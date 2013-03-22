@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import (
     create_engine,
     Table,
@@ -17,7 +18,9 @@ def wipe(engine, meta):
             con.execute(table.delete())
         trans.commit()
 
-engine = create_engine("postgresql+pg8000://postgres:pass@localhost")
+engine = create_engine(os.environ.get(
+    "DATABASE_URL",
+    "postgresql+pg8000://postgres:pass@localhost"))
 engine.echo = False  # Try changing this to True and see what happens
 
 conn = engine.connect()
