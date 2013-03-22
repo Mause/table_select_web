@@ -39,6 +39,28 @@ metadata.create_all()
 Session = sessionmaker(bind=engine)
 
 
+def get_tables(session):
+    fields = ['attendee_id', 'attendee_name', 'table_id']
+
+    tables = []
+
+    ball_tables = ball_table.select()
+    result = ball_tables.execute()
+    for row in result:
+        table_id = row['table_id']
+
+        query = session.query(attendee).filter_by(
+            table_id=table_id)
+
+        attendees = [dict(zip(fields, x)) for x in query.all()]
+
+        tables.append({
+            'table_id': table_id,
+            'attendees': attendees
+        })
+    return tables
+
+
 if __name__ == '__main__':
     wipe(engine, metadata)
     # from pprint import pprint

@@ -2,8 +2,9 @@ var API = function() {};
 
 API.prototype.base_url = '/api';
 
-API.prototype.getContacts = function(success, failure) {
+API.prototype.getTables = function(success, failure) {
     var win = function(data) {
+        // console.log(data);
         if(success)
             success(data);
     };
@@ -13,7 +14,30 @@ API.prototype.getContacts = function(success, failure) {
             failure();
     };
 
-    $.ajax(this.base_url + '/contacts', {
+    $.ajax({
+        dataType: "json",
+        url: this.base_url + '/tables',
+        success: win,
+        failure: fail
+    });
+};
+
+API.prototype.request_remove_attendee = function(attendee_id, success, failure){
+    var win = function(data){
+        if (success){
+            success(data);
+        }
+    };
+
+    var fail = function(){
+        if (failure){
+            failure();
+        }
+    };
+
+    $.ajax({
+        url: this.base_url + '/attendee/remove',
+        data: {'attendee_id': attendee_id},
         success: win,
         failure: fail
     });
@@ -21,12 +45,9 @@ API.prototype.getContacts = function(success, failure) {
 
 var Data = function() {
     this.api = new API();
-    this.contacts = this.readFromStorage();
-    this.indexData();
-};
 
-Data.prototype.indexData = function() {
-    // Do indexing task (e.g. store contact via email)
+    // this.tables holds the current data representation of the tables
+    this.tables = {};
 };
 
 /* -- API Updating -- */
@@ -35,8 +56,8 @@ Data.prototype.updateFromServer = function(callback) {
     var _this = this;
 
     var win = function(data) {
-        _this.contacts = data;
-        _this.indexData();
+        _this.tables = data;
+        // _this.indexData();
 
         if(callback)
             callback();
@@ -47,38 +68,25 @@ Data.prototype.updateFromServer = function(callback) {
             callback();
     };
 
-    this.api.getContacts(win, fail);
-};
-
-/* -- Data serialisation -- */
-
-Data.prototype.readFromStorage = function() {
-    var c = JSON.parse(window.localStorage.getItem('appData'));
-
-    // Ensure a sensible default
-    return c || [];
-};
-
-Data.prototype.writeToStorage = function() {
-    window.localStorage.setItem('appData', JSON.stringify(this.contacts));
+    this.api.getTables(win, fail);
 };
 
 /* -- Standard getters/setters -- */
 
-Data.prototype.getContacts = function() {
-    return this.contacts;
+Data.prototype.getTables = function() {
+    return this.tables;
 };
 
-// App specific data request
-Data.prototype.getContactWithEmail = function(email) {
-    var contact;
-    // Retrieve the contact from our index datastructure
-    return contact;
-};
+// // App specific data request
+// Data.prototype.getContactWithEmail = function(email) {
+//     var contact;
+//     // Retrieve the contact from our index datastructure
+//     return contact;
+// };
 
 var App = function() {
     this.data = new Data();
-    this.template = '...';
+    // this.template = '...';
 
     this.render();
     this.setupListeners();
@@ -86,8 +94,13 @@ var App = function() {
 
 App.prototype.render = function() {
     var html;
+    console.log(this.data.getTables());
     // Use this.template && this.data.getContacts() to render HTML
     return html;
+};
+
+App.prototype.request_remove_attendee = function(attendee_id, success, failure){
+    this.data.api.request_remove_attendee(attendee_id, success, failure);
 };
 
 App.prototype.setupListeners = function() {
@@ -97,9 +110,17 @@ App.prototype.setupListeners = function() {
     $('button.refresh').on('click', function(event) {
         _this.refresh();
     });
+
+    $('a.request_remove_attendee').on('click', function(event){
+        var element = $(event.target);
+        var attendee_id = element.data('id');
+        _this.request_remove_attendee(attendee_id);
+    });
 };
 
 App.prototype.refresh = function () {
+    var _this = this;
+
     _this.showLoadingSpinner();
 
     _this.data.updateFromServer(function() {

@@ -21,6 +21,7 @@ import tornado.httpserver
 
 # application specific
 import db
+import ajax
 
 sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
@@ -28,27 +29,9 @@ tornado.options.parse_command_line()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        fields = ['attendee_id', 'attendee_name', 'table_id']
-
         self.session = db.Session()
-        tables = []
-        ball_tables = db.ball_table.select()
-        result = ball_tables.execute()
-        for row in result:
-            table_id = row['table_id']
 
-            query = self.session.query(db.attendee).filter_by(
-                table_id=table_id)
-
-            logging.warning('{} results, table id {}'.format(
-                len(list(query)),
-                table_id))
-
-            attendees = [dict(zip(fields, x)) for x in query]
-            tables.append({
-                'table_id': table_id,
-                'attendees': attendees
-            })
+        tables = db.get_tables(self.session)
 
         self.render(template_name='home.html', tables=tables)
 
@@ -72,7 +55,8 @@ settings = {
 application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
     (r"/", MainHandler),
-    # (r"/api/", ajax.),
+    (r"/api/tables", ajax.TablesHandler),
+    (r"/api/attendee/remove", ajax.RemoveAttendeeHandler)
 ], **settings)
 
 

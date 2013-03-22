@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Galaxy{% end %}
 {% block content %}
-    {% for table in tables %}
-        <div class="enclosure space_below" data-table-id="{{table['table_id']}}" id="table-{{table['table_id']}}">
-            <h2>Table {{table['table_id']}}</h2>
-            <div>
-                {% for member in table['attendees'] %}
-                    <div>{{member['attendee_name']}}</div>
-                {% end %}
+    <div class="row">
+        <button class="refresh">Refresh</button>
+        {% for table in tables %}
+            <div class="enclosure space_below span5"  style="float:left;" data-table-id="{{table['table_id']}}" id="table-{{table['table_id']}}">
+                <h2>Table {{table['table_id']}}</h2>
+                <div>
+                    {% for attendee in table['attendees'] %}
+                        <div>
+                            {{attendee['attendee_name']}} | <a class="request_remove_attendee" data-id="{{attendee['attendee_id']}}">X</a>
+                        </div>
+                    {% end %}
+                </div>
             </div>
-        </div>
-    {% end %}
+        {% end %}
+    </div>
 {% end %}
