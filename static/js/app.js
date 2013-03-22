@@ -1,5 +1,7 @@
 var API = function() {};
 
+API.prototype.base_url = '/api';
+
 API.prototype.getContacts = function(success, failure) {
     var win = function(data) {
         if(success)
@@ -11,7 +13,7 @@ API.prototype.getContacts = function(success, failure) {
             failure();
     };
 
-    $.ajax('http://myserver.com/contacts', {
+    $.ajax(this.base_url + '/contacts', {
         success: win,
         failure: fail
     });

@@ -1,36 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Galaxy{% end %}
 {% block content %}
-    <div class="enclosure space_below" id="intro">
-        <h4>
-            Galaxy is a toolchain envisioned to be:
-        </h4>
-        <ul>
-            <li>clean</li>
-            <li>easy to use</li>
-            <li>specification compliant</li>
-            <li>written to take advantage of the new features in C++11 (and beyond)</li>
-            <li>pleasant API</li>
-        </ul>
-    </div>
-
-    <div class="enclosure space_below" id="roadmap">
-        <h4>Roadmap</h4>
-        <ol>
-            <li><span title="Jupiter">Assembler</span></li>
-            <li><span title="Saturn">Emulator</span></li>
-            <li><span title="Pluto">Linker</span></li>
-        </ol>
-    </div>
-
-    <div class="enclosure space_below" id="contributors">
-        <h4>Contributors</h4>
-        <ul>
-            <li><b>mrout</b>, the Colonist</li>
-            <li><b>Lord_DeathMatch</b>, the Criminal</li>
-            <li><b>ThatOtherPerson</b>, the Crusader</li>
-            <li><b>r4d2</b>, the Chalmerist</li>
-            <li><b>Taneb</b>, the Cadet</li>
-        </ul>
-    </div>
+    {% for table in tables %}
+        <div class="enclosure space_below" data-table-id="{{table['table_id']}}" id="table-{{table['table_id']}}">
+            <h2>Table {{table['table_id']}}</h2>
+            <div>
+                {% for member in table['attendees'] %}
+                    <div>{{member['attendee_name']}}</div>
+                {% end %}
+            </div>
+        </div>
+    {% end %}
 {% end %}

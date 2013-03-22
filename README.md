@@ -1,7 +1,5 @@
-Galaxy Team Website
+Simple Table Selection webapp
 ==================
 
-Lovely python this time around, hosted on Heroku.
-
-
-NOT PHP.
+For my year twelve school ball.
+Is unlikely to be used, but it is a good learning excersize.
