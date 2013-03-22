@@ -2,3 +2,4 @@ tornado
 requests
 sqlalchemy
 pg8000-py3
+psycopg2
