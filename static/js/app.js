@@ -117,15 +117,21 @@ var App = function() {
 };
 
 App.prototype.templates = {};
+
+// compiling on the fly aint the best, but its good enough for what we're doing
 App.prototype.templates.tables = Handlebars.compile($('#tableTemplate').html());
 
 
 App.prototype.render = function() {
     "use strict";
-    var html;
     var _this = this.app === undefined ? this : this.app;
 
-    var data = {tables: _this.data.tables};
+    var tables = _this.data.tables;
+    for (var key in tables){
+        tables[key].row = tables[key].table_id % 2 === 0;
+    }
+
+    var data = {"tables": tables};
     $('#tableContainer').html(_this.templates.tables(data));
 };
 

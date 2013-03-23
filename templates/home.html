@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Ball Table Select{% end %}
 {% block content %}
-    <div class="row">
+    <div class="span12">
         <div class="alert" style="position:static;">
           <button type="button" class="close" data-dismiss="alert">&times;</button>
           <strong>Warning!</strong> Best check yo self, you're not looking too good.
@@ -11,8 +11,9 @@
     </div>
 
     <script id="tableTemplate" type="text/x-jsrender">
+        <div class="row">
         {{!#each tables}}
-            <div class="enclosure space_below" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
+            <div class="enclosure space_below span5" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
                 <h2>Table {{!table_id}}</h2>
                 <div class="submit_attendee_form">
                     <form class="well submit_attendee">
@@ -25,19 +26,12 @@
                 <div>
                     {{!#if attendees}}
                         <div class="dropdown clearfix">
-                            <ul
-                                class="dropdown-menu dropdown-menu-customization"
-                                role="menu">
+                            <ul class="dropdown-menu dropdown-menu-customization" role="menu">
                                     {{!#each attendees}}
                                         <li class="attendee">
                                             <a tabindex="-1" href="#">
                                                 {{!attendee_name}}
-                                                <button
-                                                    type="button"
-                                                    class="close"
-                                                    data-dismiss="alert"
-                                                    data-attendee-id="{{!attendee_id}}"
-                                                    data-table-id="{{!table_id}}"
+                                                <button type="button" class="close" data-dismiss="alert" data-attendee-id="{{!attendee_id}}" data-table-id="{{!table_id}}"
                                                     onclick="javascript:app.request_remove_attendee(this)">&times;</button>
                                             </a>
                                         </li>
@@ -49,7 +43,12 @@
                     {{!/if}}
                 </div>
             </div>
+        {{!#if row}}
+            </div>
+            <div class="row">
+        {{!/if}}
         {{!/each}}
+        </div>
     </script>
 
 {% end %}
