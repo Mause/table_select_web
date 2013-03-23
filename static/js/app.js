@@ -94,9 +94,9 @@ var App = function() {
         // We've now got new data to show
         _this.render();
         _this.hideLoadingSpinner();
+        _this.setupListeners();
     });
 
-    this.setupListeners();
 };
 
 App.prototype.templates = {};
@@ -108,9 +108,7 @@ App.prototype.render = function() {
     var _this = this.app === undefined ? this : this.app;
 
     data = {tables: _this.data.tables};
-    console.log(data);
-
-        $('#tableContainer').html(_this.templates.tables(data));
+    $('#tableContainer').html(_this.templates.tables(data));
 };
 
     // function refresh_events(data){
@@ -137,6 +135,8 @@ App.prototype.setupListeners = function() {
         var attendee_id = element.data('id');
         _this.request_remove_attendee(attendee_id);
     });
+
+    $('.submit_attendee').submit(_this.submit_attendee);
 };
 
 App.prototype.refresh = function () {
@@ -149,6 +149,12 @@ App.prototype.refresh = function () {
         _this.render();
         _this.hideLoadingSpinner();
     });
+};
+
+App.prototype.submit_attendee = function(event) {
+    console.log(event);
+    console.log($(event.target));
+    return false;
 };
 
 App.prototype.showLoadingSpinner = function() {
