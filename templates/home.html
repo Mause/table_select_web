@@ -3,17 +3,36 @@
 {% block content %}
     <div class="row">
         <button class="refresh">Refresh</button>
-        {% for table in tables %}
-            <div class="enclosure space_below span5"  style="float:left;" data-table-id="{{table['table_id']}}" id="table-{{table['table_id']}}">
-                <h2>Table {{table['table_id']}}</h2>
-                <div>
-                    {% for attendee in table['attendees'] %}
-                        <div>
-                            {{attendee['attendee_name']}} | <a class="request_remove_attendee" data-id="{{attendee['attendee_id']}}">X</a>
-                        </div>
-                    {% end %}
-                </div>
-            </div>
-        {% end %}
+        <div id="tableContainer">
+        </div>
+
     </div>
+
+    <script id="tableTemplate" type="text/x-jsrender">
+        {{!#each tables}}
+            <div class="enclosure space_below span5" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
+                <h2>Table {{!table_id}}</h2>
+
+                {{!#if attendees}}
+                    <div class="dropdown clearfix">
+                        <ul
+                            class="dropdown-menu"
+                            role="menu"
+                            style="display: block; position: static; margin-bottom: 5px; width: 180px;">
+                                {{!#each attendees}}
+                                    <li class="attendee">
+                                        <a tabindex="-1" href="#" data-id="{{!attendee_id}}">
+                                            {{!attendee_name}}
+                                        </a>
+                                    </li>
+                                {{!/each}}
+                        </ul>
+                    </div>
+                {{!else}}
+                    <h5>No attendees on this table yet</h5>
+                {{!/if}}
+            </div>
+        {{!/each}}
+    </script>
+
 {% end %}

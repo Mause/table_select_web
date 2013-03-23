@@ -17,7 +17,7 @@ class TablesHandler(tornado.web.RequestHandler):
         "get is simple"
         self.session = db.Session()
         tables = db.get_tables(self.session)
-        tables = json.dumps(tables)
+        tables = json.dumps(tables, indent=4)
         self.write(tables)
 
     def post(self):

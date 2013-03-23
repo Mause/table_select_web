@@ -18,49 +18,59 @@ def wipe(engine, meta):
             con.execute(table.delete())
         trans.commit()
 
-engine = create_engine(os.environ.get(
-    "DATABASE_URL",
-    "postgresql+pg8000://postgres:pass@localhost"))
-engine.echo = False  # Try changing this to True and see what happens
 
-conn = engine.connect()
-metadata = MetaData(engine)
+def setup():
+    engine = create_engine(os.environ.get(
+        "DATABASE_URL",
+        "postgresql://postgres:pass@localhost"))
+    engine.echo = False  # Try changing this to True and see what happens
 
+    conn = engine.connect()
+    metadata = MetaData(engine)
 
-ball_table = Table('ball_table', metadata,
-    Column('table_id', Integer, primary_key=True),
-    # Column('name', String(40))
-)
+    ball_table = Table('ball_table', metadata,
+        Column('table_id', Integer, primary_key=True),
+        # Column('name', String(40))
+    )
 
-attendee = Table('attendee', metadata,
-    Column('attendee_id', Integer, primary_key=True),
-    Column('attendee_name', String),
-    Column('table_id', ForeignKey('ball_table.table_id')))
+    results = ball_table.select()
+    if not results.execute():
+        ball_table.insert().execute([{'table_id': id} for id in range(1, 11)])
 
-metadata.create_all()
+    attendee_table = Table('attendee', metadata,
+        Column('attendee_id', Integer, primary_key=True),
+        Column('attendee_name', String),
+        Column('table_id', ForeignKey('ball_table.table_id')))
 
-Session = sessionmaker(bind=engine)
+    metadata.create_all()
+
+    Session = sessionmaker(bind=engine)
+
+    return metadata, engine, conn, Session, ball_table, attendee_table
+
+metadata, engine, conn, Session, ball_table, attendee_table = setup()
 
 
 def get_tables(session):
     fields = ['attendee_id', 'attendee_name', 'table_id']
 
-    tables = []
+    table_num = 17
+    tables = {
+        table_id: {'table_id': table_id}
+        for table_id in range(1, table_num + 1)}
 
     ball_tables = ball_table.select()
     result = ball_tables.execute()
     for row in result:
         table_id = row['table_id']
 
-        query = session.query(attendee).filter_by(
+        query = session.query(attendee_table).filter_by(
             table_id=table_id)
 
         attendees = [dict(zip(fields, x)) for x in query.all()]
 
-        tables.append({
-            'table_id': table_id,
-            'attendees': attendees
-        })
+        tables[table_id]['attendees'] = attendees
+
     return tables
 
 
@@ -73,7 +83,7 @@ if __name__ == '__main__':
         names = json.load(fh)
 
     ball_table_insert = ball_table.insert()
-    attendee_insert = attendee.insert()
+    attendee_insert = attendee_table.insert()
     for id in range(1, 11):
         ball_table_insert.execute({'table_id': id})
 
@@ -88,10 +98,3 @@ if __name__ == '__main__':
     rs = s.execute()
     for row in rs:
         print(dict(row))
-        # print(row.name, 'is', row.age, 'years old')
-
-    # row = rs.fetchone()
-    # print('Id:', row[0])
-    # print('Name:', row['name'])
-    # print('Age:', row.age)
-    # print('Password:', row[users.c.password])

@@ -1,10 +1,11 @@
+// Handlebars.log = function(level, object) {console.log(level, object);};
+
 var API = function() {};
 
 API.prototype.base_url = '/api';
 
 API.prototype.getTables = function(success, failure) {
     var win = function(data) {
-        // console.log(data);
         if(success)
             success(data);
     };
@@ -87,17 +88,37 @@ Data.prototype.getTables = function() {
 var App = function() {
     this.data = new Data();
     // this.template = '...';
+    var _this = this;
 
-    this.render();
+    _this.data.updateFromServer(function() {
+        // We've now got new data to show
+        _this.render();
+        _this.hideLoadingSpinner();
+    });
+
     this.setupListeners();
 };
 
+App.prototype.templates = {};
+App.prototype.templates.tables = Handlebars.compile($('#tableTemplate').html());
+
+
 App.prototype.render = function() {
     var html;
-    console.log(this.data.getTables());
-    // Use this.template && this.data.getContacts() to render HTML
-    return html;
+    var _this = this.app === undefined ? this : this.app;
+
+    data = {tables: _this.data.tables};
+    console.log(data);
+
+        $('#tableContainer').html(_this.templates.tables(data));
 };
+
+    // function refresh_events(data){
+    //     $('.h-feed').html(
+    //         $("#eventTemplate").render(data)
+    //     );
+    // }
+
 
 App.prototype.request_remove_attendee = function(attendee_id, success, failure){
     this.data.api.request_remove_attendee(attendee_id, success, failure);
@@ -138,5 +159,7 @@ App.prototype.hideLoadingSpinner = function() {
     // hide spinner
 };
 
-
-app = new App();
+var app;
+$(document).ready(function(){
+    app = new App();
+});

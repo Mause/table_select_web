@@ -35,6 +35,8 @@ class MainHandler(tornado.web.RequestHandler):
 
         self.render(template_name='home.html', tables=tables)
 
+        self.session.close()
+
 
 class GithubButtonHandler(tornado.web.RequestHandler):
     def get(self):
