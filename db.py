@@ -1,4 +1,6 @@
 import os
+import logging
+
 from sqlalchemy import (
     create_engine,
     Table,
@@ -72,6 +74,13 @@ def get_tables(session):
         tables[table_id]['attendees'] = attendees
 
     return tables
+
+
+def does_attendee_exist(session, attendee_name):
+    query = session.query(attendee_table).filter_by(
+        attendee_name=attendee_name)
+    logging.info('que', query)
+    return bool(query)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
 // Handlebars.log = function(level, object) {console.log(level, object);};
 var $;
-var gevent;
 var console;
 var window;
 
@@ -149,7 +148,7 @@ App.prototype.setupListeners = function() {
     var _this = this;
 
     // Reload the data from the server
-    $('button.refresh').on('click', function(event) {
+    $('a.refresh').on('click', function(event) {
         _this.refresh();
     });
 
@@ -179,21 +178,20 @@ App.prototype.submit_attendee = function(event) {
     "use strict";
     var _this = window.app;
 
-    gevent = event;
-    console.log(event);
-    var attendee_name = $(gevent.target.attendee_name).val();
+    var attendee_name = $(event.target.attendee_name).val();
     if (attendee_name){
-        var table_id = $(gevent.target.table_id).val();
+        var table_id = $(event.target.table_id).val();
         console.log(attendee_name, table_id);
 
         _this.add_attendee(
             attendee_name, table_id,
             function(data){
+                console.log(data);
                 if (data.success === true){
                     _this.hideLoadingSpinner();
                     _this.refresh();
-                    // console.log(data);
                 }
+                return false;
         });
     }
     return false;

@@ -26,14 +26,17 @@
     </head>
 
     <body>
-
         <div class="container">
             <header>
-                <h1><a href="#">Ball Table Select</a></h1>
-                <!-- <nav>
-                    <a class="btn" href="#roadmap">Roadmap</a>
-                    <a class="btn" href="#contributors">Contributors</a>
-                </nav> -->
+                <h1><a href="/">Ball Table Select</a></h1>
+                <nav>
+                    {% if path == "/" %}
+                        <a class="btn refresh">Refresh</a>
+                        <a class="btn" href="/info">Info</a>
+                    {% else %}
+                        <a class="btn" href="/">Home</a>
+                    {% end %}
+                </nav>
             </header>
             {% block content %}
             {% end %}

@@ -30,19 +30,26 @@ class RemoveAttendeeHandler(tornado.web.RequestHandler):
 
 class AddAttendeeHandler(tornado.web.RequestHandler):
     def post(self):
+        status = {"success": True}
+
         with closing(db.Session()) as self.session:
-            table_id = self.get_argument('table_id')
             attendee_name = self.get_argument('attendee_name')
 
-            record = {
-                'attendee_name': attendee_name,
-                'table_id': table_id
-            }
+            if db.does_attendee_exist(self.session, attendee_name):
+                status['error'] = 'user_exists'
+                status['success'] = False
 
-            logging.info(record)
+            else:
+                table_id = self.get_argument('table_id')
 
-            attendee_insert = db.attendee_table.insert()
-            attendee_insert.execute(record)
+                record = {
+                    'attendee_name': attendee_name,
+                    'table_id': table_id
+                }
 
-            self.write(json.dumps({
-                "success": True}))
+                logging.info(record)
+
+                attendee_insert = db.attendee_table.insert()
+                attendee_insert.execute(record)
+
+        self.write(json.dumps(status))

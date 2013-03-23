@@ -19,7 +19,6 @@ import tornado.template
 import tornado.httpserver
 
 # application specific
-import db
 import ajax
 
 sys.argv.append('--logging=INFO')
@@ -28,9 +27,7 @@ tornado.options.parse_command_line()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        with closing(db.Session()) as self.session:
-            tables = db.get_tables(self.session)
-            self.render(template_name='home.html', tables=tables)
+        self.render(template_name='home.html', path='/')
 
 
 class GithubButtonHandler(tornado.web.RequestHandler):
@@ -38,9 +35,9 @@ class GithubButtonHandler(tornado.web.RequestHandler):
         self.render('github-btn.html')
 
 
-class GitHubStream(tornado.web.RequestHandler):
+class InfoHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('github_stream.html')
+        self.render('info.html', path='/info')
 
 
 class AdminHandler(tornado.web.RequestHandler):
@@ -64,6 +61,7 @@ application = tornado.wsgi.WSGIApplication([
     (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
     (r"/admin", AdminHandler),
+    (r"/info", InfoHandler),
     (r"/", MainHandler),
 ], **settings)
 
