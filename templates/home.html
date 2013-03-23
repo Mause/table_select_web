@@ -14,7 +14,8 @@
                 <h2>Table {{!table_id}}</h2>
                 <div class="submit_attendee_form">
                     <form class="well submit_attendee">
-                        <label><strong>Attendee name:</strong> <input type="text" name=""></label>
+                        <input type="hidden" value="{{!table_id}}" name="table_id"/>
+                        <label><strong>Attendee name:</strong> <input type="text" name="attendee_name"></label>
                         <button class="btn btn-primary">Submit request</button>
                     </form>
                 </div>

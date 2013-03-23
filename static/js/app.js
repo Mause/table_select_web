@@ -1,10 +1,15 @@
 // Handlebars.log = function(level, object) {console.log(level, object);};
+var $;
+var gevent;
+var console;
+var window;
 
 var API = function() {};
 
 API.prototype.base_url = '/api';
 
 API.prototype.getTables = function(success, failure) {
+    "use strict";
     var win = function(data) {
         if(success)
             success(data);
@@ -24,27 +29,35 @@ API.prototype.getTables = function(success, failure) {
 };
 
 API.prototype.request_remove_attendee = function(attendee_id, success, failure){
-    var win = function(data){
-        if (success){
-            success(data);
-        }
-    };
-
-    var fail = function(){
-        if (failure){
-            failure();
-        }
-    };
-
+    "use strict";
     $.ajax({
+        type: 'POST',
         url: this.base_url + '/attendee/remove',
         data: {'attendee_id': attendee_id},
-        success: win,
-        failure: fail
+        success: success,
+        failure: failure
     });
 };
 
+
+API.prototype.add_attendee = function(attendee_name, table_id, success, failure){
+    "use strict";
+    $.ajax({
+        dataType: "json",
+        type: "POST",
+        url: this.base_url + '/attendee/add',
+        data: {
+            'attendee_name': attendee_name,
+            'table_id': table_id
+        },
+        success: success,
+        failure: failure
+    });
+};
+
+
 var Data = function() {
+    "use strict";
     this.api = new API();
 
     // this.tables holds the current data representation of the tables
@@ -54,6 +67,7 @@ var Data = function() {
 /* -- API Updating -- */
 
 Data.prototype.updateFromServer = function(callback) {
+    "use strict";
     var _this = this;
 
     var win = function(data) {
@@ -75,6 +89,7 @@ Data.prototype.updateFromServer = function(callback) {
 /* -- Standard getters/setters -- */
 
 Data.prototype.getTables = function() {
+    "use strict";
     return this.tables;
 };
 
@@ -86,6 +101,7 @@ Data.prototype.getTables = function() {
 // };
 
 var App = function() {
+    "use strict";
     this.data = new Data();
     // this.template = '...';
     var _this = this;
@@ -104,10 +120,11 @@ App.prototype.templates.tables = Handlebars.compile($('#tableTemplate').html());
 
 
 App.prototype.render = function() {
+    "use strict";
     var html;
     var _this = this.app === undefined ? this : this.app;
 
-    data = {tables: _this.data.tables};
+    var data = {tables: _this.data.tables};
     $('#tableContainer').html(_this.templates.tables(data));
 };
 
@@ -118,11 +135,17 @@ App.prototype.render = function() {
     // }
 
 
+// silly straight through methods -.-
 App.prototype.request_remove_attendee = function(attendee_id, success, failure){
     this.data.api.request_remove_attendee(attendee_id, success, failure);
 };
 
+App.prototype.add_attendee = function(attendee_name, table_id, success, failure){
+    this.data.api.add_attendee(attendee_name, table_id, success, failure);
+};
+
 App.prototype.setupListeners = function() {
+    "use strict";
     var _this = this;
 
     // Reload the data from the server
@@ -140,6 +163,7 @@ App.prototype.setupListeners = function() {
 };
 
 App.prototype.refresh = function () {
+    "use strict";
     var _this = this;
 
     _this.showLoadingSpinner();
@@ -152,8 +176,26 @@ App.prototype.refresh = function () {
 };
 
 App.prototype.submit_attendee = function(event) {
+    "use strict";
+    var _this = window.app;
+
+    gevent = event;
     console.log(event);
-    console.log($(event.target));
+    var attendee_name = $(gevent.target.attendee_name).val();
+    if (attendee_name){
+        var table_id = $(gevent.target.table_id).val();
+        console.log(attendee_name, table_id);
+
+        _this.add_attendee(
+            attendee_name, table_id,
+            function(data){
+                if (data.success === true){
+                    _this.hideLoadingSpinner();
+                    _this.refresh();
+                    // console.log(data);
+                }
+        });
+    }
     return false;
 };
 
@@ -167,5 +209,6 @@ App.prototype.hideLoadingSpinner = function() {
 
 var app;
 $(document).ready(function(){
+    "use strict";
     app = new App();
 });

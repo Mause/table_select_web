@@ -5,10 +5,9 @@
 # stdlib
 import os
 import sys
-import json
-import logging
-logging
-json
+# import json
+# import logging
+from contextlib import closing
 
 # third party
 import tornado
@@ -29,13 +28,9 @@ tornado.options.parse_command_line()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.session = db.Session()
-
-        tables = db.get_tables(self.session)
-
-        self.render(template_name='home.html', tables=tables)
-
-        self.session.close()
+        with closing(db.Session()) as self.session:
+            tables = db.get_tables(self.session)
+            self.render(template_name='home.html', tables=tables)
 
 
 class GithubButtonHandler(tornado.web.RequestHandler):
@@ -67,6 +62,7 @@ application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
     (r"/api/tables", ajax.TablesHandler),
     (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
+    (r"/api/attendee/add", ajax.AddAttendeeHandler),
     (r"/admin", AdminHandler),
     (r"/", MainHandler),
 ], **settings)
