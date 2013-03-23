@@ -88,6 +88,7 @@ body {
 }
 
 @media print {
+    /* yep, we are nice, lets make print output look good :D */
     .submit_attendee_form {
         display:none;
     }

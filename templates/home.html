@@ -11,8 +11,14 @@
     <script id="tableTemplate" type="text/x-jsrender">
         {{!#each tables}}
             <div class="enclosure space_below" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
+                <h2>Table {{!table_id}}</h2>
+                <div class="submit_attendee_form">
+                    <form class="well submit_attendee">
+                        <label><strong>Attendee name:</strong> <input type="text" name=""></label>
+                        <button class="btn btn-primary">Submit request</button>
+                    </form>
+                </div>
                 <div class="">
-                    <h2>Table {{!table_id}}</h2>
 
                     {{!#if attendees}}
                         <div class="dropdown clearfix">
@@ -32,12 +38,6 @@
                     {{!else}}
                         <h5>No attendees on this table yet</h5>
                     {{!/if}}
-                </div>
-                <div class="submit_attendee_form">
-                    <form class="well submit_attendee">
-                        <label><strong>Attendee name:</strong> <input type="text" name=""></label>
-                        <button class="btn btn-primary">Submit request</button>
-                    </form>
                 </div>
             </div>
         {{!/each}}

@@ -47,6 +47,15 @@ class GitHubStream(tornado.web.RequestHandler):
     def get(self):
         self.render('github_stream.html')
 
+
+class AdminHandler(tornado.web.RequestHandler):
+    def get(self):
+        "this page will allow the authorization of removals"
+        # keep removals persistant, for future reference
+        # give every user a UUID, stored as a cookie,
+        # that can be used to group requests
+
+
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
@@ -56,9 +65,10 @@ settings = {
 
 application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
-    (r"/", MainHandler),
     (r"/api/tables", ajax.TablesHandler),
-    (r"/api/attendee/remove", ajax.RemoveAttendeeHandler)
+    (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
+    (r"/admin", AdminHandler),
+    (r"/", MainHandler),
 ], **settings)
 
 
