@@ -27,12 +27,14 @@ API.prototype.getTables = function(success, failure) {
     });
 };
 
-API.prototype.request_remove_attendee = function(attendee_id, success, failure){
+API.prototype.request_remove_attendee = function(attendee_id, table_id, success, failure){
     "use strict";
     $.ajax({
         type: 'POST',
         url: this.base_url + '/attendee/remove',
-        data: {'attendee_id': attendee_id},
+        data: {
+            'attendee_id': attendee_id,
+            'table_id': table_id},
         success: success,
         failure: failure
     });
@@ -131,6 +133,8 @@ App.prototype.request_remove_attendee = function(element){
     element = $(element);
     var attendee_id = element.data('attendeeId');
     console.log('attendee_id', attendee_id);
+    var table_id = element.data('tableId');
+    console.log('table_id', table_id);
 
     var win = function(data){
         console.log('win', data);
@@ -140,7 +144,7 @@ App.prototype.request_remove_attendee = function(element){
         console.log('failure', data);
     };
 
-    this.data.api.request_remove_attendee(attendee_id, win, fail);
+    this.data.api.request_remove_attendee(attendee_id, table_id, win, fail);
 };
 
 App.prototype.setupListeners = function() {

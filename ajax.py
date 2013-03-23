@@ -26,12 +26,24 @@ class TablesHandler(tornado.web.RequestHandler):
 class RemoveAttendeeHandler(tornado.web.RequestHandler):
     def post(self):
         attendee_id = self.get_argument('attendee_id')
+        table_id = self.get_argument('table_id')
 
         logging.info(
             'recording removal request for attendee with id {}'.format(
                 attendee_id))
-        with closing(db.Session()) as session:
-            session
+
+    # removal_request_table = Table('removal_request', metadata,
+    #     Column('request_id', Integer, primary_key=True),
+    #     Column('attendee_id', ForeignKey('attendee.attendee_id')),
+    #     Column('table_id', ForeignKey('ball_table.table_id')))
+
+        record = {
+            'attendee_id': attendee_id,
+            'table_id': table_id
+        }
+
+        removal_request_insert = db.removal_request_table.insert()
+        removal_request_insert.execute(record)
 
 
 class AddAttendeeHandler(tornado.web.RequestHandler):

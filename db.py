@@ -46,8 +46,7 @@ def setup():
 
     removal_request_table = Table('removal_request', metadata,
         Column('request_id', Integer, primary_key=True),
-        Column('attendee_name', String),
-        Column('table_id', ForeignKey('ball_table.table_id')),
+        Column('attendee_id', ForeignKey('attendee.attendee_id')),
         Column('table_id', ForeignKey('ball_table.table_id')))
 
     metadata.create_all()
@@ -85,9 +84,12 @@ def get_tables(session):
 
 
 def does_attendee_exist(session, attendee_name):
+    fields = ['attendee_id', 'attendee_name', 'table_id']
+
     query = session.query(attendee_table).filter_by(
         attendee_name=attendee_name)
-    return bool(query.count())
+    query = query.all()
+    return [dict(zip(fields, x)) for x in query]
 
 
 if __name__ == '__main__':
