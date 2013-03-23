@@ -86,3 +86,13 @@ body {
     -moz-background-clip: padding;
     background-clip: padding-box;
 }
+
+@media print {
+    .submit_attendee_form {
+        display:none;
+    }
+    .dropdown-menu {
+        list-style: none;
+        border: none;
+    }
+}
