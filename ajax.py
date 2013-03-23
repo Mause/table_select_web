@@ -53,8 +53,11 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
         with closing(db.Session()) as session:
             attendee_name = self.get_argument('attendee_name')
 
-            if db.does_attendee_exist(session, attendee_name):
-                logging.info('attendee_exists: "{}"'.format(attendee_name))
+            exists = db.does_attendee_exist(session, attendee_name)
+            if exists:
+                logging.info('attendee_exists: "{}"=="{}", on table {}'.format(
+                    attendee_name, exists['attendee_name'],
+                    exists['table_id']))
                 status['error'] = 'attendee_exists'
                 status['success'] = False
 
@@ -62,8 +65,8 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                 table_id = self.get_argument('table_id')
 
                 record = {
-                    'attendee_name': attendee_name,
-                    'table_id': table_id
+                    'attendee_name': int(attendee_name),
+                    'table_id': int(table_id)
                 }
 
                 attendee_insert = db.attendee_table.insert()

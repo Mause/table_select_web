@@ -180,6 +180,7 @@ App.prototype.refresh = function () {
     _this.data.updateFromServer(function() {
         // We've now got new data to show
         _this.render();
+        _this.setupListeners();
         _this.hideLoadingSpinner();
     });
 };

@@ -10,6 +10,7 @@ from sqlalchemy import (
     Column,
     ForeignKey)
 from sqlalchemy.orm import sessionmaker
+from fuzzywuzzy import fuzz
 
 
 def wipe(engine, meta):
@@ -63,6 +64,9 @@ def setup():
 def get_tables(session):
     fields = ['attendee_id', 'attendee_name', 'table_id']
 
+    # these next two lines really shouldn't be here
+    # but w/e. they basically create a framework for the tables to slot into
+    # and at the same time create empty tables
     table_num = 17
     tables = {
         table_id: {'table_id': table_id}
@@ -83,13 +87,30 @@ def get_tables(session):
     return tables
 
 
-def does_attendee_exist(session, attendee_name):
+def does_attendee_exist_dumb(session, attendee_name):
+    "does a simple check if any other attendees have the same name"
     fields = ['attendee_id', 'attendee_name', 'table_id']
 
     query = session.query(attendee_table).filter_by(
         attendee_name=attendee_name)
     query = query.all()
     return [dict(zip(fields, x)) for x in query]
+
+
+def does_attendee_exist(session, attendee_name):
+    """uses fuzzy matching to determine
+    whether someone is trying to dupe the app"""
+    fields = ['attendee_id', 'attendee_name', 'table_id']
+
+    query = session.query(attendee_table).all()
+    # logging.info('{} attendees'.format(len(query)))
+
+    for attendee in query:
+        _, cur_attendee_name, _ = attendee
+        if fuzz.ratio(cur_attendee_name, attendee_name) > 85:
+            return dict(zip(fields, attendee))
+
+    return False
 
 
 if __name__ == '__main__':
