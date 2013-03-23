@@ -2,6 +2,10 @@
 {% block title %}Ball Table Select{% end %}
 {% block content %}
     <div class="row">
+        <div class="alert" style="position:static;">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>Warning!</strong> Best check yo self, you're not looking too good.
+        </div>
         <div id="tableContainer">
         </div>
     </div>
@@ -17,18 +21,23 @@
                         <button class="btn btn-primary">Submit request</button>
                     </form>
                 </div>
-                <div class="">
 
+                <div>
                     {{!#if attendees}}
                         <div class="dropdown clearfix">
                             <ul
-                                class="dropdown-menu"
-                                role="menu"
-                                style="display: block; position: static; margin-bottom: 5px; width: 180px;">
+                                class="dropdown-menu dropdown-menu-customization"
+                                role="menu">
                                     {{!#each attendees}}
                                         <li class="attendee">
-                                            <a tabindex="-1" href="#" data-id="{{!attendee_id}}">
+                                            <a tabindex="-1" href="#">
                                                 {{!attendee_name}}
+                                                <button
+                                                    type="button"
+                                                    class="close"
+                                                    data-dismiss="alert"
+                                                    data-attendee-id="{{!attendee_id}}"
+                                                    onclick="javascript:app.request_remove_attendee(this)">&times;</button>
                                             </a>
                                         </li>
                                     {{!/each}}

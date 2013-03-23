@@ -44,13 +44,21 @@ def setup():
         Column('attendee_name', String),
         Column('table_id', ForeignKey('ball_table.table_id')))
 
+    removal_request_table = Table('removal_request', metadata,
+        Column('request_id', Integer, primary_key=True),
+        Column('attendee_name', String),
+        Column('table_id', ForeignKey('ball_table.table_id')),
+        Column('table_id', ForeignKey('ball_table.table_id')))
+
     metadata.create_all()
 
     Session = sessionmaker(bind=engine)
 
-    return metadata, engine, conn, Session, ball_table, attendee_table
+    return (metadata, engine, conn, Session,
+        ball_table, attendee_table, removal_request_table)
 
-metadata, engine, conn, Session, ball_table, attendee_table = setup()
+(metadata, engine, conn, Session,
+    ball_table, attendee_table, removal_request_table) = setup()
 
 
 def get_tables(session):
@@ -79,8 +87,7 @@ def get_tables(session):
 def does_attendee_exist(session, attendee_name):
     query = session.query(attendee_table).filter_by(
         attendee_name=attendee_name)
-    logging.info('que', query)
-    return bool(query)
+    return bool(query.count())
 
 
 if __name__ == '__main__':

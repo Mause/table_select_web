@@ -87,6 +87,17 @@ body {
     background-clip: padding-box;
 }
 
+.dropdown-menu-customization {
+    display: block;
+    position: static;
+    margin-bottom: 5px;
+    width: 180px;
+}
+
+.submit_attendee_form {
+    width: 375px;
+}
+
 @media print {
     /* yep, we are nice, lets make print output look good :D */
     .submit_attendee_form {

@@ -127,20 +127,20 @@ App.prototype.render = function() {
     $('#tableContainer').html(_this.templates.tables(data));
 };
 
-    // function refresh_events(data){
-    //     $('.h-feed').html(
-    //         $("#eventTemplate").render(data)
-    //     );
-    // }
+App.prototype.request_remove_attendee = function(element){
+    element = $(element);
+    var attendee_id = element.data('attendeeId');
+    console.log('attendee_id', attendee_id);
 
+    var win = function(data){
+        console.log('win', data);
+    };
 
-// silly straight through methods -.-
-App.prototype.request_remove_attendee = function(attendee_id, success, failure){
-    this.data.api.request_remove_attendee(attendee_id, success, failure);
-};
+    var fail = function(data){
+        console.log('failure', data);
+    };
 
-App.prototype.add_attendee = function(attendee_name, table_id, success, failure){
-    this.data.api.add_attendee(attendee_name, table_id, success, failure);
+    this.data.api.request_remove_attendee(attendee_id, win, fail);
 };
 
 App.prototype.setupListeners = function() {
@@ -183,13 +183,14 @@ App.prototype.submit_attendee = function(event) {
         var table_id = $(event.target.table_id).val();
         console.log(attendee_name, table_id);
 
-        _this.add_attendee(
-            attendee_name, table_id,
+        _this.data.api.add_attendee(attendee_name, table_id,
             function(data){
                 console.log(data);
                 if (data.success === true){
                     _this.hideLoadingSpinner();
                     _this.refresh();
+                } else {
+                    console.log('Add attendee failed');
                 }
                 return false;
         });
