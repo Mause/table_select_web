@@ -49,6 +49,8 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                     attendee_name, exists['attendee_name'],
                     exists['table_id']))
                 status['error'] = 'attendee_exists'
+                status['human_error'] = 'attendee already on {}'.format(
+                    exists['table_id'])
                 status['success'] = False
 
             else:
@@ -66,3 +68,4 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                     attendee_name, table_id))
 
         self.write(json.dumps(status))
+

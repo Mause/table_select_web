@@ -169,6 +169,7 @@ App.prototype.setupListeners = function() {
     });
 
     $('.submit_attendee').submit(_this.submit_attendee);
+    $('.submit_attendee').tooltip();
 };
 
 App.prototype.refresh = function () {
@@ -185,16 +186,21 @@ App.prototype.refresh = function () {
     });
 };
 
-// App.prototype.tooltip = function(element, text) {
-//     element = $(element);
-//     element.
-// };
+App.prototype.tooltip = function(element, text, timeout) {
+    element.data('title', text);
+    element.tooltip('show');
+
+    window.setTimeout(function(){
+        element.tooltip('hide');
+    }, timeout || 1500);
+};
 
 
 App.prototype.submit_attendee = function(event) {
     "use strict";
     var _this = window.app;
 
+    var element = $(event.target);
     var attendee_name = $(event.target.attendee_name).val();
     if (attendee_name){
         var table_id = $(event.target.table_id).val();
@@ -206,8 +212,11 @@ App.prototype.submit_attendee = function(event) {
                 if (data.success === true){
                     _this.hideLoadingSpinner();
                     _this.refresh();
+
+                    _this.tooltip(element, 'attendee add was successful');
                 } else {
                     console.log('Add attendee failed');
+                    _this.tooltip(element, data.human_error);
                 }
                 return false;
         });

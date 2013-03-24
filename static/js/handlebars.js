@@ -2091,6 +2091,7 @@ Handlebars.precompile = function(input, options) {
 
 Handlebars.compile = function(input, options) {
   if (!input || (typeof input !== 'string' && input.constructor !== Handlebars.AST.ProgramNode)) {
+    console.error(input);
     throw new Handlebars.Exception("You must pass a string or Handlebars AST to Handlebars.compile. You passed " + input);
   }
 
