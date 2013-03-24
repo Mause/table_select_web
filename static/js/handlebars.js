@@ -701,6 +701,7 @@ Handlebars.print = function(ast) {
 
   var verifyMatch = function(open, close) {
     if(open.original !== close.original) {
+      console.error(open.original + " doesn't match " + close.original);
       throw new Handlebars.Exception(open.original + " doesn't match " + close.original);
     }
   };

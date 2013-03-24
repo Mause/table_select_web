@@ -3,45 +3,55 @@
 {% block content %}
     <div class="span12">
         <div class="alert" style="position:static;">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <strong>Warning!</strong> Best check yo self, you're not looking too good.
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>Warning!</strong> Best check yo self, you're not looking too good.
         </div>
-        <div id="tableContainer">
+        <div id="tableContainer" class="fixmargin">
         </div>
     </div>
 
-    <script id="tableTemplate" type="text/x-jsrender">
+    <script type="text/x-handlebars-template" id="add_attendee_form">
+        <div class="submit_attendee_form">
+            <form class="well submit_attendee">
+                <input type="hidden" value="{{!table_id}}" name="table_id"/>
+                <label><strong>Attendee name:</strong> <input type="text" name="attendee_name"></label>
+                <button class="btn btn-primary">Submit attendee</button>
+            </form>
+        </div>
+    </script>
+
+    <script type="text/x-handlebars-template" id="attendee_list">
+        <div>
+            {{!#if attendees}}
+                <div class="dropdown clearfix">
+                    <ul class="dropdown-menu dropdown-menu-customization" role="menu">
+                            {{!#each attendees}}
+                                <li class="attendee">
+                                    <a tabindex="-1" href="#">
+                                        {{!attendee_name}}
+                                        <button type="button" class="close" data-dismiss="alert" data-attendee-id="{{!attendee_id}}" data-table-id="{{!table_id}}"
+                                            onclick="javascript:app.request_remove_attendee(this)">&times;</button>
+                                    </a>
+                                </li>
+                            {{!/each}}
+                    </ul>
+                </div>
+            {{!else}}
+                <h5>No attendees on this table yet</h5>
+            {{!/if}}
+        </div>
+    </script>
+
+    <script id="tableTemplate" type="text/x-handlebars-template">
         <div class="row">
         {{!#each tables}}
             <div class="enclosure space_below span5" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
                 <h2>Table {{!table_id}}</h2>
-                <div class="submit_attendee_form">
-                    <form class="well submit_attendee">
-                        <input type="hidden" value="{{!table_id}}" name="table_id"/>
-                        <label><strong>Attendee name:</strong> <input type="text" name="attendee_name"></label>
-                        <button class="btn btn-primary">Submit request</button>
-                    </form>
-                </div>
 
-                <div>
-                    {{!#if attendees}}
-                        <div class="dropdown clearfix">
-                            <ul class="dropdown-menu dropdown-menu-customization" role="menu">
-                                    {{!#each attendees}}
-                                        <li class="attendee">
-                                            <a tabindex="-1" href="#">
-                                                {{!attendee_name}}
-                                                <button type="button" class="close" data-dismiss="alert" data-attendee-id="{{!attendee_id}}" data-table-id="{{!table_id}}"
-                                                    onclick="javascript:app.request_remove_attendee(this)">&times;</button>
-                                            </a>
-                                        </li>
-                                    {{!/each}}
-                            </ul>
-                        </div>
-                    {{!else}}
-                        <h5>No attendees on this table yet</h5>
-                    {{!/if}}
-                </div>
+                {{!subtemplate template="add_attendee_form"}}
+
+                {{!subtemplate template="attendee_list"}}
+
             </div>
         {{!#if row}}
             </div>

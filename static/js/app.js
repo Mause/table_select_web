@@ -1,7 +1,8 @@
 // Handlebars.log = function(level, object) {console.log(level, object);};
 var $;
-var console;
 var window;
+var console;
+var Handlebars;
 
 var API = function() {};
 
@@ -119,8 +120,25 @@ var App = function() {
 App.prototype.templates = {};
 
 // compiling on the fly aint the best, but its good enough for what we're doing
+// if this was a fully fledged webapp, i would consider pre-compiling the templates though :P
 App.prototype.templates.tables = Handlebars.compile($('#tableTemplate').html());
 
+App.prototype.templates.add_attendee_form = Handlebars.compile($('#add_attendee_form').html());
+App.prototype.templates.attendee_list = Handlebars.compile($('#attendee_list').html());
+
+Handlebars.registerHelper('subtemplate',
+    function(options, blah){
+        "use strict";
+        var subtemplate_name = options.hash.template;
+
+        if (window.app.templates[subtemplate_name] === undefined){
+            console.error('No such template;', subtemplate_name);
+        } else {
+            var subtemplate = window.app.templates[subtemplate_name];
+            return new Handlebars.SafeString(subtemplate(this));
+        }
+    }
+);
 
 App.prototype.render = function() {
     "use strict";
@@ -132,7 +150,7 @@ App.prototype.render = function() {
     }
 
     var data = {"tables": tables};
-    $('#tableContainer').html(_this.templates.tables(data));
+    $('#tableContainer').html(_this.templates.tables(data, app.templates.helpers));
 };
 
 App.prototype.request_remove_attendee = function(element){
