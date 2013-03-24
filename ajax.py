@@ -29,7 +29,8 @@ class RemoveAttendeeHandler(tornado.web.RequestHandler):
 
         record = {
             'attendee_id': int(attendee_id),
-            'table_id': int(table_id)
+            'table_id': int(table_id),
+            'state': 'unresolved'
         }
 
         removal_request_insert = db.removal_request_table.insert()
@@ -68,3 +69,19 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                     attendee_name, table_id))
 
         self.write(json.dumps(status))
+
+
+class ActionHandler(tornado.web.RequestHandler):
+    def post(self, action, *args, **kwargs):
+        logging.info('action: {}'.format(action))
+
+        request_ids = self.request.body.decode('utf-8')
+        request_ids = json.loads(request_ids)
+        logging.info(request_ids)
+        logging.info('{} request_ids'.format(len(request_ids)))
+
+        if request_ids:
+            pass
+        # logging.info(dir(self.request))
+        # logging.info(dir(self))
+        # selected_requests = self.get_argument('selected_requests')

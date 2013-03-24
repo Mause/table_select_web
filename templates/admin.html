@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Ball Table Select{% end %}
+{% block content %}
+    <div class="row">
+        <div class="enclosure">
+            <h3>Admin</h3>
+
+            <ul class="well no-decoration">
+            {% for request in requests %}
+                <li>
+                    <label>
+                        <input type="checkbox" class="action_marker"  data-request-id="{{request['request_id']}}"/>
+                         asking for {{request['attendee_id']}} to be remove from table {{request['table_id']}}
+                    </label>
+                </li>
+            {%end%}
+            </ul>
+
+            <div class="request_actions">
+                <button class="btn btn-success" id="allow_button">Allow</button>
+                <button class="btn btn-danger" id="deny_button">Deny</button>
+            </div>
+        </div>
+    </div>
+{% end %}

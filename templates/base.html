@@ -38,6 +38,9 @@
                     {% if path == "/" %}
                         <a class="btn refresh">Refresh</a>
                         <a class="btn" href="/info">Info</a>
+                    {% elif path == "/admin" %}
+                        <a class="btn" href="/">Home</a>
+                        <a class="btn" href="/info">Info</a>
                     {% else %}
                         <a class="btn" href="/">Home</a>
                     {% end %}
@@ -58,7 +61,11 @@
         <!-- // <script src="{{ static_url("js/handlebars.js") }}"></script> -->
         <script src="{{ static_url("js/handlebars-1.0.rc.1.min.js") }}"></script>
 
-        <script src="{{ static_url("js/app.js") }}"></script>
+        {% if path == "/" %}
+            <script src="{{ static_url("js/app.js") }}"></script>
+        {% elif path == "/admin" %}
+            <script type="text/javascript" src="{{ static_url("js/admin_logic.js") }}"></script>
+        {% end %}
         <!--
         <script src="/js/jquery.js"></script>
         <script src="/js/bootstrap-transition.js"></script>

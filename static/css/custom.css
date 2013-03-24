@@ -157,3 +157,6 @@ button.spec_close {
     filter: alpha(opacity=20);
 }
 
+.no-decoration {
+    list-style: none;
+}

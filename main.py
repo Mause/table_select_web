@@ -5,7 +5,6 @@
 # stdlib
 import os
 import sys
-# import json
 # import logging
 from contextlib import closing
 
@@ -20,6 +19,7 @@ import tornado.httpserver
 
 # application specific
 import ajax
+import db
 from utils import BaseHandler
 
 sys.argv.append('--logging=INFO')
@@ -31,11 +31,6 @@ class MainHandler(BaseHandler):
         self.render('home.html', path='/')
 
 
-class GithubButtonHandler(BaseHandler):
-    def get(self):
-        self.render('github-btn.html')
-
-
 class InfoHandler(BaseHandler):
     def get(self):
         self.render('info.html', path='/info')
@@ -44,9 +39,20 @@ class InfoHandler(BaseHandler):
 class AdminHandler(BaseHandler):
     def get(self):
         "this page will allow the authorization of removals"
-        # keep removals persistant, for future reference
-        # give every user a UUID, stored as a cookie,
-        # that can be used to group requests
+        fields = ['request_id', 'attendee_id', 'table_id', 'remover_ident']
+        with closing(db.Session()) as session:
+            # keep removals persistant, for future reference
+            # give every user a UUID, stored as a cookie,
+            # that can be used to group requests
+            query = (
+                session.query(db.removal_request_table)
+                    .filter_by(state='unresolved')
+                    .all())
+
+            query = [dict(zip(fields, record)) for record in query]
+            # logging.info(query)
+
+        self.render('admin.html', path='/admin', requests=query)
 
 
 settings = {
@@ -61,6 +67,7 @@ application = tornado.wsgi.WSGIApplication([
     (r"/api/tables", ajax.TablesHandler),
     (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
+    (r"/api/admin/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
     (r"/admin", AdminHandler),
     (r"/info", InfoHandler),
     (r"/", MainHandler),
