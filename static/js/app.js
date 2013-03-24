@@ -129,7 +129,7 @@ App.prototype.templates.tables = Handlebars.compile(
 
 App.prototype.render = function() {
     "use strict";
-    var _this = this.app === undefined ? this : this.app;
+    var _this = window.app;
 
     var tables = _this.data.tables;
     for (var key in tables){
@@ -137,15 +137,16 @@ App.prototype.render = function() {
     }
 
     var data = {"tables": tables};
-    $('#tableContainer').html(_this.templates.tables(data, {}));
+    $('#tableContainer').html(_this.templates.tables(data));
 };
 
 App.prototype.request_remove_attendee = function(element){
     element = $(element);
     var attendee_id = element.data('attendeeId');
-    console.log('attendee_id', attendee_id);
     var table_id = element.data('tableId');
-    console.log('table_id', table_id);
+    console.log(
+        'removal request sent for attendee with attendee_id', attendee_id + ',',
+        'on table with table_id', table_id);
 
     var win = function(data){
         _this = window.app;
@@ -182,10 +183,10 @@ App.prototype.setupListeners = function() {
         trigger: 'manual'
     });
 
-    // $('.spec_close').tooltip({
-    //     placement: 'right',
-    //     trigger: 'manual'
-    // });
+    $('.spec_close').tooltip({
+        placement: 'right',
+        trigger: 'manual'
+    });
 };
 
 App.prototype.refresh = function () {
@@ -205,11 +206,12 @@ App.prototype.refresh = function () {
 App.prototype.tooltip = function(element, text, timeout) {
     "use strict";
     element.attr('title', text);
-    console.log(console.dir(element));
+    console.dir(element);
     element.tooltip('show');
 
     window.setTimeout(function(){
         element.tooltip('hide');
+        element.attr('title', '');
     }, timeout || 1500);
 };
 
@@ -222,7 +224,9 @@ App.prototype.submit_attendee = function(event) {
     var attendee_name = $(event.target.attendee_name).val();
     if (attendee_name){
         var table_id = $(event.target.table_id).val();
-        console.log(attendee_name, table_id);
+        console.log(
+            'adding', attendee_name,
+            'to table with id', table_id);
 
         _this.data.api.add_attendee(attendee_name, table_id,
             function(data){
@@ -231,10 +235,10 @@ App.prototype.submit_attendee = function(event) {
                     _this.hideLoadingSpinner();
                     _this.refresh();
 
-                    _this.tooltip(element, 'attendee add was successful', 20000);
+                    _this.tooltip(element, 'attendee add was successful');
                 } else {
                     console.log('Add attendee failed');
-                    _this.tooltip(element, data.human_error, 10000);
+                    _this.tooltip(element, data.human_error);
                 }
                 return false;
         });

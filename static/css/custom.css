@@ -92,6 +92,7 @@ body {
     line-height: 20px;
     color: #333;
     white-space: nowrap;
+    outline: none;
 }
 
 .dropdown-menu-customization {

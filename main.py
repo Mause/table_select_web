@@ -20,27 +20,28 @@ import tornado.httpserver
 
 # application specific
 import ajax
+from utils import BaseHandler
 
 sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
 
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(BaseHandler):
     def get(self):
-        self.render(template_name='home.html', path='/')
+        self.render('home.html', path='/')
 
 
-class GithubButtonHandler(tornado.web.RequestHandler):
+class GithubButtonHandler(BaseHandler):
     def get(self):
         self.render('github-btn.html')
 
 
-class InfoHandler(tornado.web.RequestHandler):
+class InfoHandler(BaseHandler):
     def get(self):
         self.render('info.html', path='/info')
 
 
-class AdminHandler(tornado.web.RequestHandler):
+class AdminHandler(BaseHandler):
     def get(self):
         "this page will allow the authorization of removals"
         # keep removals persistant, for future reference
