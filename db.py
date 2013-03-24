@@ -112,10 +112,11 @@ def does_attendee_exist_smart(session, attendee_name):
     fields = ['attendee_id', 'attendee_name', 'table_id']
 
     query = session.query(attendee_table).all()
-    # logging.info('{} attendees'.format(len(query)))
 
+    attendee_name = attendee_name.lower().strip()
     for attendee in query:
         _, cur_attendee_name, _ = attendee
+        cur_attendee_name = cur_attendee_name.lower().strip()
         if fuzz.ratio(cur_attendee_name, attendee_name) > 85:
             return dict(zip(fields, attendee))
 

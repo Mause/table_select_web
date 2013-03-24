@@ -7,12 +7,16 @@
     template engine ignore those tags, so they get passed through to Handlebars.js :D
     -->
 
-    <div class="span12">
+    <div class="">
+<!--         <div class="alert">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>Warning!</strong> Best check yo self, you're not looking too good.
+        </div> -->
+         <!-- -->
         <div id="tableContainer" class="fixmargin">
         </div>
-
         <!-- Modal -->
-        <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <!-- <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h3 id="myModalLabel">Modal header</h3>
@@ -24,7 +28,7 @@
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                 <button class="btn btn-primary">Save changes</button>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <script type="text/x-handlebars-template" id="add_attendee_form_template">
@@ -67,14 +71,14 @@
         <div class="row">
         {{!#each tables}}
             <div class="enclosure space_below span5" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
-                <h2>Table {{!table_id}}</h2>
+                <h2><a href="#table-{{!table_id}}" style="color:black;">Table {{!table_id}}</a></h2>
 
                 {{!>add_attendee_form}}
                 {{!>attendee_list}}
             </div>
         {{!#if row}}
-            </div>
-            <div class="row">
+        </div>
+        <div class="row">
         {{!/if}}
         {{!/each}}
         </div>

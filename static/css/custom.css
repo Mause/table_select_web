@@ -42,7 +42,7 @@ body {
 
 
 .enclosure {
-    width: 100%;
+    /*width: 100%;*/
     padding: 19px 29px 29px;
     background-color: #fff;
     border: 1px solid #e5e5e5;
@@ -103,7 +103,7 @@ body {
 }
 
 .fixmargin {
-    margin-left: 3.5%;
+    margin-left: 4.15%;
 }
 
 @media print {

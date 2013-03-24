@@ -134,6 +134,7 @@ App.prototype.render = function() {
     var tables = _this.data.tables;
     for (var key in tables){
         tables[key].row = tables[key].table_id % 2 === 0;
+        console.log(tables[key].row);
     }
 
     var data = {"tables": tables};
