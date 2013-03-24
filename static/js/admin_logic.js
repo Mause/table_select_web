@@ -29,8 +29,8 @@ $(document).ready(function(){
 
         var success = function(data){
             for (var i=0; i<checked.length; i++){
-                element[i].parent.hide();
-            });
+                checked[i].parent.hide();
+            }
         };
 
         $.ajax({

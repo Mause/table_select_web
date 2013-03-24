@@ -150,13 +150,13 @@ App.prototype.request_remove_attendee = function(element){
 
     var win = function(data){
         _this = window.app;
-        _this.tooltip(element, 'removal request successfully submitted');
+        _this.notif(element, 'Removal request successfully submitted');
         console.log('win');
     };
 
     var fail = function(data){
         console.log('fail');
-        _this.tooltip(element, 'removal request submission failed');
+        _this.notif(element, 'Removal request submission failed');
     };
 
     this.data.api.request_remove_attendee(attendee_id, table_id, win, fail);
@@ -178,15 +178,15 @@ App.prototype.setupListeners = function() {
     });
 
     $('.submit_attendee').submit(_this.submit_attendee);
-    $('.submit_attendee').tooltip({
-        placement: 'right',
-        trigger: 'manual'
-    });
+    // $('.submit_attendee').tooltip({
+    //     placement: 'right',
+    //     trigger: 'manual'
+    // });
 
-    $('.spec_close').tooltip({
-        placement: 'right',
-        trigger: 'manual'
-    });
+    // $('.spec_close').tooltip({
+    //     placement: 'right',
+    //     trigger: 'manual'
+    // });
 };
 
 App.prototype.refresh = function () {
@@ -203,16 +203,10 @@ App.prototype.refresh = function () {
     });
 };
 
-App.prototype.tooltip = function(element, text, timeout) {
+App.prototype.notif = function(element, text, timeout) {
     "use strict";
-    element.attr('title', text);
-    console.dir(element);
-    element.tooltip('show');
-
-    window.setTimeout(function(){
-        element.tooltip('hide');
-        element.attr('title', '');
-    }, timeout || 1500);
+    $('#myModalLabel').text(text);
+    $('#myModal').modal();
 };
 
 
@@ -235,10 +229,10 @@ App.prototype.submit_attendee = function(event) {
                     _this.hideLoadingSpinner();
                     _this.refresh();
 
-                    _this.tooltip(element, 'attendee add was successful');
+                    _this.notif(element, 'Attendee add was successful');
                 } else {
                     console.log('Add attendee failed');
-                    _this.tooltip(element, data.human_error);
+                    _this.notif(element, data.human_error);
                 }
                 return false;
         });
