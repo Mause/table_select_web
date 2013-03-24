@@ -10,7 +10,7 @@ $(document).ready(function(){
         var element = null,
             selected = [];
 
-        for (var i; i<checked.length; i++){
+        for (var i=0; i<checked.length; i++){
             element = $(checked[i]);
             selected.push(element.data('requestId'));
         }
@@ -28,8 +28,8 @@ $(document).ready(function(){
         }
 
         var success = function(data){
-            checked.forEach(function(element){
-                element.parent.hide();
+            for (var i=0; i<checked.length; i++){
+                element[i].parent.hide();
             });
         };
 
@@ -45,10 +45,7 @@ $(document).ready(function(){
 
     $('#deny_button').click(function(){
         var checked = get_checked();
-        console.assert(checked.length);
-        console.log(checked);
         var request_ids = get_request_ids(checked);
-        console.log(request_ids);
         commit_action('deny', request_ids, checked);
     });
 
