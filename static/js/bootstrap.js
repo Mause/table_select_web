@@ -43,19 +43,19 @@
 
         for (name in transEndEventNames){
           if (el.style[name] !== undefined) {
-            return transEndEventNames[name]
+            return transEndEventNames[name];
           }
         }
 
-      }())
+      }());
 
       return transitionEnd && {
         end: transitionEnd
-      }
+      };
 
-    })()
+    })();
 
-  })
+  });
 
 }(window.jQuery);/* ==========================================================
  * bootstrap-alert.js v2.2.2

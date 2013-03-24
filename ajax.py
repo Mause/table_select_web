@@ -1,14 +1,9 @@
+# stdlib
 import json
 import logging
 from contextlib import closing
 
-# import tornado
 import tornado.web
-# import tornado.wsgi
-# import tornado.ioloop
-# import tornado.options
-# import tornado.template
-# import tornado.httpserver
 
 # application specific
 import db
@@ -32,14 +27,9 @@ class RemoveAttendeeHandler(tornado.web.RequestHandler):
             'recording removal request for attendee with id {}'.format(
                 attendee_id))
 
-    # removal_request_table = Table('removal_request', metadata,
-    #     Column('request_id', Integer, primary_key=True),
-    #     Column('attendee_id', ForeignKey('attendee.attendee_id')),
-    #     Column('table_id', ForeignKey('ball_table.table_id')))
-
         record = {
-            'attendee_id': attendee_id,
-            'table_id': table_id
+            'attendee_id': int(attendee_id),
+            'table_id': int(table_id)
         }
 
         removal_request_insert = db.removal_request_table.insert()
@@ -65,7 +55,7 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                 table_id = self.get_argument('table_id')
 
                 record = {
-                    'attendee_name': int(attendee_name),
+                    'attendee_name': attendee_name,
                     'table_id': int(table_id)
                 }
 

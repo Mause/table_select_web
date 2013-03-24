@@ -40,5 +40,4 @@ __pycache__
 
 
 # application specific
-auth_data.json
 *.sublime-workspace

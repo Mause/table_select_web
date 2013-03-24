@@ -185,6 +185,12 @@ App.prototype.refresh = function () {
     });
 };
 
+// App.prototype.tooltip = function(element, text) {
+//     element = $(element);
+//     element.
+// };
+
+
 App.prototype.submit_attendee = function(event) {
     "use strict";
     var _this = window.app;

@@ -1,5 +1,5 @@
 import os
-import logging
+import json
 
 from sqlalchemy import (
     create_engine,
@@ -11,6 +11,9 @@ from sqlalchemy import (
     ForeignKey)
 from sqlalchemy.orm import sessionmaker
 from fuzzywuzzy import fuzz
+
+with open('settings.json') as fh:
+    settings = json.load(fh)
 
 
 def wipe(engine, meta):
@@ -38,7 +41,10 @@ def setup():
 
     results = ball_table.select()
     if not results.execute():
-        ball_table.insert().execute([{'table_id': id} for id in range(1, 11)])
+        tables = [
+            {'table_id': id}
+            for id in range(1, settings.get('table_num', 17) + 1)]
+        ball_table.insert().execute(tables)
 
     attendee_table = Table('attendee', metadata,
         Column('attendee_id', Integer, primary_key=True),
@@ -48,7 +54,8 @@ def setup():
     removal_request_table = Table('removal_request', metadata,
         Column('request_id', Integer, primary_key=True),
         Column('attendee_id', ForeignKey('attendee.attendee_id')),
-        Column('table_id', ForeignKey('ball_table.table_id')))
+        Column('table_id', ForeignKey('ball_table.table_id')),
+        Column('remover_ident', String))
 
     metadata.create_all()
 
@@ -67,10 +74,9 @@ def get_tables(session):
     # these next two lines really shouldn't be here
     # but w/e. they basically create a framework for the tables to slot into
     # and at the same time create empty tables
-    table_num = 17
     tables = {
         table_id: {'table_id': table_id}
-        for table_id in range(1, table_num + 1)}
+        for table_id in range(1, settings.get('table_num', 17) + 1)}
 
     ball_tables = ball_table.select()
     result = ball_tables.execute()

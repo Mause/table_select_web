@@ -109,10 +109,4 @@ body {
         /* alerts :P */
         display: none;
     }
-    h1:after{
-        content: "";
-    }
-    a:after {
-        content: "";
-    }
 }
