@@ -68,4 +68,3 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                     attendee_name, table_id))
 
         self.write(json.dumps(status))
-
