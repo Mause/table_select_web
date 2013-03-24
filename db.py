@@ -10,6 +10,7 @@ from sqlalchemy import (
     Column,
     ForeignKey)
 from sqlalchemy.orm import sessionmaker
+import sqlalchemy.exc
 from fuzzywuzzy import fuzz
 
 with open('settings.json') as fh:
@@ -39,12 +40,6 @@ def setup():
         # Column('name', String(40))
     )
 
-    results = ball_table.select()
-    if not results.execute():
-        tables = [
-            {'table_id': id}
-            for id in range(1, settings.get('table_num', 17) + 1)]
-        ball_table.insert().execute(tables)
 
     attendee_table = Table('attendee', metadata,
         Column('attendee_id', Integer, primary_key=True),
@@ -55,9 +50,17 @@ def setup():
         Column('request_id', Integer, primary_key=True),
         Column('attendee_id', ForeignKey('attendee.attendee_id')),
         Column('table_id', ForeignKey('ball_table.table_id')),
-        Column('remover_ident', String))
+        # Column('remover_ident', String)
+    )
 
     metadata.create_all()
+
+    results = ball_table.select()
+    if not results.execute():
+        tables = [
+            {'table_id': id}
+            for id in range(1, settings.get('table_num', 17) + 1)]
+        ball_table.insert().execute(tables)
 
     Session = sessionmaker(bind=engine)
 
