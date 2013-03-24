@@ -106,7 +106,7 @@ def does_attendee_exist_dumb(session, attendee_name):
     return [dict(zip(fields, x)) for x in query]
 
 
-def does_attendee_exist(session, attendee_name):
+def does_attendee_exist_smart(session, attendee_name):
     """uses fuzzy matching to determine
     whether someone is trying to dupe the app"""
     fields = ['attendee_id', 'attendee_name', 'table_id']
@@ -124,7 +124,6 @@ def does_attendee_exist(session, attendee_name):
 
 if __name__ == '__main__':
     wipe(engine, metadata)
-    # from pprint import pprint
     import json
 
     with open('names.json') as fh:

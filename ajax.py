@@ -43,7 +43,7 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
         with closing(db.Session()) as session:
             attendee_name = self.get_argument('attendee_name')
 
-            exists = db.does_attendee_exist(session, attendee_name)
+            exists = db.does_attendee_exist_smart(session, attendee_name)
             if exists:
                 logging.info('attendee_exists: "{}"=="{}", on table {}'.format(
                     attendee_name, exists['attendee_name'],
