@@ -1273,8 +1273,15 @@
       var $this = $(this)
         , data = $this.data('tooltip')
         , options = typeof option == 'object' && option
-      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)))
-      if (typeof option == 'string') data[option]()
+        // console.log(data, options);
+
+      if (!data)
+        // this block fires when tooltips are instantiated
+        $this.data('tooltip', (data = new Tooltip(this, options)))
+
+      if (typeof option == 'string')
+        // this block is fired when you attempt to show or hide the tooltip
+        data[option]()
     })
   }
 

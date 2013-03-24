@@ -95,17 +95,9 @@ Data.prototype.getTables = function() {
     return this.tables;
 };
 
-// // App specific data request
-// Data.prototype.getContactWithEmail = function(email) {
-//     var contact;
-//     // Retrieve the contact from our index datastructure
-//     return contact;
-// };
-
 var App = function() {
     "use strict";
     this.data = new Data();
-    // this.template = '...';
     var _this = this;
 
     _this.data.updateFromServer(function() {
@@ -117,28 +109,23 @@ var App = function() {
 
 };
 
-App.prototype.templates = {};
-
 // compiling on the fly aint the best, but its good enough for what we're doing
 // if this was a fully fledged webapp, i would consider pre-compiling the templates though :P
-App.prototype.templates.tables = Handlebars.compile($('#tableTemplate').html());
+templates = {
+    add_attendee_form: '#add_attendee_form_template',
+    attendee_list: '#attendee_list_template',
+    single_attendee: '#single_attendee_template'
+};
 
-App.prototype.templates.add_attendee_form = Handlebars.compile($('#add_attendee_form').html());
-App.prototype.templates.attendee_list = Handlebars.compile($('#attendee_list').html());
+for (var template_name in templates){
+    var source = $(templates[template_name]).html();
+    Handlebars.registerPartial(template_name, source);
+}
 
-Handlebars.registerHelper('subtemplate',
-    function(options, blah){
-        "use strict";
-        var subtemplate_name = options.hash.template;
+App.prototype.templates = {};
+App.prototype.templates.tables = Handlebars.compile(
+    $('#table_template').html());
 
-        if (window.app.templates[subtemplate_name] === undefined){
-            console.error('No such template;', subtemplate_name);
-        } else {
-            var subtemplate = window.app.templates[subtemplate_name];
-            return new Handlebars.SafeString(subtemplate(this));
-        }
-    }
-);
 
 App.prototype.render = function() {
     "use strict";
@@ -150,7 +137,7 @@ App.prototype.render = function() {
     }
 
     var data = {"tables": tables};
-    $('#tableContainer').html(_this.templates.tables(data, app.templates.helpers));
+    $('#tableContainer').html(_this.templates.tables(data, {}));
 };
 
 App.prototype.request_remove_attendee = function(element){
@@ -161,11 +148,14 @@ App.prototype.request_remove_attendee = function(element){
     console.log('table_id', table_id);
 
     var win = function(data){
-        console.log('win', data);
+        _this = window.app;
+        _this.tooltip(element, 'removal request successfully submitted');
+        console.log('win');
     };
 
     var fail = function(data){
-        console.log('failure', data);
+        console.log('fail');
+        _this.tooltip(element, 'removal request submission failed');
     };
 
     this.data.api.request_remove_attendee(attendee_id, table_id, win, fail);
@@ -187,7 +177,15 @@ App.prototype.setupListeners = function() {
     });
 
     $('.submit_attendee').submit(_this.submit_attendee);
-    $('.submit_attendee').tooltip();
+    $('.submit_attendee').tooltip({
+        placement: 'right',
+        trigger: 'manual'
+    });
+
+    // $('.spec_close').tooltip({
+    //     placement: 'right',
+    //     trigger: 'manual'
+    // });
 };
 
 App.prototype.refresh = function () {
@@ -205,7 +203,9 @@ App.prototype.refresh = function () {
 };
 
 App.prototype.tooltip = function(element, text, timeout) {
-    element.data('title', text);
+    "use strict";
+    element.attr('title', text);
+    console.log(console.dir(element));
     element.tooltip('show');
 
     window.setTimeout(function(){
@@ -231,10 +231,10 @@ App.prototype.submit_attendee = function(event) {
                     _this.hideLoadingSpinner();
                     _this.refresh();
 
-                    _this.tooltip(element, 'attendee add was successful');
+                    _this.tooltip(element, 'attendee add was successful', 20000);
                 } else {
                     console.log('Add attendee failed');
-                    _this.tooltip(element, data.human_error);
+                    _this.tooltip(element, data.human_error, 10000);
                 }
                 return false;
         });
