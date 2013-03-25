@@ -62,11 +62,12 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
                     'table_id': int(table_id)
                 }
 
+                logging.info(
+                    'adding attendee "{}" to table {}'.format(
+                    attendee_name, table_id))
+
                 attendee_insert = db.attendee_table.insert()
                 attendee_insert.execute(record)
-
-                logging.info('attendee "{}" was added to table {}'.format(
-                    attendee_name, table_id))
 
         self.write(json.dumps(status))
 

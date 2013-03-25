@@ -76,6 +76,7 @@ def setup():
 # assert hasattr(removal_request_table, 'request_id'), '*cries*'
 #
 
+
 def get_tables(session):
     fields = ['attendee_id', 'attendee_name', 'table_id']
 
