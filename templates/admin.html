@@ -16,14 +16,13 @@
             <ul class="well no-decoration">
             {% for request in requests %}
                 <li>
-                    <label for=>
+                    <label>
                         <input
                             type="checkbox"
                             class="action_marker"
-                            data-request-id="{{request['request_id']}}"
-                            />
+                            data-request-id="{{request['request_id']}}"/>
                         <span style="margin-top:-1px;">
-                            requesting that for "{{request['attendee_name']}}" to be remove from table {{request['table_id']}}
+                            requesting that "{{request['attendee_name']}}" be removed from table {{request['table_id']}}
                         </span>
                     </label>
                 </li>
