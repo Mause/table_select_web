@@ -74,16 +74,16 @@ def setup():
 
 
 def get_tables(session):
-    # these next two lines really shouldn't be here
-    # but w/e. they basically create a framework for the tables to slot into
-    # and at the same time create empty tables
-    tables = {
-        table_id: {'table_id': table_id}
-        for table_id in range(1, settings.get('table_num', 17) + 1)}
 
-    ball_tables = ball_table.select()
-    result = ball_tables.execute()
-    for row in result:
+    tables = []
+
+    raw_tables = session.query(ball_table).all()
+    raw_tables = [dict(zip(x.keys(), x)) for x in raw_tables]
+    for row in raw_tables:
+        tables.append({
+            'table_id': row['table_id'],
+            'table_name': row['table_name']})
+
         table_id = row['table_id']
 
         query = session.query(attendee_table).filter_by(
@@ -91,9 +91,9 @@ def get_tables(session):
 
         attendees = [dict(zip(x.keys(), x)) for x in query.all()]
 
-        tables[table_id]['attendees'] = attendees
-        tables[table_id]['attendee_num'] = len(attendees)
-        tables[table_id]['full'] = (
+        tables[-1]['attendees'] = attendees
+        tables[-1]['attendee_num'] = len(attendees)
+        tables[-1]['full'] = (
             len(attendees) >= settings.get('max_pax_per_table', 10))
 
     return tables
