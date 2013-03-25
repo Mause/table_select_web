@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 
 from sqlalchemy import (
     create_engine,
@@ -8,7 +9,8 @@ from sqlalchemy import (
     Integer,
     String,
     Column,
-    ForeignKey)
+    ForeignKey,
+    Boolean)
 
 from sqlalchemy.orm import sessionmaker
 from fuzzywuzzy import fuzz
@@ -43,6 +45,7 @@ def setup():
     attendee_table = Table('attendee', metadata,
         Column('attendee_id', Integer, primary_key=True),
         Column('attendee_name', String),
+        Column('show', Boolean),
         Column('table_id', ForeignKey('ball_table.table_id')))
 
     removal_request_table = Table('removal_request', metadata,
@@ -78,7 +81,7 @@ def setup():
 
 
 def get_tables(session):
-    fields = ['attendee_id', 'attendee_name', 'table_id']
+    # fields = ['attendee_id', 'attendee_name', 'show', 'table_id']
 
     # these next two lines really shouldn't be here
     # but w/e. they basically create a framework for the tables to slot into
@@ -93,9 +96,9 @@ def get_tables(session):
         table_id = row['table_id']
 
         query = session.query(attendee_table).filter_by(
-            table_id=table_id)
+            table_id=table_id, show=True)
 
-        attendees = [dict(zip(fields, x)) for x in query.all()]
+        attendees = [dict(zip(x.keys(), x)) for x in query.all()]
 
         tables[table_id]['attendees'] = attendees
 
@@ -104,27 +107,28 @@ def get_tables(session):
 
 def does_attendee_exist_dumb(session, attendee_name):
     "does a simple check if any other attendees have the same name"
-    fields = ['attendee_id', 'attendee_name', 'table_id']
+    # fields = ['attendee_id', 'attendee_name', 'table_id']
 
     query = session.query(attendee_table).filter_by(
-        attendee_name=attendee_name)
+        attendee_name=attendee_name, show=True)
     query = query.all()
-    return [dict(zip(fields, x)) for x in query]
+    return [dict(zip(x.keys(), x)) for x in query]
 
 
 def does_attendee_exist_smart(session, attendee_name):
     """uses fuzzy matching to determine
     whether someone is trying to dupe the app"""
-    fields = ['attendee_id', 'attendee_name', 'table_id']
+    # fields = ['attendee_id', 'attendee_name', 'show', 'table_id']
 
-    query = session.query(attendee_table).all()
+    query = session.query(attendee_table).filter_by(show=True).all()
 
     attendee_name = attendee_name.lower().strip()
     for attendee in query:
-        _, cur_attendee_name, _ = attendee
-        cur_attendee_name = cur_attendee_name.lower().strip()
+        attendee = dict(zip(attendee.keys(), attendee))
+
+        cur_attendee_name = attendee['attendee_name'].lower().strip()
         if fuzz.ratio(cur_attendee_name, attendee_name) > 85:
-            return dict(zip(fields, attendee))
+            return attendee
 
     return False
 

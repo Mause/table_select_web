@@ -29,6 +29,7 @@ $(document).ready(function(){
 
         var success = function(data){
             for (var i=0; i<checked.length; i++){
+                console.log(checked[i]);
                 checked[i].parent.hide();
             }
         };
@@ -42,14 +43,17 @@ $(document).ready(function(){
         });
     };
 
-
-    $('#deny_button').click(function(){
+    var do_action = function(action){
         var checked = get_checked();
         var request_ids = get_request_ids(checked);
-        commit_action('deny', request_ids, checked);
+        commit_action(action, request_ids, checked);
+    };
+
+    $('#deny_button').click(function(){
+        do_action('deny');
     });
 
     $('#allow_button').click(function(){
-
+        do_action('allow');
     });
 });

@@ -59,7 +59,8 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
 
                 record = {
                     'attendee_name': attendee_name,
-                    'table_id': int(table_id)
+                    'table_id': int(table_id),
+                    'show': True
                 }
 
                 logging.info(
@@ -74,44 +75,62 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
 
 class ActionHandler(tornado.web.RequestHandler):
     def post(self, action, *args, **kwargs):
-        # fields = [
-        #     'request_id',
-        #     'attendee_id',
-        #     'table_id',
-        #     'remover_ident',
-        #     'state'
-        # ]
+        removal_request_fields = [
+            'request_id',
+            'attendee_id',
+            'table_id',
+            'remover_ident',
+            'state'
+        ]
 
-        logging.info('action: {}'.format(action))
+        attendee_fields = [
+            'attendee_id',
+            'attendee_name',
+            'show',
+            'table_id'
+        ]
+
         if action not in ['deny', 'allow']:
             return
 
         request_ids = self.request.body.decode('utf-8')
         request_ids = json.loads(request_ids)
-        logging.info('{} request_ids'.format(len(request_ids)))
+
+        logging.info('{}ing {} request(s)'.format(action, len(request_ids)))
 
         if request_ids:
             with closing(db.Session()) as session:
-                # for request_id in request_ids:
-                #     to_update = session.query(
-                #         db.removal_request_table).filter_by(
-                #         request_id=request_id)
-                #     to_update = dict(zip(fields, to_update.all()[0]))
+                for request_id in request_ids:
+                    removal_request_to_update = session.query(
+                        db.removal_request_table).filter_by(
+                        request_id=request_id)
+                    removal_request_updated_data = dict(zip(
+                        removal_request_fields,
+                        removal_request_to_update.all()[0]))
 
-                #     logging.info('{}ing removal_request {}'.format(
-                #         action, request_id))
-                #     to_update['state'] = action
-                #     logging.info(to_update)
+                    removal_request_updated_data['state'] = action
 
-                query = session.query(db.removal_request_table)
-                logging.info(query)
-                sel = db.removal_request_table.columns.request_id.in_(request_ids)
-                logging.info(sel)
-                query.filter(sel)
-                logging.info(query)
+                    removal_request_to_update.update(
+                        removal_request_updated_data,
+                        synchronize_session=False)
+                    session.commit()
 
-                query.update(
-                    {'state': action}, synchronize_session='fetch')
-                    # logging.info(removal_request_update)
-                    # logging.info(removal_request_update)
-                    # removal_request_update.execute()
+                    if action == "allow":
+                        logging.info(
+                            'allowing deletion of attendee with id {}'.format(
+                                removal_request_updated_data['attendee_id']))
+
+                        attendee_table_update = (
+                            session.query(db.attendee_table).filter_by(
+                                attendee_id=removal_request_updated_data[
+                                'attendee_id']))
+
+                        attendee_updated_data = dict(zip(
+                            attendee_fields, attendee_table_update.all()[0]))
+
+                        attendee_updated_data['show'] = False
+                        logging.info(attendee_updated_data)
+
+                        attendee_table_update.update(attendee_updated_data,
+                            synchronize_session=False)
+                        session.commit()
