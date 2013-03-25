@@ -63,9 +63,9 @@
         <!-- <script src="{{ static_url("js/bootstrap.js") }}"></script> -->
 
         <!-- // <script src="{{ static_url("js/handlebars.js") }}"></script> -->
-        <script src="{{ static_url("js/handlebars-1.0.rc.1.min.js") }}"></script>
 
         {% if path == "/" %}
+            <script src="{{ static_url("js/handlebars-1.0.rc.1.min.js") }}"></script>
             <script src="{{ static_url("js/app.js") }}"></script>
         {% elif path == "/admin" %}
             <script type="text/javascript" src="{{ static_url("js/admin_logic.js") }}"></script>
