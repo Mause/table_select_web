@@ -59,6 +59,13 @@
         <!-- Placed at the end of the document so the pages load faster -->
         <script src="{{ static_url("js/jquery-1.9.1.min.js") }}"></script>
         <!-- // <script src="{{ static_url("js/jquery-1.9.1.js") }}"></script> -->
+
+        <script type="text/javascript">
+        if (window.navigator.userAgent.indexOf('Firefox') !== -1) {
+                 $('body').addClass('firefox');
+        };
+        </script>
+
         <script src="{{ static_url("js/bootstrap.min.js") }}"></script>
         <!-- <script src="{{ static_url("js/bootstrap.js") }}"></script> -->
 

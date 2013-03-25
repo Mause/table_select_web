@@ -159,6 +159,11 @@ button.spec_close {
     /*filter: alpha(opacity=20);*/
 }
 
+.firefox .spec_close {
+    /* stupid firefox */
+    margin-top: -21px;
+}
+
 .action_marker {
     margin: 0px;
 }
