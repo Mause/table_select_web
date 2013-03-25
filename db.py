@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     Column,
     ForeignKey)
+
 from sqlalchemy.orm import sessionmaker
 from fuzzywuzzy import fuzz
 
@@ -36,7 +37,7 @@ def setup():
 
     ball_table = Table('ball_table', metadata,
         Column('table_id', Integer, primary_key=True),
-        # Column('name', String(40))
+        Column('table_name', String)
     )
 
     attendee_table = Table('attendee', metadata,
@@ -69,6 +70,11 @@ def setup():
 (metadata, engine, conn, Session,
     ball_table, attendee_table, removal_request_table) = setup()
 
+# assert hasattr(removal_request_table.columns, 'request_id'), '*cries*'
+# assert False, removal_request_table.__dict__
+
+# assert hasattr(removal_request_table, 'request_id'), '*cries*'
+#
 
 def get_tables(session):
     fields = ['attendee_id', 'attendee_name', 'table_id']
@@ -131,15 +137,16 @@ if __name__ == '__main__':
 
     ball_table_insert = ball_table.insert()
     attendee_insert = attendee_table.insert()
-    for id in range(1, 11):
-        ball_table_insert.execute({'table_id': id})
+    for id in range(1, settings.get('table_num', 17) + 1):
+        ball_table_insert.execute(
+            {'table_name': 'Table {}'.format(id)})
 
-        att = []
-        for x in range(10):
-            att.append({
-                'attendee_name': names.pop(),
-                'table_id': id})
-        attendee_insert.execute(att)
+        # att = []
+        # for x in range(10):
+        #     att.append({
+        #         'attendee_name': names.pop(),
+        #         'table_id': id})
+        # attendee_insert.execute(att)
 
     s = ball_table.select()
     rs = s.execute()

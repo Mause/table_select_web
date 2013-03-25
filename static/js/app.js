@@ -151,7 +151,7 @@ App.prototype.request_remove_attendee = function(element){
     var win = function(data){
         _this = window.app;
         _this.notif(element, 'Removal request successfully submitted');
-        console.log('win');
+        console.log('Removal request successfully submitted');
     };
 
     var fail = function(data){

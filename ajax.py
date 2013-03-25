@@ -73,12 +73,44 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
 
 class ActionHandler(tornado.web.RequestHandler):
     def post(self, action, *args, **kwargs):
+        # fields = [
+        #     'request_id',
+        #     'attendee_id',
+        #     'table_id',
+        #     'remover_ident',
+        #     'state'
+        # ]
+
         logging.info('action: {}'.format(action))
+        if action not in ['deny', 'allow']:
+            return
 
         request_ids = self.request.body.decode('utf-8')
         request_ids = json.loads(request_ids)
-        logging.info(request_ids)
         logging.info('{} request_ids'.format(len(request_ids)))
 
         if request_ids:
-            removal_request_update = db.removal_request_table.update()
+            with closing(db.Session()) as session:
+                # for request_id in request_ids:
+                #     to_update = session.query(
+                #         db.removal_request_table).filter_by(
+                #         request_id=request_id)
+                #     to_update = dict(zip(fields, to_update.all()[0]))
+
+                #     logging.info('{}ing removal_request {}'.format(
+                #         action, request_id))
+                #     to_update['state'] = action
+                #     logging.info(to_update)
+
+                query = session.query(db.removal_request_table)
+                logging.info(query)
+                sel = db.removal_request_table.columns.request_id.in_(request_ids)
+                logging.info(sel)
+                query.filter(sel)
+                logging.info(query)
+
+                query.update(
+                    {'state': action}, synchronize_session='fetch')
+                    # logging.info(removal_request_update)
+                    # logging.info(removal_request_update)
+                    # removal_request_update.execute()
