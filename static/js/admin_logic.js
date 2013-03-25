@@ -29,8 +29,7 @@ $(document).ready(function(){
 
         var success = function(data){
             for (var i=0; i<checked.length; i++){
-                console.log(checked[i]);
-                checked[i].parent.hide();
+                $(checked[i]).parent.remove();
             }
         };
 
@@ -39,7 +38,6 @@ $(document).ready(function(){
             url: base_url + '/admin/attendee/' + action + '_bulk',
             data: JSON.stringify(selected_requests),
             success: success
-            // failure: failure
         });
     };
 
