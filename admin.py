@@ -25,6 +25,13 @@ class AuthHandler(BaseHandler):
                 if password == auth_combos[username]:
                     self.set_secure_cookie('is_admin', json.dumps(True))
                     self.redirect('/admin')
+                    return
+                else:
+                    self.redirect('/')
+                    return
+            else:
+                self.redirect('/')
+                return
 
         else:
             self.redirect('/')

@@ -29,7 +29,7 @@ $(document).ready(function(){
 
         var success = function(data){
             for (var i=0; i<checked.length; i++){
-                $(checked[i]).parent.remove();
+                $(checked[i]).parent().hide();
             }
         };
 
