@@ -44,6 +44,10 @@
                     {% else %}
                         <a class="btn" href="/">Home</a>
                     {% end %}
+
+                    {% if is_admin == True %}
+                        <a class="btn" href="/logout">Logout</a>
+                    {% end %}
                 </nav>
             </header>
             {% block content %}

@@ -1,6 +1,6 @@
 import os
 import json
-import logging
+# import logging
 
 from sqlalchemy import (
     create_engine,
@@ -15,8 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker
 from fuzzywuzzy import fuzz
 
-with open('settings.json') as fh:
-    settings = json.load(fh)
+from settings import settings
 
 
 def wipe(engine, meta):

@@ -5,8 +5,6 @@
 # stdlib
 import os
 import sys
-# import logging
-from contextlib import closing
 
 # third party
 import tornado
@@ -19,8 +17,9 @@ import tornado.httpserver
 
 # application specific
 import ajax
-import db
+import admin
 from utils import BaseHandler
+from settings import settings
 
 sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
@@ -36,29 +35,11 @@ class InfoHandler(BaseHandler):
         self.render('info.html', path='/info')
 
 
-class AdminHandler(BaseHandler):
-    def get(self):
-        "this page will allow the authorization of removals"
-        fields = ['request_id', 'attendee_id', 'table_id', 'remover_ident']
-        with closing(db.Session()) as session:
-            # keep removals persistant, for future reference
-            # give every user a UUID, stored as a cookie,
-            # that can be used to group requests
-            query = (
-                session.query(db.removal_request_table)
-                    .filter_by(state='unresolved')
-                    .all())
-
-            query = [dict(zip(fields, record)) for record in query]
-            # logging.info(query)
-
-        self.render('admin.html', path='/admin', requests=query)
-
-
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
     "debug": True,
+    'cookie_secret': settings['cookie_secret']
 }
 
 
@@ -68,7 +49,9 @@ application = tornado.wsgi.WSGIApplication([
     (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
     (r"/api/admin/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
-    (r"/admin", AdminHandler),
+    (r"/admin", admin.AdminHandler),
+    (r"/auth", admin.AuthHandler),
+    (r"/logout", admin.LogoutHandler),
     (r"/info", InfoHandler),
     (r"/", MainHandler),
 ], **settings)

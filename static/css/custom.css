@@ -144,6 +144,8 @@ button.spec_close {
     cursor: pointer;
     background: transparent;
     border: 0;
+    appearance: none;
+    -moz-appearance: none;
     -webkit-appearance: none;
 }
 .spec_close {
@@ -154,9 +156,16 @@ button.spec_close {
     color: black;
     text-shadow: 0 1px 0 white;
     opacity: 0.2;
-    filter: alpha(opacity=20);
+    /*filter: alpha(opacity=20);*/
 }
 
+.action_marker {
+    margin: 0px;
+}
+/*@user-agent-
+    margin-top: -21px;
+}
+*/
 .no-decoration {
     list-style: none;
 }

@@ -1,3 +1,8 @@
 {
-  "table_num": 17
+    "cookie_secret": "7720b2aa8d4d4849babf2dbf7d7321d2",
+    "table_num": 17,
+    "auth_combos": {
+        "dominic": "20133",
+        "sitara": "powerrangers"
+    }
 }

@@ -3,13 +3,12 @@ import json
 import logging
 from contextlib import closing
 
-import tornado.web
-
 # application specific
 import db
+from utils import BaseHandler
 
 
-class TablesHandler(tornado.web.RequestHandler):
+class TablesHandler(BaseHandler):
     def get(self):
         "get is simple"
         with closing(db.Session()) as session:
@@ -18,7 +17,7 @@ class TablesHandler(tornado.web.RequestHandler):
             self.write(tables)
 
 
-class RemoveAttendeeHandler(tornado.web.RequestHandler):
+class RemoveAttendeeHandler(BaseHandler):
     def post(self):
         attendee_id = self.get_argument('attendee_id')
         table_id = self.get_argument('table_id')
@@ -37,7 +36,7 @@ class RemoveAttendeeHandler(tornado.web.RequestHandler):
         removal_request_insert.execute(record)
 
 
-class AddAttendeeHandler(tornado.web.RequestHandler):
+class AddAttendeeHandler(BaseHandler):
     def post(self):
         status = {"success": True}
 
@@ -73,7 +72,7 @@ class AddAttendeeHandler(tornado.web.RequestHandler):
         self.write(json.dumps(status))
 
 
-class ActionHandler(tornado.web.RequestHandler):
+class ActionHandler(BaseHandler):
     def post(self, action, *args, **kwargs):
         removal_request_fields = [
             'request_id',
