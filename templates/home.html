@@ -64,7 +64,9 @@
             <div class="enclosure space_below span5" data-table-id="{{!table_id}}" id="table-{{!table_id}}">
                 <h2><a href="#table-{{!table_id}}" style="color:black;">Table {{!table_id}}</a></h2>
 
-                {{!>add_attendee_form}}
+                {{!# unless full }}
+                     {{!>add_attendee_form}}
+                {{!/unless}}
                 {{!>attendee_list}}
             </div>
         {{!#if row}}

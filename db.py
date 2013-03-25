@@ -92,6 +92,9 @@ def get_tables(session):
         attendees = [dict(zip(x.keys(), x)) for x in query.all()]
 
         tables[table_id]['attendees'] = attendees
+        tables[table_id]['attendee_num'] = len(attendees)
+        tables[table_id]['full'] = (
+            len(attendees) >= settings.get('max_pax_per_table', 10))
 
     return tables
 

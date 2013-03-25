@@ -6,6 +6,7 @@ from contextlib import closing
 # application specific
 import db
 from utils import BaseHandler
+from settings import settings
 
 
 class TablesHandler(BaseHandler):
@@ -41,33 +42,46 @@ class AddAttendeeHandler(BaseHandler):
         status = {"success": True}
 
         with closing(db.Session()) as session:
-            attendee_name = self.get_argument('attendee_name')
+            table_id = self.get_argument('table_id')
 
-            exists = db.does_attendee_exist_smart(session, attendee_name)
-            if exists:
-                logging.info('attendee_exists: "{}"=="{}", on table {}'.format(
-                    attendee_name, exists['attendee_name'],
-                    exists['table_id']))
-                status['error'] = 'attendee_exists'
-                status['human_error'] = 'Attendee already on table {}'.format(
-                    exists['table_id'])
+            query = session.query(db.attendee_table).filter_by(
+                    table_id=table_id, show=True)
+
+            attendees = [dict(zip(x.keys(), x)) for x in query.all()]
+
+            if len(attendees) >= settings.get('max_pax_per_table', 10):
                 status['success'] = False
-
+                status['error'] = 'table_full'
+                status['human_error'] = "I'm sorry, that table is already full"
             else:
-                table_id = self.get_argument('table_id')
+                attendee_name = self.get_argument('attendee_name')
 
-                record = {
-                    'attendee_name': attendee_name,
-                    'table_id': int(table_id),
-                    'show': True
-                }
+                exists = db.does_attendee_exist_smart(session, attendee_name)
+                if exists:
+                    logging.info(
+                        'attendee_exists: "{}"=="{}", on table {}'.format(
+                            attendee_name, exists['attendee_name'],
+                            exists['table_id']))
+                    status['error'] = 'attendee_exists'
+                    status['human_error'] = (
+                        'Attendee already on table {}'.format(
+                            exists['table_id']))
+                    status['success'] = False
 
-                logging.info(
-                    'adding attendee "{}" to table {}'.format(
-                    attendee_name, table_id))
+                else:
 
-                attendee_insert = db.attendee_table.insert()
-                attendee_insert.execute(record)
+                    record = {
+                        'attendee_name': attendee_name,
+                        'table_id': int(table_id),
+                        'show': True
+                    }
+
+                    logging.info(
+                        'adding attendee "{}" to table {}'.format(
+                        attendee_name, table_id))
+
+                    attendee_insert = db.attendee_table.insert()
+                    attendee_insert.execute(record)
 
         self.write(json.dumps(status))
 
