@@ -72,16 +72,8 @@ def setup():
 (metadata, engine, conn, Session,
     ball_table, attendee_table, removal_request_table) = setup()
 
-# assert hasattr(removal_request_table.columns, 'request_id'), '*cries*'
-# assert False, removal_request_table.__dict__
-
-# assert hasattr(removal_request_table, 'request_id'), '*cries*'
-#
-
 
 def get_tables(session):
-    # fields = ['attendee_id', 'attendee_name', 'show', 'table_id']
-
     # these next two lines really shouldn't be here
     # but w/e. they basically create a framework for the tables to slot into
     # and at the same time create empty tables
@@ -134,7 +126,6 @@ def does_attendee_exist_smart(session, attendee_name):
 
 if __name__ == '__main__':
     wipe(engine, metadata)
-    import json
 
     with open('names.json') as fh:
         names = json.load(fh)

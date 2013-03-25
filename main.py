@@ -1,10 +1,12 @@
 #!/usr/bin/env python
-# import newrelic.agent
-# newrelic.agent.initialize('newrelic.ini')
 
 # stdlib
 import os
 import sys
+
+if 'HEROKU' in os.environ:
+    import newrelic.agent
+    newrelic.agent.initialize('newrelic.ini')
 
 # third party
 import tornado
