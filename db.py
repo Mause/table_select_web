@@ -1,6 +1,4 @@
 import os
-# import json
-# import logging
 
 from sqlalchemy import (
     create_engine,
@@ -11,12 +9,12 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Boolean)
-
 from sqlalchemy.orm import sessionmaker
+
 from fuzzywuzzy import fuzz
 
-from utils import dict_from_query
 from settings import settings
+from utils import dict_from_query
 
 
 def wipe(engine, meta):
@@ -59,13 +57,6 @@ def setup():
 
     metadata.create_all()
 
-    results = ball_table.select()
-    if not results.execute():
-        tables = [
-            {'table_id': id}
-            for id in range(1, settings.get('table_num', 17) + 1)]
-        ball_table.insert().execute(tables)
-
     Session = sessionmaker(bind=engine)
 
     return (metadata, engine, conn, Session,
@@ -103,8 +94,6 @@ def get_tables(session):
 
 def does_attendee_exist_dumb(session, attendee_name):
     "does a simple check if any other attendees have the same name"
-    # fields = ['attendee_id', 'attendee_name', 'table_id']
-
     query = session.query(attendee_table).filter_by(
         attendee_name=attendee_name, show=True)
     query = query.all()
@@ -114,11 +103,9 @@ def does_attendee_exist_dumb(session, attendee_name):
 def does_attendee_exist_smart(session, attendee_name):
     """uses fuzzy matching to determine
     whether someone is trying to dupe the app"""
-    # fields = ['attendee_id', 'attendee_name', 'show', 'table_id']
+    attendee_name = attendee_name.lower().strip()
 
     query = session.query(attendee_table).filter_by(show=True).all()
-
-    attendee_name = attendee_name.lower().strip()
     for attendee in query:
         attendee = dict_from_query(attendee)
 
@@ -140,8 +127,8 @@ if __name__ == '__main__':
     print('already_there:', already_there)
 
     ball_table_insert = ball_table.insert()
-    for id in range(1, settings.get('table_num', 17) + 1):
-        if id not in already_there:
-            print('added;', id)
+    for table_id in range(1, settings.get('table_num', 17) + 1):
+        if table_id not in already_there:
+            print('added;', table_id)
             ball_table_insert.execute(
-                {'table_name': 'Table {}'.format(id)})
+                {'table_name': 'Table {}'.format(table_id)})
