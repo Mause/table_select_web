@@ -1,5 +1,5 @@
 import os
-import json
+# import json
 # import logging
 
 from sqlalchemy import (
@@ -129,16 +129,29 @@ def does_attendee_exist_smart(session, attendee_name):
 
 
 if __name__ == '__main__':
-    wipe(engine, metadata)
+    # wipe(engine, metadata)
 
-    with open('names.json') as fh:
-        names = json.load(fh)
+    # with open('names.json') as fh:
+    #     names = json.load(fh)
+
+    # already_there = ball_table.select().execute()
+    # already_there = [x[0] for x in already_there]
+    s = ball_table.select()
+    rs = s.execute()
+    already_there = [
+        int(x['table_name'].split()[-1])
+        for x in rs]
+    print('already_there:', already_there)
+    # for row in rs:
+    #     print(dict(row))
 
     ball_table_insert = ball_table.insert()
-    attendee_insert = attendee_table.insert()
+    # attendee_insert = attendee_table.insert()
     for id in range(1, settings.get('table_num', 17) + 1):
-        ball_table_insert.execute(
-            {'table_name': 'Table {}'.format(id)})
+        if id not in already_there:
+            print('added;', id)
+            ball_table_insert.execute(
+                {'table_name': 'Table {}'.format(id)})
 
         # att = []
         # for x in range(10):
@@ -147,7 +160,3 @@ if __name__ == '__main__':
         #         'table_id': id})
         # attendee_insert.execute(att)
 
-    s = ball_table.select()
-    rs = s.execute()
-    for row in rs:
-        print(dict(row))

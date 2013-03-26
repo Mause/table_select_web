@@ -1,6 +1,6 @@
 {
     "cookie_secret": "7720b2aa8d4d4849babf2dbf7d7321d2",
-    "table_num": 17,
+    "table_num": 20,
     "max_pax_per_table": 10,
     "auth_combos": {
         "dominic": "20133",
