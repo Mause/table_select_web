@@ -29,6 +29,14 @@ import logging
 #         logging.info(r.content)
 #     return r
 
+def dict_from_query(query):
+    dz = lambda d: dict(zip(d.keys(), d))
+
+    if type(query) == list:
+        return list(map(dz, query))
+    else:
+        return dz(query)
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def is_admin(self):

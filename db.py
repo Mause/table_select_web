@@ -15,6 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker
 from fuzzywuzzy import fuzz
 
+from utils import dict_from_query
 from settings import settings
 
 
@@ -78,7 +79,7 @@ def get_tables(session):
     tables = []
 
     raw_tables = session.query(ball_table).all()
-    raw_tables = [dict(zip(x.keys(), x)) for x in raw_tables]
+    raw_tables = dict_from_query(raw_tables)
     for row in raw_tables:
         tables.append({
             'table_id': row['table_id'],
@@ -89,7 +90,7 @@ def get_tables(session):
         query = session.query(attendee_table).filter_by(
             table_id=table_id, show=True)
 
-        attendees = [dict(zip(x.keys(), x)) for x in query.all()]
+        attendees = dict_from_query(query.all())
 
         tables[-1]['attendees'] = attendees
         tables[-1]['attendee_num'] = len(attendees)
@@ -106,7 +107,7 @@ def does_attendee_exist_dumb(session, attendee_name):
     query = session.query(attendee_table).filter_by(
         attendee_name=attendee_name, show=True)
     query = query.all()
-    return [dict(zip(x.keys(), x)) for x in query]
+    return dict_from_query(query)
 
 
 def does_attendee_exist_smart(session, attendee_name):
@@ -118,7 +119,7 @@ def does_attendee_exist_smart(session, attendee_name):
 
     attendee_name = attendee_name.lower().strip()
     for attendee in query:
-        attendee = dict(zip(attendee.keys(), attendee))
+        attendee = dict_from_query(attendee)
 
         cur_attendee_name = attendee['attendee_name'].lower().strip()
         if fuzz.ratio(cur_attendee_name, attendee_name) > 85:

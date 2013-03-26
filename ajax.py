@@ -5,7 +5,7 @@ from contextlib import closing
 
 # application specific
 import db
-from utils import BaseHandler
+from utils import BaseHandler, dict_from_query
 from settings import settings
 
 
@@ -47,7 +47,7 @@ class AddAttendeeHandler(BaseHandler):
             query = session.query(db.attendee_table).filter_by(
                     table_id=table_id, show=True)
 
-            attendees = [dict(zip(x.keys(), x)) for x in query.all()]
+            attendees = dict_from_query(query.all())
 
             if len(attendees) >= settings.get('max_pax_per_table', 10):
                 status['success'] = False
@@ -88,21 +88,6 @@ class AddAttendeeHandler(BaseHandler):
 
 class ActionHandler(BaseHandler):
     def post(self, action, *args, **kwargs):
-        removal_request_fields = [
-            'request_id',
-            'attendee_id',
-            'table_id',
-            'remover_ident',
-            'state'
-        ]
-
-        attendee_fields = [
-            'attendee_id',
-            'attendee_name',
-            'show',
-            'table_id'
-        ]
-
         if action not in ['deny', 'allow']:
             return
 
@@ -117,9 +102,8 @@ class ActionHandler(BaseHandler):
                     removal_request_to_update = session.query(
                         db.removal_request_table).filter_by(
                         request_id=request_id)
-                    removal_request_updated_data = dict(zip(
-                        removal_request_fields,
-                        removal_request_to_update.all()[0]))
+                    removal_request_updated_data = dict_from_query(
+                        removal_request_to_update.one())
 
                     removal_request_updated_data['state'] = action
 
@@ -138,8 +122,8 @@ class ActionHandler(BaseHandler):
                                 attendee_id=removal_request_updated_data[
                                 'attendee_id']))
 
-                        attendee_updated_data = dict(zip(
-                            attendee_fields, attendee_table_update.all()[0]))
+                        attendee_updated_data = dict_from_query(
+                            attendee_table_update.one())
 
                         attendee_updated_data['show'] = False
                         logging.info(attendee_updated_data)

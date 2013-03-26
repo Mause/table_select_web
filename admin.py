@@ -4,7 +4,7 @@ from contextlib import closing
 
 import db
 from settings import settings
-from utils import BaseHandler
+from utils import BaseHandler, dict_from_query
 
 
 class AuthHandler(BaseHandler):
@@ -42,7 +42,6 @@ class AdminHandler(BaseHandler):
         "this page will allow the authorization of removals"
         if self.is_admin():
 
-            fields = ['request_id', 'attendee_id', 'table_id', 'remover_ident']
             with closing(db.Session()) as session:
                 # keep removals persistant, for future reference
                 # give every user a UUID, stored as a cookie,
@@ -51,16 +50,15 @@ class AdminHandler(BaseHandler):
                                 .filter_by(state='unresolved')
                                 .all())
 
-                requests = [dict(zip(fields, record)) for record in query]
+                requests = dict_from_query(query)
                 for request in requests:
                     query = (
                         session.query(db.attendee_table)
                                 .filter_by(attendee_id=request['attendee_id'])
                                 .one())
 
-                    request['attendee_name'] = dict(zip(
-                        query.keys(),
-                        query))['attendee_name']
+                    request['attendee_name'] = (
+                        dict_from_query(query)['attendee_name'])
 
                 # logging.info(query)
 
