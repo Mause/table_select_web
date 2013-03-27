@@ -4,6 +4,10 @@ var document;
 
 $(document).ready(function(){
     "use strict";
+    // most of the functionality here could be compressed into a
+    // single function with two $().click connectors
+    // but it is implemented like this for
+    // modularitys sake :)
     var base_url = '/api';
 
     var get_request_ids = function(checked){
@@ -35,7 +39,7 @@ $(document).ready(function(){
 
         $.ajax({
             type: 'POST',
-            url: base_url + '/admin/attendee/' + action + '_bulk',
+            url: base_url + '/attendee/' + action + '_bulk',
             data: JSON.stringify(selected_requests),
             success: success
         });

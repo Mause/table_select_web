@@ -1,5 +1,7 @@
+# stdlib
 import os
 
+# third-party
 from sqlalchemy import (
     create_engine,
     Table,
@@ -9,10 +11,10 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Boolean)
+from fuzzywuzzy import fuzz
 from sqlalchemy.orm import sessionmaker
 
-from fuzzywuzzy import fuzz
-
+# application specific
 from settings import settings
 from utils import dict_from_query
 

@@ -4,6 +4,7 @@
 import os
 import sys
 
+# setup newrelic
 if 'HEROKU' in os.environ:
     import newrelic.agent
     newrelic.agent.initialize('newrelic.ini')
@@ -27,6 +28,7 @@ sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
 
 
+# simple dump renderers; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
         self.render('home.html', path='/')
@@ -48,9 +50,9 @@ settings = {
 application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
     (r"/api/tables", ajax.TablesHandler),
-    (r"/api/attendee/remove", ajax.RemoveAttendeeHandler),
+    (r"/api/attendee/remove", ajax.RemovalRequestHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
-    (r"/api/admin/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
+    (r"/api/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
     (r"/admin", admin.AdminHandler),
     (r"/auth", admin.AuthHandler),
     (r"/logout", admin.LogoutHandler),

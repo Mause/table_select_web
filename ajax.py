@@ -11,14 +11,13 @@ from settings import settings
 
 class TablesHandler(BaseHandler):
     def get(self):
-        "get is simple"
         with closing(db.Session()) as session:
             tables = db.get_tables(session)
             tables = json.dumps(tables, indent=4)
             self.write(tables)
 
 
-class RemoveAttendeeHandler(BaseHandler):
+class RemovalRequestHandler(BaseHandler):
     def post(self):
         attendee_id = self.get_argument('attendee_id')
         table_id = self.get_argument('table_id')
@@ -39,16 +38,19 @@ class RemoveAttendeeHandler(BaseHandler):
 
 class AddAttendeeHandler(BaseHandler):
     def post(self):
+        "yikes this is complicated"
         status = {"success": True}
 
         with closing(db.Session()) as session:
             table_id = self.get_argument('table_id')
 
+            # query the db for users on this table that can be shown
             query = session.query(db.attendee_table).filter_by(
                     table_id=table_id, show=True)
 
             attendees = dict_from_query(query.all())
 
+            # check if the table is full
             if len(attendees) >= settings.get('max_pax_per_table', 10):
                 status['success'] = False
                 status['error'] = 'table_full'
@@ -56,6 +58,7 @@ class AddAttendeeHandler(BaseHandler):
             else:
                 attendee_name = self.get_argument('attendee_name')
 
+                # check if the attendee is already on a table
                 exists = db.does_attendee_exist_smart(session, attendee_name)
                 if exists:
                     logging.info(
@@ -87,7 +90,10 @@ class AddAttendeeHandler(BaseHandler):
 
 
 class ActionHandler(BaseHandler):
-    def post(self, action, *args, **kwargs):
+    def post(self, action):
+        if not self.is_admin():
+            return
+
         if action not in ['deny', 'allow']:
             return
 
@@ -99,29 +105,35 @@ class ActionHandler(BaseHandler):
         if request_ids:
             with closing(db.Session()) as session:
                 for request_id in request_ids:
+                    # grab the current data
                     removal_request_to_update = session.query(
                         db.removal_request_table).filter_by(
                         request_id=request_id)
                     removal_request_updated_data = dict_from_query(
                         removal_request_to_update.one())
 
+                    # set the state
                     removal_request_updated_data['state'] = action
 
+                    # update the db with the new state
                     removal_request_to_update.update(
                         removal_request_updated_data,
                         synchronize_session=False)
                     session.commit()
 
                     if action == "allow":
+                        # if we allowing the removal request
                         logging.info(
                             'allowing deletion of attendee with id {}'.format(
                                 removal_request_updated_data['attendee_id']))
 
+                        # grab the attendee record in question
                         attendee_table_update = (
                             session.query(db.attendee_table).filter_by(
                                 attendee_id=removal_request_updated_data[
                                 'attendee_id']))
 
+                        # dictionary representation...
                         attendee_updated_data = dict_from_query(
                             attendee_table_update.one())
 
