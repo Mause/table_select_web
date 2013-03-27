@@ -77,4 +77,3 @@ class StringMatcher:
         if not self._distance:
             self._distance = distance(self._str1, self._str2)
         return self._distance
-

@@ -38,6 +38,7 @@ def setup():
     metadata = MetaData(engine)
 
     # TODO: add a table_num field to the ball_table table
+    # (do this once the ball is over to avoid breaking things :P)
     ball_table = Table('ball_table', metadata,
         Column('table_id', Integer, primary_key=True),
         Column('table_name', String)
@@ -72,24 +73,22 @@ def get_tables(session):
 
     tables = []
 
-    raw_tables = session.query(ball_table).all()
-    raw_tables = dict_from_query(raw_tables)
+    raw_tables = dict_from_query(session.query(ball_table).all())
     for row in raw_tables:
         tables.append({
             'table_id': row['table_id'],
             'table_name': row['table_name']})
 
-        table_id = row['table_id']
-
         query = session.query(attendee_table).filter_by(
-            table_id=table_id, show=True)
+            table_id=row['table_id'], show=True)
 
         attendees = dict_from_query(query.all())
 
-        tables[-1]['attendees'] = attendees
-        tables[-1]['attendee_num'] = len(attendees)
-        tables[-1]['full'] = (
-            len(attendees) >= settings.get('max_pax_per_table', 10))
+        tables[-1].update({
+            'attendees': attendees,
+            'attendee_num': len(attendees),
+            'full': (len(attendees) >= settings.get('max_pax_per_table', 10))
+        })
 
     return tables
 
@@ -120,6 +119,8 @@ def does_attendee_exist_smart(session, attendee_name):
 
 if __name__ == '__main__':
     # wipe(engine, metadata)
+
+    # do some stuff to ensure that there are enough ball_entry's in the db
 
     s = ball_table.select()
     rs = s.execute()

@@ -15,7 +15,6 @@ def asciionly(s):
 # remove non-ASCII characters from strings
 def asciidammit(s):
     return s
-    # return asciionly(s.encode('ascii', 'replace'))
 
 
 def validate_string(s):

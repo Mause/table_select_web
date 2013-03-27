@@ -34,14 +34,19 @@ from . import utils
 
 
 def extract(query, choices, processor=None, scorer=None, limit=5):
-
-    # choices       = a list of objects we are attempting to extract values from
-    # query         = an object representing the thing we want to find
-    # scorer        f(OBJ, QUERY) --> INT. We will return the objects with the highest score
-        # by default, we use score.WRatio() and both OBJ and QUERY should be strings
-    # processor     f(OBJ_A) --> OBJ_B, where the output is an input to scorer
-        # for example, "processor = lambda x: x[0]" would return the first element in a collection x (of, say, strings)
-        # this would then be used in the scoring collection
+    """
+    choices
+        a list of objects we are attempting to extract values from
+    query
+        an object representing the thing we want to find
+    scorer f(OBJ, QUERY) --> INT.
+        We will return the objects with the highest score by default, we use
+        score.WRatio() and both OBJ and QUERY should be strings
+    processor f(OBJ_A) --> OBJ_B, where the output is an input to scorer
+        for example, "processor = lambda x: x[0]" would return the first
+        element in a collection x (of, say, strings)
+        this would then be used in the scoring collection
+    """
 
     if choices is None or len(choices) == 0:
         return []
