@@ -15,7 +15,6 @@ import tornado.web
 import tornado.wsgi
 import tornado.ioloop
 import tornado.options
-import tornado.template
 import tornado.httpserver
 
 # application specific
@@ -28,7 +27,7 @@ sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
 
 
-# simple dump renderers; nothing fancy here
+# simple & dumb renderers; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
         self.render('home.html', path='/')
@@ -49,7 +48,9 @@ settings = {
 
 application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
+    # (r"/api/tables/test", ajax.TestTablesHandler),
     (r"/api/tables", ajax.TablesHandler),
+
     (r"/api/attendee/remove", ajax.RemovalRequestHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
     (r"/api/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),

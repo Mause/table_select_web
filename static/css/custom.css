@@ -137,9 +137,11 @@ body {
     cursor: pointer;
     opacity: 0.4;
     filter: alpha(opacity=40);
+    float: right;
 }
 
 button.spec_close {
+    float: right;
     padding: 0;
     cursor: pointer;
     background: transparent;
@@ -167,10 +169,32 @@ button.spec_close {
 .action_marker {
     margin: 0px;
 }
-/*@user-agent-
-    margin-top: -21px;
-}
-*/
+
 .no-decoration {
     list-style: none;
+}
+
+.info-icon {
+    margin-top: 2.3px;
+    margin-right: 2.3px;
+
+    border-radius: 10px;
+    border: solid 1px #9C9999;
+    background-color: #C4C4C4;
+
+    width: 13px;
+    height: 13px;
+
+    display: inline-block;
+    float: right;
+}
+
+.inner-info-icon {
+    width: 4px;
+    height: 19px;
+    margin-left: -2px;
+    margin-top: -9.5px;
+    top: -27.5%;
+    left: 45.5%;
+    position: relative;
 }

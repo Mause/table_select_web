@@ -9,12 +9,42 @@ from utils import BaseHandler, dict_from_query
 from settings import settings
 
 
+# class TablesHandler(BaseHandler):
+#     def get(self):
+#         with closing(db.Session()) as session:
+#             tables = db.get_tables(session)
+#             self.write(json.dumps(tables, indent=4))
+
+
 class TablesHandler(BaseHandler):
     def get(self):
         with closing(db.Session()) as session:
             tables = db.get_tables(session)
-            tables = json.dumps(tables, indent=4)
-            self.write(tables)
+
+            for table in tables:
+                if table['attendees']:
+                    ids = [
+                        attendee['attendee_id']
+                        for attendee in table['attendees']
+                        if attendee['show']]
+                    condition = (
+                        db.removal_request_table.columns.attendee_id.in_(
+                            set(ids)))
+                    query = session.query(db.removal_request_table).filter(
+                        condition).filter_by(state='unresolved')
+                    # .filter_by(show=True)
+                    query = dict_from_query(query.all())
+                    cur_states = {x['attendee_id']: x['state'] for x in query}
+
+                    for attendee in table['attendees']:
+                        if attendee['attendee_id'] in cur_states:
+                            attendee['state'] = 'submitted'
+                            attendee['removal_request_exists'] = True
+                        else:
+                            attendee['state'] = 'normal'
+                            attendee['removal_request_exists'] = False
+
+            self.write(json.dumps(tables, indent=4))
 
 
 class RemovalRequestHandler(BaseHandler):
@@ -38,53 +68,61 @@ class RemovalRequestHandler(BaseHandler):
 
 class AddAttendeeHandler(BaseHandler):
     def post(self):
-        "yikes this is complicated"
+        # yikes this is complicated
         status = {"success": True}
 
-        with closing(db.Session()) as session:
-            table_id = self.get_argument('table_id')
+        table_id = self.get_argument('table_id')
+        attendee_name = self.get_argument('attendee_name')
+        if not table_id or not attendee_name:
+            self.error(400)
+            status['success'] = False
+            status['error'] = 'programming_error'
+            status['human_error'] = 'An unknown error occured.'
+        else:
 
-            # query the db for users on this table that can be shown
-            query = session.query(db.attendee_table).filter_by(
-                    table_id=table_id, show=True)
+            with closing(db.Session()) as session:
 
-            attendees = dict_from_query(query.all())
+                # query the db for users on this table that can be shown
+                query = session.query(db.attendee_table).filter_by(
+                        table_id=table_id, show=True)
 
-            # check if the table is full
-            if len(attendees) >= settings.get('max_pax_per_table', 10):
-                status['success'] = False
-                status['error'] = 'table_full'
-                status['human_error'] = "I'm sorry, that table is already full"
-            else:
-                attendee_name = self.get_argument('attendee_name')
+                attendees = dict_from_query(query.all())
 
-                # check if the attendee is already on a table
-                exists = db.does_attendee_exist_smart(session, attendee_name)
-                if exists:
-                    logging.info(
-                        'attendee_exists: "{}"=="{}", on table {}'.format(
-                            attendee_name, exists['attendee_name'],
-                            exists['table_id']))
-                    status['error'] = 'attendee_exists'
-                    status['human_error'] = (
-                        'Attendee already on table {}'.format(
-                            exists['table_id']))
+                # check if the table is full
+                if len(attendees) >= settings.get('max_pax_per_table', 10):
                     status['success'] = False
-
+                    status['error'] = 'table_full'
+                    status['human_error'] = (
+                        "I'm sorry, that table is already full")
                 else:
+                    # check if the attendee is already on a table
+                    exists = db.does_attendee_exist_smart(
+                        session, attendee_name)
+                    if exists:
+                        logging.info(
+                            'attendee_exists: "{}"=="{}", on table {}'.format(
+                                attendee_name, exists['attendee_name'],
+                                exists['table_id']))
+                        status['error'] = 'attendee_exists'
+                        status['human_error'] = (
+                            'Attendee already on table {}'.format(
+                                exists['table_id']))
+                        status['success'] = False
 
-                    record = {
-                        'attendee_name': attendee_name,
-                        'table_id': int(table_id),
-                        'show': True
-                    }
+                    else:
 
-                    logging.info(
-                        'adding attendee "{}" to table {}'.format(
-                        attendee_name, table_id))
+                        record = {
+                            'attendee_name': attendee_name,
+                            'table_id': int(table_id),
+                            'show': True
+                        }
 
-                    attendee_insert = db.attendee_table.insert()
-                    attendee_insert.execute(record)
+                        logging.info(
+                            'adding attendee "{}" to table {}'.format(
+                            attendee_name, table_id))
+
+                        attendee_insert = db.attendee_table.insert()
+                        attendee_insert.execute(record)
 
         self.write(json.dumps(status))
 

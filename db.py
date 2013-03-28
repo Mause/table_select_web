@@ -31,7 +31,7 @@ def wipe(engine, meta):
 def setup():
     engine = create_engine(os.environ.get(
         "DATABASE_URL",
-        "postgresql://postgres:pass@localhost"))
+        settings.get('DATABASE_URL')))
     engine.echo = False  # Try changing this to True and see what happens
 
     conn = engine.connect()

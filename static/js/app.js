@@ -182,10 +182,10 @@ App.prototype.setupListeners = function() {
     //     trigger: 'manual'
     // });
 
-    // $('.spec_close').tooltip({
-    //     placement: 'right',
-    //     trigger: 'manual'
-    // });
+    $('.removal_request_notif').tooltip({
+        placement: 'bottom'
+        // trigger: 'manual'
+    });
 };
 
 App.prototype.refresh = function () {
