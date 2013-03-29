@@ -174,27 +174,8 @@ button.spec_close {
     list-style: none;
 }
 
-.info-icon {
+.removal_request_notif {
     margin-top: 2.3px;
     margin-right: 2.3px;
-
-    border-radius: 10px;
-    border: solid 1px #9C9999;
-    background-color: #C4C4C4;
-
-    width: 13px;
-    height: 13px;
-
-    display: inline-block;
     float: right;
-}
-
-.inner-info-icon {
-    width: 4px;
-    height: 19px;
-    margin-left: -2px;
-    margin-top: -9.5px;
-    top: -27.5%;
-    left: 45.5%;
-    position: relative;
 }

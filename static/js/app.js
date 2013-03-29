@@ -231,8 +231,10 @@ App.prototype.submit_attendee = function(event) {
     var table_id = $(event.target.table_id).val();
     if (attendee_name && table_id){
         _this.data.api.add_attendee(attendee_name, table_id, win);
+        window.setTimeout(app.refresh, 10);
+    } else {
+
     }
-    window.setTimeout(app.refresh, 10);
     // return false to ensure that the browser does not continue posting the
     // results of the form itself
     return false;
