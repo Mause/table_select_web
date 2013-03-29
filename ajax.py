@@ -140,44 +140,49 @@ class ActionHandler(BaseHandler):
 
         logging.info('{}ing {} request(s)'.format(action, len(request_ids)))
 
-        if request_ids:
-            with closing(db.Session()) as session:
-                for request_id in request_ids:
-                    # grab the current data
-                    removal_request_to_update = session.query(
-                        db.removal_request_table).filter_by(
-                        request_id=request_id)
-                    removal_request_updated_data = dict_from_query(
-                        removal_request_to_update.one())
+        if not request_ids:
+            return
 
-                    # set the state
-                    removal_request_updated_data['state'] = action
+        with closing(db.Session()) as session:
+            removal_request_condition = (
+                db.removal_request_table.columns.request_id.in_(request_ids))
 
-                    # update the db with the new state
-                    removal_request_to_update.update(
-                        removal_request_updated_data,
-                        synchronize_session=False)
-                    session.commit()
+            # grab the current data
+            removal_request_update = (session
+                .query(db.removal_request_table)
+                .filter(removal_request_condition))
 
-                    if action == "allow":
-                        # if we allowing the removal request
-                        logging.info(
-                            'allowing deletion of attendee with id {}'.format(
-                                removal_request_updated_data['attendee_id']))
+            # update the db with the new state
+            removal_request_update.update(
+                {db.removal_request_table.columns.state: action},
+                synchronize_session=False
+            )
 
-                        # grab the attendee record in question
-                        attendee_table_update = (
-                            session.query(db.attendee_table).filter_by(
-                                attendee_id=removal_request_updated_data[
-                                'attendee_id']))
+            if action == "allow":
+                # if we're allowing the removal request
 
-                        # dictionary representation...
-                        attendee_updated_data = dict_from_query(
-                            attendee_table_update.one())
+                condition = (
+                    db.attendee_table.columns.attendee_id ==
+                    db.removal_request_table.columns.attendee_id)
 
-                        attendee_updated_data['show'] = False
-                        logging.info(attendee_updated_data)
+                # grab the attendee record in question
+                attendee_table_update = (session
+                    .query(db.attendee_table)
+                    .filter(condition)
+                    .filter(removal_request_condition)
+                )
 
-                        attendee_table_update.update(attendee_updated_data,
-                            synchronize_session=False)
-                        session.commit()
+                to_update = dict_from_query(attendee_table_update.all())
+                to_update = [attendee['attendee_id'] for attendee in to_update]
+
+                attendee_table_update = (session
+                    .query(db.attendee_table)
+                    .filter(db.attendee_table.columns.attendee_id.in_(
+                        to_update)))
+
+                attendee_table_update.update(
+                    {db.attendee_table.columns.show: False},
+                    synchronize_session=False
+                )
+
+            session.commit()
