@@ -20,8 +20,8 @@ import tornado.httpserver
 # application specific
 import ajax
 import admin
-from utils import BaseHandler
 from settings import settings
+from utils import BaseHandler, SmartStaticFileHandler
 
 sys.argv.append('--logging=INFO')
 tornado.options.parse_command_line()
@@ -41,19 +41,19 @@ class InfoHandler(BaseHandler):
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
+    'cookie_secret': settings['cookie_secret'],
     "debug": True,
-    'cookie_secret': settings['cookie_secret']
 }
 
 
 application = tornado.wsgi.WSGIApplication([
-    (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': settings['static_path']}),
-    # (r"/api/tables/test", ajax.TestTablesHandler),
-    (r"/api/tables", ajax.TablesHandler),
+    (r'/static/(.*)', SmartStaticFileHandler, {'path': settings['static_path']}),
 
+    (r"/api/tables", ajax.TablesHandler),
     (r"/api/attendee/remove", ajax.RemovalRequestHandler),
     (r"/api/attendee/add", ajax.AddAttendeeHandler),
     (r"/api/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
+
     (r"/admin", admin.AdminHandler),
     (r"/auth", admin.AuthHandler),
     (r"/logout", admin.LogoutHandler),

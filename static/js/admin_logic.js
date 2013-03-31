@@ -20,10 +20,6 @@ $(document).ready(function(){
         return selected;
     };
 
-    var get_checked = function(){
-        return $('.action_marker:checked');
-    };
-
     var commit_action = function(action, selected_requests, checked){
         var possible_actions = ['deny', 'allow'];
         if (possible_actions.indexOf(action) == -1){
@@ -46,7 +42,7 @@ $(document).ready(function(){
     };
 
     var do_action = function(action){
-        var checked = get_checked();
+        var checked = $('.action_marker:checked');
         var request_ids = get_request_ids(checked);
         commit_action(action, request_ids, checked);
     };

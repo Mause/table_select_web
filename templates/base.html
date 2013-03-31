@@ -57,40 +57,26 @@
         <!-- Le javascript
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->
-        <script src="{{ static_url("js/jquery-1.9.1.min.js") }}"></script>
-        <!-- // <script src="{{ static_url("js/jquery-1.9.1.js") }}"></script> -->
+        {% if path != "/info" %}
+            <script src="{{ static_url("js/jquery-1.9.1.min.js") }}"></script>
+            <!-- // <script src="{{ static_url("js/jquery-1.9.1.js") }}"></script> -->
 
-        <script type="text/javascript">
-        if (window.navigator.userAgent.indexOf('Firefox') !== -1) {
-                 $('body').addClass('firefox');
-        };
-        </script>
+            <script type="text/javascript">
+            if (window.navigator.userAgent.indexOf('Firefox') !== -1) {
+                     $('body').addClass('firefox');
+            };
+            </script>
 
-        <script src="{{ static_url("js/bootstrap.min.js") }}"></script>
-        <!-- <script src="{{ static_url("js/bootstrap.js") }}"></script> -->
-
-        <!-- // <script src="{{ static_url("js/handlebars.js") }}"></script> -->
+            <script src="{{ static_url("js/bootstrap.min.js") }}"></script>
+            <!-- <script src="{{ static_url("js/bootstrap.js") }}"></script> -->
+        {% end %}
 
         {% if path == "/" %}
             <script src="{{ static_url("js/handlebars-1.0.rc.1.min.js") }}"></script>
+            <!-- // <script src="{{ static_url("js/handlebars.js") }}"></script> -->
             <script src="{{ static_url("js/app.js") }}"></script>
         {% elif path == "/admin" %}
             <script type="text/javascript" src="{{ static_url("js/admin_logic.js") }}"></script>
         {% end %}
-        <!--
-        <script src="/js/jquery.js"></script>
-        <script src="/js/bootstrap-transition.js"></script>
-        <script src="/js/bootstrap-alert.js"></script>
-        <script src="/js/bootstrap-modal.js"></script>
-        <script src="/js/bootstrap-dropdown.js"></script>
-        <script src="/js/bootstrap-scrollspy.js"></script>
-        <script src="/js/bootstrap-tab.js"></script>
-        <script src="/js/bootstrap-tooltip.js"></script>
-        <script src="/js/bootstrap-popover.js"></script>
-        <script src="/js/bootstrap-button.js"></script>
-        <script src="/js/bootstrap-collapse.js"></script>
-        <script src="/js/bootstrap-carousel.js"></script>
-        <script src="/js/bootstrap-typeahead.js"></script>
-        -->
     </body>
 </html>
