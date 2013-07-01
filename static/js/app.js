@@ -1,5 +1,4 @@
 var $;
-var window;
 var console;
 var Handlebars;
 

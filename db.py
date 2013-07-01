@@ -39,18 +39,21 @@ def setup():
 
     # TODO: add a table_num field to the ball_table table
     # (do this once the ball is over to avoid breaking things :P)
-    ball_table = Table('ball_table', metadata,
+    ball_table = Table(
+        'ball_table', metadata,
         Column('table_id', Integer, primary_key=True),
         Column('table_name', String)
     )
 
-    attendee_table = Table('attendee', metadata,
+    attendee_table = Table(
+        'attendee', metadata,
         Column('attendee_id', Integer, primary_key=True),
         Column('attendee_name', String),
         Column('show', Boolean),
         Column('table_id', ForeignKey('ball_table.table_id')))
 
-    removal_request_table = Table('removal_request', metadata,
+    removal_request_table = Table(
+        'removal_request', metadata,
         Column('request_id', Integer, primary_key=True),
         Column('attendee_id', ForeignKey('attendee.attendee_id')),
         Column('table_id', ForeignKey('ball_table.table_id')),
@@ -62,7 +65,8 @@ def setup():
 
     Session = sessionmaker(bind=engine)
 
-    return (metadata, engine, conn, Session,
+    return (
+        metadata, engine, conn, Session,
         ball_table, attendee_table, removal_request_table)
 
 (metadata, engine, conn, Session,

@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 from contextlib import closing
 
 import db
@@ -52,10 +52,9 @@ class AdminHandler(BaseHandler):
 
                 requests = dict_from_query(query)
                 for request in requests:
-                    query = (
-                        session.query(db.attendee_table)
-                                .filter_by(attendee_id=request['attendee_id'])
-                                .one())
+                    query = (session.query(db.attendee_table)
+                                    .filter_by(attendee_id=request['attendee_id'])
+                                    .one())
 
                     request['attendee_name'] = (
                         dict_from_query(query)['attendee_name'])

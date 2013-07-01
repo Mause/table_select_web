@@ -18,7 +18,7 @@ import tornado.options
 import tornado.httpserver
 
 # application specific
-import ajax
+# import ajax
 import admin
 from settings import settings
 from utils import BaseHandler, SmartStaticFileHandler

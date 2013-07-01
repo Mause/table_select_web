@@ -83,8 +83,8 @@ class AddAttendeeHandler(BaseHandler):
             with closing(db.Session()) as session:
 
                 # query the db for users on this table that can be shown
-                query = session.query(db.attendee_table).filter_by(
-                        table_id=table_id, show=True)
+                query = (session.query(db.attendee_table)
+                                .filter_by(table_id=table_id, show=True))
 
                 attendees = dict_from_query(query.all())
 
@@ -148,9 +148,9 @@ class ActionHandler(BaseHandler):
                 db.removal_request_table.columns.request_id.in_(request_ids))
 
             # grab the current data
-            removal_request_update = (session
-                .query(db.removal_request_table)
-                .filter(removal_request_condition))
+            removal_request_update = (
+                session.query(db.removal_request_table)
+                       .filter(removal_request_condition))
 
             # update the db with the new state
             removal_request_update.update(
@@ -166,19 +166,18 @@ class ActionHandler(BaseHandler):
                     db.removal_request_table.columns.attendee_id)
 
                 # grab the attendee record in question
-                attendee_table_update = (session
-                    .query(db.attendee_table)
-                    .filter(condition)
-                    .filter(removal_request_condition)
+                attendee_table_update = (
+                    session.query(db.attendee_table)
+                           .filter(condition)
+                           .filter(removal_request_condition)
                 )
 
                 to_update = dict_from_query(attendee_table_update.all())
                 to_update = [attendee['attendee_id'] for attendee in to_update]
 
-                attendee_table_update = (session
-                    .query(db.attendee_table)
-                    .filter(db.attendee_table.columns.attendee_id.in_(
-                        to_update)))
+                attendee_table_update = (
+                    session.query(db.attendee_table)
+                           .filter(db.attendee_table.columns.attendee_id.in_(to_update)))
 
                 attendee_table_update.update(
                     {db.attendee_table.columns.show: False},

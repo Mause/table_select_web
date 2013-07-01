@@ -1,9 +1,5 @@
 # stdlib
-import os
-import stat
 import json
-import urllib
-import datetime
 
 # third-party
 import tornado.web
@@ -29,7 +25,7 @@ class BaseHandler(tornado.web.RequestHandler):
             except ValueError:
                 self.admin_cookied_yes = False
             else:
-                if is_admin == True:
+                if is_admin:
                     self.admin_cookied_yes = True
                 else:
                     self.admin_cookied_yes = False

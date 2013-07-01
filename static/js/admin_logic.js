@@ -1,6 +1,5 @@
 var $;
 var console;
-var document;
 
 $(document).ready(function(){
     "use strict";
