@@ -18,7 +18,7 @@ import tornado.options
 import tornado.httpserver
 
 # application specific
-# import ajax
+import ajax
 import admin
 from settings import settings
 from utils import BaseHandler, SmartStaticFileHandler
@@ -49,10 +49,10 @@ settings = {
 application = tornado.wsgi.WSGIApplication([
     (r'/static/(.*)', SmartStaticFileHandler, {'path': settings['static_path']}),
 
-    (r"/api/tables", ajax.TablesHandler),
-    (r"/api/attendee/remove", ajax.RemovalRequestHandler),
-    (r"/api/attendee/add", ajax.AddAttendeeHandler),
-    (r"/api/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
+    (r"/api/v1/ball_tables", ajax.BallTablesHandler),
+    (r"/api/v1/attendee/remove", ajax.RemovalRequestHandler),
+    (r"/api/v1/attendee/add", ajax.AddAttendeeHandler),
+    (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
 
     (r"/admin", admin.AdminHandler),
     (r"/auth", admin.AuthHandler),

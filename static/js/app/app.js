@@ -131,9 +131,10 @@ App.prototype.render = function() {
     var _this = window.app;
 
     var tables = _this.data.tables;
-    for (var key in tables){
-        tables[key].row = tables[key].table_id % 2 === 0;
-    }
+
+    tables.forEach(function(table){
+        table.row = table.table_id % 2 === 0;
+    });
 
     var data = {"tables": tables};
     $('#tableContainer').html(_this.templates.tables(data));

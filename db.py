@@ -37,12 +37,11 @@ def setup():
     conn = engine.connect()
     metadata = MetaData(engine)
 
-    # TODO: add a table_num field to the ball_table table
-    # (do this once the ball is over to avoid breaking things :P)
     ball_table = Table(
         'ball_table', metadata,
         Column('table_id', Integer, primary_key=True),
-        Column('table_name', String)
+        Column('table_name', String),
+        Column('table_num', Integer)
     )
 
     attendee_table = Table(
@@ -75,26 +74,27 @@ def setup():
 
 def get_tables(session):
 
-    tables = []
+    # tables = []
 
     raw_tables = dict_from_query(session.query(ball_table).all())
-    for row in raw_tables:
-        tables.append({
-            'table_id': row['table_id'],
-            'table_name': row['table_name']})
+    return raw_tables
+    # for row in raw_tables:
+    #     tables.append({
+    #         'table_id': row['table_id'],
+    #         'table_name': row['table_name']})
 
-        query = session.query(attendee_table).filter_by(
-            table_id=row['table_id'], show=True)
+    #     query = session.query(attendee_table).filter_by(
+    #         table_id=row['table_id'], show=True)
 
-        attendees = dict_from_query(query.all())
+    #     attendees = dict_from_query(query.all())
 
-        tables[-1].update({
-            'attendees': attendees,
-            'attendee_num': len(attendees),
-            'full': (len(attendees) >= settings.get('max_pax_per_table', 10))
-        })
+    #     tables[-1].update({
+    #         'attendees': attendees,
+    #         'attendee_num': len(attendees),
+    #         'full': (len(attendees) >= settings.get('max_pax_per_table', 10))
+    #     })
 
-    return tables
+    # return tables
 
 
 def does_attendee_exist_dumb(session, attendee_name):
@@ -134,8 +134,10 @@ if __name__ == '__main__':
     print('already_there:', already_there)
 
     ball_table_insert = ball_table.insert()
-    for table_id in range(1, settings.get('table_num', 17) + 1):
-        if table_id not in already_there:
-            print('added;', table_id)
+    for table_num in range(1, settings.get('table_num', 17) + 1):
+        if table_num not in already_there:
+            print('added;', table_num)
             ball_table_insert.execute(
-                {'table_name': 'Table {}'.format(table_id)})
+                {
+                    'table_name': 'Table {}'.format(table_num),
+                    'table_num': table_num})

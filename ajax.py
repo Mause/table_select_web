@@ -16,35 +16,38 @@ from settings import settings
 #             self.write(json.dumps(tables, indent=4))
 
 
-class TablesHandler(BaseHandler):
+class BallTablesHandler(BaseHandler):
     def get(self):
         with closing(db.Session()) as session:
             tables = db.get_tables(session)
 
-            for table in tables:
-                if table['attendees']:
-                    ids = [
-                        attendee['attendee_id']
-                        for attendee in table['attendees']
-                        if attendee['show']]
-                    condition = (
-                        db.removal_request_table.columns.attendee_id.in_(
-                            set(ids)))
-                    query = session.query(db.removal_request_table).filter(
-                        condition).filter_by(state='unresolved')
-                    # .filter_by(show=True)
-                    query = dict_from_query(query.all())
-                    cur_states = {x['attendee_id']: x['state'] for x in query}
+            # for table in tables:
+                # if table['attendees']:
+                #     ids = [
+                #         attendee['attendee_id']
+                #         for attendee in table['attendees']
+                #         if attendee['show']]
+                #     condition = (
+                #         db.removal_request_table.columns.attendee_id.in_(
+                #             set(ids)))
+                #     query = session.query(db.removal_request_table).filter(
+                #         condition).filter_by(state='unresolved')
+                #     # .filter_by(show=True)
+                #     query = dict_from_query(query.all())
+                #     cur_states = {x['attendee_id']: x['state'] for x in query}
 
-                    for attendee in table['attendees']:
-                        if attendee['attendee_id'] in cur_states:
-                            attendee['state'] = 'submitted'
-                            attendee['removal_request_exists'] = True
-                        else:
-                            attendee['state'] = 'normal'
-                            attendee['removal_request_exists'] = False
-
-            self.write(json.dumps(tables, indent=4))
+                #     for attendee in table['attendees']:
+                #         if attendee['attendee_id'] in cur_states:
+                #             attendee['state'] = 'submitted'
+                #             attendee['removal_request_exists'] = True
+                #         else:
+                #             attendee['state'] = 'normal'
+                #             attendee['removal_request_exists'] = False
+            data = {
+                'ball_tables': tables
+            }
+            # data = tables
+            self.write(json.dumps(data, indent=4))
 
 
 class RemovalRequestHandler(BaseHandler):
@@ -124,7 +127,7 @@ class AddAttendeeHandler(BaseHandler):
                         attendee_insert = db.attendee_table.insert()
                         attendee_insert.execute(record)
 
-        self.write(json.dumps(status))
+        self.write(json.dumps(status, indent=4))
 
 
 class ActionHandler(BaseHandler):
