@@ -1,0 +1,8 @@
+<nav>
+    <a {{action 'refresh'}} class="btn refresh">Refresh</a>
+    {{#linkTo 'info' class="btn"}}Info{{/linkTo}}
+
+    {{#if is_admin}}
+        <a class="btn" href="/logout">Logout</a>
+    {{/if}}
+</nav>
