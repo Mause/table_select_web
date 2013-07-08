@@ -1,4 +1,8 @@
 TableSelectWeb.Router.map(function(){
-    this.resource('ball_tables', {path: '/'});
+    this.resource('index', {path: '/'});
     this.resource('info', {path: '/info'});
+});
+
+TableSelectWeb.Router.reopen({
+    location: 'history'
 });
