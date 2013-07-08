@@ -168,17 +168,15 @@ class AttendeeHandler(EmberDataRESTEndpoint):
                     'show': True
                 }
 
-                logging.info(
-                    'adding attendee "{}" to table {}'.format(
-                    attendee_name, ball_table_id))
-
                 attendee_insert = db.attendee_table.insert(record)
-
                 session.execute(attendee_insert)
-
                 session.commit()
 
-                response['attendee'] = record
+                logging.info(
+                    'added attendee "{}" to table {}'.format(
+                    attendee_name, ball_table_id))
+
+                # response['attendee'] = record
 
                 self.set_status(201)  # created
 

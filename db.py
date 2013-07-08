@@ -68,8 +68,8 @@ def does_attendee_exist_smart(session, attendee_name):
     attendee_name = attendee_name.lower().strip()
 
     query = session.query(attendee_table).filter_by(show=True).all()
+    query = dict_from_query(query)
     for attendee in query:
-        attendee = dict_from_query(attendee)
 
         cur_attendee_name = attendee['attendee_name'].lower().strip()
         if fuzz.ratio(cur_attendee_name, attendee_name) > 85:
