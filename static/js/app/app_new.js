@@ -23,33 +23,49 @@ function check(){
     keys(Ember.TEMPLATES);
 }
 
-$.fn.extend({
-    safeClone: function() {
-        var clone;
-        clone = $('body').clone();
+// Em.View.reopen({
+//     templateForName: function(name, type) {
+//         if (!name) { return; }
+//         // console.log('Get;', name);
+//         Em.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
 
-        clone.find('script[id^=metamorph]').remove();
-        clone.find('script[type="text/x-placeholder"]').remove();
-        clone.find('*').each(function() {
-            var $this;
-            $this = $(this);
-            return $.each($this[0].attributes, function(index, attr) {
-                if (!(attr && (attr.name.indexOf('data-bindattr') || attr.name.indexOf('data-ember')))) {
-                    return;
-                }
-                return $this.removeAttr(attr.name);
-            });
-        });
-        if (clone.attr('id') && clone.attr('id').indexOf('ember') !== -1) {
-            clone.removeAttr('id');
-        }
-        clone.find('[id^=ember]').removeAttr('id');
-        return clone;
-    }
-});
+//         var templates = Em.get(this, 'templates'),
+//             template = Em.get(templates, name);
+
+//         if (!template) {
+//             $.ajax({
+//                 url: 'static/templates/%@.hbs'.fmt(name),
+//                 async: false,
+//                 success: function(data) {
+//                     template = Em.Handlebars.compile(data);
+//                     console.log('Got from remote;', name);
+//                 },
+//                 failure: function(){
+//                     console.warning('Get Error');
+//                 }
+//             });
+//         }
+
+//         if (!template) {
+//             throw new Em.Error('%@ - Unable to find %@ "%@".'.fmt(this, type, name));
+//         }
+
+//         if (typeof Em.TEMPLATES[name] === 'undefined') {
+//             Em.TEMPLATES[name] = template;
+//         }
+
+//         return template;
+//     }
+// });
 
 window.TableSelectWeb = Ember.Application.create({
-    // addAttendee: function(event) { console.log('Event:', event); }
+    title: 'Ball Table Select',
+    author: 'Dominic May (http://mause.me)',
+    LOG_TRANSITIONS: true,
+    LOG_ACTIVE_GENERATION: true,
+    LOG_TRANSITIONS_INTERNAL: true,
+    LOG_VIEW_LOOKUPS: true,
+    rootElement: 'body'
 });
 
 
@@ -64,107 +80,6 @@ window.TableSelectWeb = Ember.Application.create({
 //         success: success,
 //         failure: failure
 //     });
-// };
-
-
-// API.prototype.add_attendee = function(attendee_name, table_id, success, failure){
-//     "use strict";
-//     $.ajax({
-//         dataType: "json",
-//         type: "POST",
-//         url: this.base_url + '/attendee/add',
-//         data: {
-//             'attendee_name': attendee_name,
-//             'table_id': table_id
-//         },
-//         success: success,
-//         failure: failure
-//     });
-// };
-
-
-// var Data = function() {
-//     "use strict";
-//     this.api = new API();
-
-//     // this.tables holds the current data representation of the tables
-//     this.tables = {};
-// };
-
-// /* -- API Updating -- */
-
-// Data.prototype.updateFromServer = function(callback) {
-//     "use strict";
-//     var _this = this;
-
-//     var win = function(data) {
-//         _this.tables = data;
-//         // _this.indexData();
-
-//         if(callback)
-//             callback();
-//     };
-
-//     var fail = function() {
-//         if(callback)
-//             callback();
-//     };
-
-//     this.api.getTables(win, fail);
-// };
-
-// /* -- Standard getters/setters -- */
-
-// Data.prototype.getTables = function() {
-//     "use strict";
-//     return this.tables;
-// };
-
-// var App = function() {
-//     "use strict";
-//     this.data = new Data();
-//     var _this = this;
-
-//     _this.data.updateFromServer(function() {
-//         // We've now got new data to show
-//         _this.render();
-//         _this.hideLoadingSpinner();
-//         _this.setupListeners();
-//     });
-
-// };
-
-// // compiling on the fly aint the best, but its good enough for what we're doing
-// // if this was a fully fledged webapp, i would consider pre-compiling the templates though :P
-// templates = {
-//     add_attendee_form: '#add_attendee_form_template',
-//     attendee_list: '#attendee_list_template',
-//     single_attendee: '#single_attendee_template'
-// };
-
-// for (var template_name in templates){
-//     var source = $(templates[template_name]).html();
-//     Handlebars.registerPartial(template_name, source);
-// }
-
-// // design for the future, i say :D
-// App.prototype.templates = {};
-// App.prototype.templates.tables = Handlebars.compile(
-//     $('#table_template').html());
-
-
-// App.prototype.render = function() {
-//     "use strict";
-//     var _this = window.app;
-
-//     var tables = _this.data.tables;
-
-//     tables.forEach(function(table){
-//         table.row = table.table_id % 2 === 0;
-//     });
-
-//     var data = {"tables": tables};
-//     $('#tableContainer').html(_this.templates.tables(data));
 // };
 
 // App.prototype.request_remove_attendee = function(element){
@@ -207,24 +122,6 @@ window.TableSelectWeb = Ember.Application.create({
 //     $('.submit_attendee').submit(_this.submit_attendee);
 
 //     $('.removal_request_notif').tooltip({placement: 'bottom'});
-// };
-
-// App.prototype.refresh = function () {
-//     "use strict";
-//     var _this = window.app;
-
-//     _this.showLoadingSpinner();
-
-//     _this.data.updateFromServer(function() {
-//         // We've now got new data to show
-//         _this.render();
-
-//         // sadly, listeners have to be setup again everytime we render
-//         // as pretty much everything we are listening to events on
-//         // is in the html generated by rendering
-//         _this.setupListeners();
-//         _this.hideLoadingSpinner();
-//     });
 // };
 
 // App.prototype.notif = function(element, text, timeout) {
