@@ -3,51 +3,93 @@ import json
 import logging
 from contextlib import closing
 
+# third party
+import tornado
+
 # application specific
 import db
 from utils import BaseHandler, dict_from_query
 from settings import settings
 
 
-# class TablesHandler(BaseHandler):
-#     def get(self):
-#         with closing(db.Session()) as session:
-#             tables = db.get_tables(session)
-#             self.write(json.dumps(tables, indent=4))
+class EmberDataRESTEndpoint(BaseHandler):
+    table = db.ball_table
+    ember_model_name = None
+    allowed_methods = []
 
-
-class BallTablesHandler(BaseHandler):
     def get(self):
+        if 'GET' not in self.allowed_methods:
+            raise tornado.web.HTTPError(405)
+
+        assert self.table is not None, 'Bad table name'
+        assert self.ember_model_name is not None, 'Bad EmberJS model name'
+
+        conditions = self.build_conditions_from_args(
+            self.request.arguments, db.ball_table)
+
         with closing(db.Session()) as session:
-            tables = db.get_tables(session)
+            query = (session.query(self.table)
+                            .filter_by(**conditions))
 
-            # for table in tables:
-                # if table['attendees']:
-                #     ids = [
-                #         attendee['attendee_id']
-                #         for attendee in table['attendees']
-                #         if attendee['show']]
-                #     condition = (
-                #         db.removal_request_table.columns.attendee_id.in_(
-                #             set(ids)))
-                #     query = session.query(db.removal_request_table).filter(
-                #         condition).filter_by(state='unresolved')
-                #     # .filter_by(show=True)
-                #     query = dict_from_query(query.all())
-                #     cur_states = {x['attendee_id']: x['state'] for x in query}
+            records = dict_from_query(query.all())
 
-                #     for attendee in table['attendees']:
-                #         if attendee['attendee_id'] in cur_states:
-                #             attendee['state'] = 'submitted'
-                #             attendee['removal_request_exists'] = True
-                #         else:
-                #             attendee['state'] = 'normal'
-                #             attendee['removal_request_exists'] = False
+            id_field_name = self.table.name + '_id'
+
+            for record in records:
+                if id_field_name in record:
+                    record['id'] = record[id_field_name]
+                    del record[id_field_name]
+
             data = {
-                'ball_tables': tables
+                self.ember_model_name: records
             }
-            # data = tables
+
             self.write(json.dumps(data, indent=4))
+
+    def build_conditions_from_args(self, args, table):
+        try:
+            conditions = {}
+            for key, val in args.items():
+                if val and key in table.columns.keys():
+                    conditions[key] = val[0].decode('utf-8')
+                else:
+                    if not val:
+                        logging.debug('Bad value; {}'.format(val))
+                    else:
+                        logging.debug('Bad filter')
+
+                    raise tornado.web.HTTPError(400)
+
+        except UnicodeDecodeError:
+            logging.debug('UnicodeDecodeError when decoding filters')
+            raise tornado.web.HTTPError(400)
+
+        logging.debug('{} filter conditions: {}'.format(
+            self.table.name,
+            conditions))
+
+        return conditions
+
+    def decode_and_load(self, body):
+        try:
+            body = body.decode('utf-8')
+        except UnicodeDecodeError:
+            logging.debug('UnicodeDecodeError when decoding fields')
+            raise tornado.web.HTTPError(400)
+
+        try:
+            body = json.loads(body)
+        except ValueError:
+            logging.debug('ValueError when loading fields')
+            raise tornado.web.HTTPError(400)
+
+        return body
+
+
+class BallTablesHandler(EmberDataRESTEndpoint):
+    table = db.ball_table
+    ember_model_name = 'ball_tables'
+    allowed_methods = ['GET']
 
 
 class RemovalRequestHandler(BaseHandler):
@@ -65,69 +107,82 @@ class RemovalRequestHandler(BaseHandler):
             'state': 'unresolved'
         }
 
-        removal_request_insert = db.removal_request_table.insert()
-        removal_request_insert.execute(record)
+        with closing(db.Session()) as session:
+            record = db.removal_request_table.insert(record)
+            session.execute(record)
 
 
-class AddAttendeeHandler(BaseHandler):
+class AttendeeHandler(EmberDataRESTEndpoint):
+    table = db.attendee_table
+    ember_model_name = 'attendees'
+
+    # dont allow anything, we want to roll our own this time
+    allowed_methods = []
+
+    def is_table_full(self, session, ball_table_id):
+        # query the db for users on this table that can be shown
+        query = (session.query(db.attendee_table)
+                        .filter_by(ball_table_id=ball_table_id, show=True))
+
+        attendees = dict_from_query(query.all())
+
+        # check if the table is full
+        return len(attendees) >= settings.get('max_pax_per_table', 10)
+
     def post(self):
+        body = self.decode_and_load(self.request.body)
+
         # yikes this is complicated
-        status = {"success": True}
+        response = {}
 
-        table_id = self.get_argument('table_id')
-        attendee_name = self.get_argument('attendee_name')
-        if not table_id or not attendee_name:
-            self.error(400)
-            status['success'] = False
-            status['error'] = 'programming_error'
-            status['human_error'] = 'An unknown error occured.'
-        else:
+        attendee = body['attendee']
+        ball_table_id = attendee['ball_table_id']
+        attendee_name = attendee['attendee_name']
 
-            with closing(db.Session()) as session:
+        with closing(db.Session()) as session:
 
-                # query the db for users on this table that can be shown
-                query = (session.query(db.attendee_table)
-                                .filter_by(table_id=table_id, show=True))
+            if self.is_table_full(session, ball_table_id):
+                logging.info('table_full')
+                response['errors'] = {
+                    'ball_table_id': [
+                        'table_full'
+                    ]
+                }
+                self.set_status(400)
 
-                attendees = dict_from_query(query.all())
+            elif db.does_attendee_exist_smart(session, attendee_name):
+                # check if the attendee is already on a table
+                logging.info('attendee_exists: "{}"'.format(
+                             attendee_name))
+                response['errors'] = {
+                    'attendee_name': [
+                        'attendee_exists'
+                    ]
+                }
+                self.set_status(400)
+            else:
 
-                # check if the table is full
-                if len(attendees) >= settings.get('max_pax_per_table', 10):
-                    status['success'] = False
-                    status['error'] = 'table_full'
-                    status['human_error'] = (
-                        "I'm sorry, that table is already full")
-                else:
-                    # check if the attendee is already on a table
-                    exists = db.does_attendee_exist_smart(
-                        session, attendee_name)
-                    if exists:
-                        logging.info(
-                            'attendee_exists: "{}"=="{}", on table {}'.format(
-                                attendee_name, exists['attendee_name'],
-                                exists['table_id']))
-                        status['error'] = 'attendee_exists'
-                        status['human_error'] = (
-                            'Attendee already on table {}'.format(
-                                exists['table_id']))
-                        status['success'] = False
+                record = {
+                    'attendee_name': attendee_name,
+                    'ball_table_id': ball_table_id,
+                    'show': True
+                }
 
-                    else:
+                logging.info(
+                    'adding attendee "{}" to table {}'.format(
+                    attendee_name, ball_table_id))
 
-                        record = {
-                            'attendee_name': attendee_name,
-                            'table_id': int(table_id),
-                            'show': True
-                        }
+                attendee_insert = db.attendee_table.insert(record)
 
-                        logging.info(
-                            'adding attendee "{}" to table {}'.format(
-                            attendee_name, table_id))
+                session.execute(attendee_insert)
 
-                        attendee_insert = db.attendee_table.insert()
-                        attendee_insert.execute(record)
+                session.commit()
 
-        self.write(json.dumps(status, indent=4))
+                response['attendee'] = record
+
+                self.set_status(201)  # created
+
+        self.write(json.dumps(response, indent=4))
 
 
 class ActionHandler(BaseHandler):

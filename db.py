@@ -1,9 +1,7 @@
 # stdlib
-import os
 
 # third-party
 from sqlalchemy import (
-    create_engine,
     Table,
     MetaData,
     Integer,
@@ -19,6 +17,34 @@ from settings import settings
 from utils import dict_from_query
 
 
+metadata = MetaData()
+
+ball_table = Table(
+    'ball_table', metadata,
+    Column('ball_table_id', Integer, primary_key=True),
+    Column('ball_table_name', String),
+    Column('ball_table_num', Integer)
+)
+
+attendee_table = Table(
+    'attendee', metadata,
+    Column('attendee_id', Integer, primary_key=True),
+    Column('attendee_name', String),
+    Column('show', Boolean),
+    Column('ball_table_id', ForeignKey('ball_table.ball_table_id')))
+
+removal_request_table = Table(
+    'removal_request', metadata,
+    Column('request_id', Integer, primary_key=True),
+    Column('attendee_id', ForeignKey('attendee.attendee_id')),
+    Column('ball_table_id', ForeignKey('ball_table.ball_table_id')),
+    Column('remover_ident', String),
+    Column('state', String)
+)
+
+Session = sessionmaker()
+
+
 def wipe(engine, meta):
     import contextlib
     with contextlib.closing(engine.connect()) as con:
@@ -26,75 +52,6 @@ def wipe(engine, meta):
         for table in reversed(meta.sorted_tables):
             con.execute(table.delete())
         trans.commit()
-
-
-def setup():
-    engine = create_engine(os.environ.get(
-        "DATABASE_URL",
-        settings.get('DATABASE_URL')))
-    engine.echo = False  # Try changing this to True and see what happens
-
-    conn = engine.connect()
-    metadata = MetaData(engine)
-
-    ball_table = Table(
-        'ball_table', metadata,
-        Column('table_id', Integer, primary_key=True),
-        Column('table_name', String),
-        Column('table_num', Integer)
-    )
-
-    attendee_table = Table(
-        'attendee', metadata,
-        Column('attendee_id', Integer, primary_key=True),
-        Column('attendee_name', String),
-        Column('show', Boolean),
-        Column('table_id', ForeignKey('ball_table.table_id')))
-
-    removal_request_table = Table(
-        'removal_request', metadata,
-        Column('request_id', Integer, primary_key=True),
-        Column('attendee_id', ForeignKey('attendee.attendee_id')),
-        Column('table_id', ForeignKey('ball_table.table_id')),
-        Column('remover_ident', String),
-        Column('state', String)
-    )
-
-    metadata.create_all()
-
-    Session = sessionmaker(bind=engine)
-
-    return (
-        metadata, engine, conn, Session,
-        ball_table, attendee_table, removal_request_table)
-
-(metadata, engine, conn, Session,
-    ball_table, attendee_table, removal_request_table) = setup()
-
-
-def get_tables(session):
-
-    # tables = []
-
-    raw_tables = dict_from_query(session.query(ball_table).all())
-    return raw_tables
-    # for row in raw_tables:
-    #     tables.append({
-    #         'table_id': row['table_id'],
-    #         'table_name': row['table_name']})
-
-    #     query = session.query(attendee_table).filter_by(
-    #         table_id=row['table_id'], show=True)
-
-    #     attendees = dict_from_query(query.all())
-
-    #     tables[-1].update({
-    #         'attendees': attendees,
-    #         'attendee_num': len(attendees),
-    #         'full': (len(attendees) >= settings.get('max_pax_per_table', 10))
-    #     })
-
-    # return tables
 
 
 def does_attendee_exist_dumb(session, attendee_name):
@@ -126,18 +83,34 @@ if __name__ == '__main__':
 
     # do some stuff to ensure that there are enough ball_entry's in the db
 
-    s = ball_table.select()
-    rs = s.execute()
-    already_there = [
-        int(x['table_name'].split()[-1])
-        for x in rs]
-    print('already_there:', already_there)
+    import os
+    from sqlalchemy import create_engine
 
-    ball_table_insert = ball_table.insert()
-    for table_num in range(1, settings.get('table_num', 17) + 1):
-        if table_num not in already_there:
-            print('added;', table_num)
-            ball_table_insert.execute(
-                {
-                    'table_name': 'Table {}'.format(table_num),
-                    'table_num': table_num})
+    default_url = settings.get('DATABASE_URL')
+    db_url = os.environ.get("DATABASE_URL", default_url)
+
+    engine = create_engine(db_url)
+    engine.echo = False
+
+    Session.configure(bind=engine)
+    metadata.create_all(engine)
+
+    conn = engine.connect()
+
+    try:
+        s = ball_table.select()
+        rs = engine.execute(s)
+        already_there = [
+            int(x['table_name'].split()[-1])
+            for x in rs]
+        print('already_there:', already_there)
+
+        for table_num in range(1, settings.get('table_num', 17) + 1):
+            if table_num not in already_there:
+                print('added;', table_num)
+                ball_table_insert = ball_table.insert({
+                    'ball_table_name': 'Table {}'.format(table_num),
+                    'ball_table_num': table_num})
+                engine.execute(ball_table_insert)
+    finally:
+        conn.close()

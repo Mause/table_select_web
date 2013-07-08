@@ -1,5 +1,9 @@
 # stdlib
+# import os
 import json
+# import logging
+# import datetime
+# import urllib.parse
 
 # third-party
 import tornado.web
@@ -44,16 +48,21 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class SmartStaticFileHandler(tornado.web.StaticFileHandler):
     pass
+    # def get_age(self, path):
+    #     import stat
+    #     abspath = os.path.abspath(path)
+    #     stat_result = os.stat(abspath)
+    #     modified = datetime.datetime.fromtimestamp(
+    #         stat_result[stat.ST_MTIME])
+    #     return modified
+
     # def get(self, path, include_body=True):
     #     orig_path = path
 
     #     filename = urllib.parse.urlparse(orig_path).path
-    #     if filename.endswith('.js') and not filename.endswith('.min.js'):
+    #     if filename.endswith('.hbs.js'):
     #         path = self.parse_url_path(path)
     #         abspath = os.path.abspath(os.path.join(self.root, path))
-    #         stat_result = os.stat(abspath)
-    #         modified = datetime.datetime.fromtimestamp(
-    #             stat_result[stat.ST_MTIME])
 
     #     else:
     #         super(SmartStaticFileHandler, self).get(orig_path, include_body)
