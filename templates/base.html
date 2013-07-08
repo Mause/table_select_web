@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>{% block title %}{% end %}</title>
+        <title>Table Select Web</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="author" content="">
@@ -28,83 +28,76 @@
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/ico/apple-touch-icon-72-precomposed.png">
         <link rel="apple-touch-icon-precomposed" href="/ico/apple-touch-icon-57-precomposed.png">
                    <link rel="shortcut icon" href="/ico/favicon.png"> -->
-    </head>
-
-    <body>
-        <div class="container">
-            <header>
-                <h1><a href="/">Ball Table Select</a></h1>
-                <nav>
-                    {% if path == "/" %}
-                        <a class="btn refresh">Refresh</a>
-                        <a class="btn" href="/info">Info</a>
-                    {% elif path == "/admin" %}
-                        <a class="btn" href="/">Home</a>
-                        <a class="btn" href="/info">Info</a>
-                    {% else %}
-                        <a class="btn" href="/">Home</a>
-                    {% end %}
-
-                    {% if is_admin == True %}
-                        <a class="btn" href="/logout">Logout</a>
-                    {% end %}
-                </nav>
-            </header>
-            {% block content %}
-            {% end %}
-        </div> <!-- /container -->
-
         <!-- Le javascript
         ================================================== -->
         <!-- Placed at the end of the document so the pages load faster -->
-        {% if path != "/info" %}
-            <!-- <script src="{{ static_url('js/third-party/jquery-1.9.1.min.js') }}"></script> -->
-            <script src="{{ static_url('js/third-party/jquery-1.9.1.js') }}"></script>
 
-            <script type="text/javascript">
+        <script src="{{ static_url('js/third-party/jquery-2.0.2.js') }}"></script>
+        <script src="{{ static_url('js/third-party/bootstrap.min.js') }}"></script>
+        <script type="text/javascript">
             if (window.navigator.userAgent.indexOf('Firefox') !== -1) {
                      $('body').addClass('firefox');
             };
-            </script>
 
-            <script src="{{ static_url('js/third-party/bootstrap.min.js') }}"></script>
-            <!-- <script src="{{ static_url('js/bootstrap.js') }}"></script> -->
+            window.ENV = window.ENV ? window.ENV : {};
+            ENV.EXPERIMENTAL_CONTROL_HELPER = true;
+        </script>
+
+
+        <!-- Libraries -->
+        <script src="{{ static_url('js/third-party/handlebars-1.0.0.js') }}"></script>
+        <script src="{{ static_url('js/third-party/ember.js') }}"></script>
+        <script src="{{ static_url('js/third-party/ember-data.js') }}"></script>
+
+        <!-- App -->
+        <script src="{{ static_url('js/app/utils.js') }}"></script>
+        <script src="{{ static_url('js/app/app_new.js') }}"></script>
+
+        <!-- Routes -->
+        <script src="{{ static_url('js/app/routes/router.js') }}"></script>
+        <script src="{{ static_url('js/app/routes/index_route.js') }}"></script>
+        <script src="{{ static_url('js/app/routes/info_route.js') }}"></script>
+
+        <!-- Models -->
+        <script src="{{ static_url('js/app/models/ball_tables_model.js') }}"></script>
+        <script src="{{ static_url('js/app/models/attendee_model.js') }}"></script>
+        <script src="{{ static_url('js/app/models/removal_request_model.js') }}"></script>
+        <script src="{{ static_url('js/app/models/store.js') }}"></script>
+
+        <!-- Controllers -->
+        <script src="{{ static_url('js/app/controllers/add_attendee_controller.js') }}"></script>
+        <script src="{{ static_url('js/app/controllers/attendee_list_controller.js') }}"></script>
+
+        <!-- Views -->
+        <script src="{{ static_url('js/app/views/add_attendee_view.js') }}"></script>
+        <script src="{{ static_url('js/app/views/attendee_list_view.js') }}"></script>
+
+        <!-- Templates -->
+        <!-- <script src="{{ static_url('js/app/template.js') }}"></script> -->
+
+        <!-- Ember plugins -->
+        <!-- <script src="{{ static_url('js/third-party/ember-easyForm-0.1.0.js') }}"></script> -->
+
+        <!-- // <script type="text/javascript" src="{{ static_url('js/app/admin_logic.js') }}"></script> -->
+
+        <script type="text/x-handlebars">
+            {{!! this is the base template for the application }}
+            <div class="container">
+                    {{!partial header}}
+
+                    {{!outlet 'application'}}
+
+                    {{!!outlet modalOutlet}}
+
+            </div> <!-- /container -->
+        </script>
+
+        {% block content %}
         {% end %}
 
-        {% if path == "/" %}
-            <!-- libraries -->
-            <script src="{{ static_url('js/third-party/handlebars-1.0.0-rc.4.js') }}"></script>
-            <script src="{{static_url('js/third-party/ember-1.0.0-rc.6.js') }}"></script>
-            <script src="{{static_url('js/third-party/ember-data-latest.js') }}"></script>
+    </head>
 
-            <!-- App -->
-            <script src="{{ static_url('js/app/app_new.js') }}"></script>
-
-            <!-- Routes -->
-            <script src="{{ static_url('js/app/routes/router.js') }}"></script>
-            <script src="{{ static_url('js/app/routes/ball_table_route.js') }}"></script>
-
-            <!-- Models -->
-            <script src="{{ static_url('js/app/models/store.js') }}"></script>
-            <script src="{{ static_url('js/app/models/ball_table_model.js') }}"></script>
-            <script src="{{ static_url('js/app/models/attendee_model.js') }}"></script>
-
-            <!-- Controllers -->
-            <script src="{{ static_url('js/app/controllers/ball_table_controller.js') }}"></script>
-            <script src="{{ static_url('js/app/controllers/add_attendee_controller.js') }}"></script>
-
-            <!-- Views -->
-            <script src="{{ static_url('js/app/views/ball_table_view.js') }}"></script>
-            <script src="{{ static_url('js/app/views/add_attendee_view.js') }}"></script>
-
-            <!-- Templates -->
-            <script src="{{ static_url('js/app/template.js') }}"></script>
-
-            <!-- Ember plugins -->
-            <script src="{{ static_url('js/third-party/ember-easyForm-0.1.0.js') }}"></script>
-
-        {% elif path == "/admin" %}
-            <script type="text/javascript" src="{{ static_url('js/app/admin_logic.js') }}"></script>
-        {% end %}
+    <body>
     </body>
+
 </html>
