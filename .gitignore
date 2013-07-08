@@ -42,3 +42,4 @@ __pycache__
 # application specific
 *.sublime-workspace
 *.swp
+*templates/templates.html
