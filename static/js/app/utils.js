@@ -27,6 +27,15 @@ function notif(element, text, timeout) {
     $('#myModal').modal();
 }
 
+TableSelectWeb.ModalControllerMixin = Ember.Mixin.create({
+    close: function() {
+        this.willClose();
+        this.get('view').destroy();
+        this.destroy();
+    },
+    willClose: Em.K
+});
+
 
 Ember.Handlebars.registerHelper('control_smart', function(path, modelPath, options) {
     // to make sure each table has a unique controller,

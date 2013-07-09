@@ -49,7 +49,7 @@ DS.RESTAdapter.reopen({
     didError: function(store, type, record, xhr) {
         if (acceptable.contains(xhr.status)) {
 
-            debugger;
+            // debugger;
             var json = JSON.parse(xhr.responseText),
                 serializer = Ember.get(this, 'serializer'),
                 // errors = serializer.extractValidationErrors(type, json);

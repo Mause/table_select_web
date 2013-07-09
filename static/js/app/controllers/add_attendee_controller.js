@@ -19,7 +19,7 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
 
         console.log('Saving');
 
-        debugger;
+        // debugger;
 
         var prom = attendee.save();
 
@@ -30,6 +30,7 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
         });
 
         var _this = this;
+        delete this;
 
         prom.on('promise:resolved', function(event){
             // success
@@ -40,7 +41,8 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
         var error_handlers = {
             attendee_name: function (error){
                 if (error === "attendee_exists") {
-                    console.error('attendee_exists: %@'.fmt(attendee_name));
+                    console.info('attendee_exists: %@'.fmt(attendee_name));
+                    _this.control('MessageModal', {}, {message: "Attendee exists: %@".fmt(attendee_name)});
                 } else {
                     throw new Error('"attendee_name": %@'.fmt(error));
                 }
@@ -60,10 +62,10 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
             // this errors attribute is set when i reopened
             // the RESTAdapter in store.js
             var errors = event.detail.errors;
-            debugger;
 
             for (var key in errors) {
                 if (Ember.keys(error_handlers).contains(key)){
+                    // debugger;
                     errors[key].forEach(error_handlers[key]);
                 } else {
                     console.warn('An unknown error for "%@" occured: %@'.fmt(
