@@ -1,14 +1,15 @@
-
-function db(event, self) {
-    console.log('Controller:', self.get('controller').toString());
-    console.log('Attendee name as reported;', self.get('attendee_name'));
-    self.get('controller').send('addAttendee_event');
-}
-
 TableSelectWeb.AddAttendeeView = Ember.View.extend({
     templateName: 'addAttendee',
     attendee_name: '',
 
-    addAttendee: function(event) { db(event, this); },
-    click: function(event) { console.log('CLICK'); db(event, this); }
+    addAttendeeFormEvent: function(){
+        // tell the controller the attendee_name
+        this.set('controller.attendee_name', this.get('attendee_name'));
+
+        // clear the input field
+        this.set('attendee_name', '');
+
+        // tell the controller to get its act together
+        this.get('controller').send('addAttendeeEvent');
+    }
 });
