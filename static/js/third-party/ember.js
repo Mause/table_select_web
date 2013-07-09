@@ -156,8 +156,8 @@ Ember.deprecateFunc = function(message, func) {
 
 })();
 
-// Version: v1.0.0-rc.6-95-gf84391b
-// Last commit: f84391b (2013-07-07 09:57:40 -0700)
+// Version: v1.0.0-rc.6-102-gf20bf05
+// Last commit: f20bf05 (2013-07-08 20:53:58 -0700)
 
 
 (function() {
@@ -354,16 +354,19 @@ Ember.uuid = 0;
 //
 
 function consoleMethod(name) {
-  if (imports.console && imports.console[name]) {
+  var console = imports.console,
+      method = typeof console === 'object' ? console[name] : null;
+
+  if (method) {
     // Older IE doesn't support apply, but Chrome needs it
-    if (imports.console[name].apply) {
+    if (method.apply) {
       return function() {
-        imports.console[name].apply(imports.console, arguments);
+        method.apply(console, arguments);
       };
     } else {
       return function() {
         var message = Array.prototype.join.call(arguments, ', ');
-        imports.console[name](message);
+        method(message);
       };
     }
   }
@@ -4541,6 +4544,220 @@ Ember.removeBeforeObserver = function(obj, path, target, method) {
 
 
 (function() {
+define("backburner/queue",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function Queue(daq, name, options) {
+      this.daq = daq;
+      this.name = name;
+      this.options = options;
+      this._queue = [];
+    }
+
+    Queue.prototype = {
+      daq: null,
+      name: null,
+      options: null,
+      _queue: null,
+
+      push: function(target, method, args, stack) {
+        var queue = this._queue;
+        queue.push(target, method, args, stack);
+        return {queue: this, target: target, method: method};
+      },
+
+      pushUnique: function(target, method, args, stack) {
+        var queue = this._queue, currentTarget, currentMethod, i, l;
+
+        for (i = 0, l = queue.length; i < l; i += 4) {
+          currentTarget = queue[i];
+          currentMethod = queue[i+1];
+
+          if (currentTarget === target && currentMethod === method) {
+            queue[i+2] = args; // replace args
+            queue[i+3] = stack; // replace stack
+            return {queue: this, target: target, method: method}; // TODO: test this code path
+          }
+        }
+
+        this._queue.push(target, method, args, stack);
+        return {queue: this, target: target, method: method};
+      },
+
+      // TODO: remove me, only being used for Ember.run.sync
+      flush: function() {
+        var queue = this._queue,
+            options = this.options,
+            before = options && options.before,
+            after = options && options.after,
+            target, method, args, stack, i, l = queue.length;
+
+        if (l && before) { before(); }
+        for (i = 0; i < l; i += 4) {
+          target = queue[i];
+          method = queue[i+1];
+          args   = queue[i+2];
+          stack  = queue[i+3]; // Debugging assistance
+
+          // TODO: error handling
+          if (args && args.length > 0) {
+            method.apply(target, args);
+          } else {
+            method.call(target);
+          }
+        }
+        if (l && after) { after(); }
+
+        // check if new items have been added
+        if (queue.length > l) {
+          this._queue = queue.slice(l);
+          this.flush();
+        } else {
+          this._queue.length = 0;
+        }
+      },
+
+      cancel: function(actionToCancel) {
+        var queue = this._queue, currentTarget, currentMethod, i, l;
+
+        for (i = 0, l = queue.length; i < l; i += 4) {
+          currentTarget = queue[i];
+          currentMethod = queue[i+1];
+
+          if (currentTarget === actionToCancel.target && currentMethod === actionToCancel.method) {
+            queue.splice(i, 4);
+            return true;
+          }
+        }
+
+        // if not found in current queue
+        // could be in the queue that is being flushed
+        queue = this._queueBeingFlushed;
+        if (!queue) {
+          return;
+        }
+        for (i = 0, l = queue.length; i < l; i += 4) {
+          currentTarget = queue[i];
+          currentMethod = queue[i+1];
+
+          if (currentTarget === actionToCancel.target && currentMethod === actionToCancel.method) {
+            // don't mess with array during flush
+            // just nullify the method
+            queue[i+1] = null;
+            return true;
+          }
+        }
+      }
+    };
+
+
+    __exports__.Queue = Queue;
+  });
+
+define("backburner/deferred_action_queues",
+  ["backburner/queue","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Queue = __dependency1__.Queue;
+
+    function DeferredActionQueues(queueNames, options) {
+      var queues = this.queues = {};
+      this.queueNames = queueNames = queueNames || [];
+
+      var queueName;
+      for (var i = 0, l = queueNames.length; i < l; i++) {
+        queueName = queueNames[i];
+        queues[queueName] = new Queue(this, queueName, options[queueName]);
+      }
+    }
+
+    DeferredActionQueues.prototype = {
+      queueNames: null,
+      queues: null,
+
+      schedule: function(queueName, target, method, args, onceFlag, stack) {
+        var queues = this.queues,
+            queue = queues[queueName];
+
+        if (!queue) { throw new Error("You attempted to schedule an action in a queue (" + queueName + ") that doesn't exist"); }
+
+        if (onceFlag) {
+          return queue.pushUnique(target, method, args, stack);
+        } else {
+          return queue.push(target, method, args, stack);
+        }
+      },
+
+      flush: function() {
+        var queues = this.queues,
+            queueNames = this.queueNames,
+            queueName, queue, queueItems, priorQueueNameIndex,
+            queueNameIndex = 0, numberOfQueues = queueNames.length;
+
+        outerloop:
+        while (queueNameIndex < numberOfQueues) {
+          queueName = queueNames[queueNameIndex];
+          queue = queues[queueName];
+          queueItems = queue._queueBeingFlushed = queue._queue.slice();
+          queue._queue = [];
+
+          var options = queue.options,
+              before = options && options.before,
+              after = options && options.after,
+              target, method, args, stack,
+              queueIndex = 0, numberOfQueueItems = queueItems.length;
+
+          if (numberOfQueueItems && before) { before(); }
+          while (queueIndex < numberOfQueueItems) {
+            target = queueItems[queueIndex];
+            method = queueItems[queueIndex+1];
+            args   = queueItems[queueIndex+2];
+            stack  = queueItems[queueIndex+3]; // Debugging assistance
+
+            if (typeof method === 'string') { method = target[method]; }
+
+            // method could have been nullified / canceled during flush
+            if (method) {
+              // TODO: error handling
+              if (args && args.length > 0) {
+                method.apply(target, args);
+              } else {
+                method.call(target);
+              }
+            }
+
+            queueIndex += 4;
+          }
+          queue._queueBeingFlushed = null;
+          if (numberOfQueueItems && after) { after(); }
+
+          if ((priorQueueNameIndex = indexOfPriorQueueWithActions(this, queueNameIndex)) !== -1) {
+            queueNameIndex = priorQueueNameIndex;
+            continue outerloop;
+          }
+
+          queueNameIndex++;
+        }
+      }
+    };
+
+    function indexOfPriorQueueWithActions(daq, currentQueueIndex) {
+      var queueName, queue;
+
+      for (var i = 0, l = currentQueueIndex; i <= l; i++) {
+        queueName = daq.queueNames[i];
+        queue = daq.queues[queueName];
+        if (queue._queue.length) { return i; }
+      }
+
+      return -1;
+    }
+
+
+    __exports__.DeferredActionQueues = DeferredActionQueues;
+  });
+
 define("backburner",
   ["backburner/deferred_action_queues","exports"],
   function(__dependency1__, __exports__) {
@@ -4549,9 +4766,11 @@ define("backburner",
 
     var slice = [].slice,
         pop = [].pop,
+        throttlers = [],
         debouncees = [],
         timers = [],
-        autorun, laterTimer, laterTimerExpiresAt;
+        autorun, laterTimer, laterTimerExpiresAt,
+        global = this;
 
     function Backburner(queueNames, options) {
       this.queueNames = queueNames;
@@ -4708,7 +4927,7 @@ define("backburner",
           clearTimeout(laterTimer);
           laterTimer = null;
         }
-        laterTimer = window.setTimeout(function() {
+        laterTimer = global.setTimeout(function() {
           executeTimers(self);
           laterTimer = null;
           laterTimerExpiresAt = null;
@@ -4718,38 +4937,86 @@ define("backburner",
         return fn;
       },
 
-      debounce: function(target, method /* , args, wait */) {
+      throttle: function(target, method /* , args, wait */) {
         var self = this,
             args = arguments,
             wait = pop.call(args),
-            debouncee;
+            throttler;
 
-        for (var i = 0, l = debouncees.length; i < l; i++) {
-          debouncee = debouncees[i];
-          if (debouncee[0] === target && debouncee[1] === method) { return; } // do nothing
+        for (var i = 0, l = throttlers.length; i < l; i++) {
+          throttler = throttlers[i];
+          if (throttler[0] === target && throttler[1] === method) { return; } // do nothing
         }
 
-        var timer = window.setTimeout(function() {
+        var timer = global.setTimeout(function() {
           self.run.apply(self, args);
 
-          // remove debouncee
+          // remove throttler
           var index = -1;
-          for (var i = 0, l = debouncees.length; i < l; i++) {
-            debouncee = debouncees[i];
-            if (debouncee[0] === target && debouncee[1] === method) {
+          for (var i = 0, l = throttlers.length; i < l; i++) {
+            throttler = throttlers[i];
+            if (throttler[0] === target && throttler[1] === method) {
               index = i;
               break;
             }
           }
 
-          if (index > -1) { debouncees.splice(index, 1); }
+          if (index > -1) { throttlers.splice(index, 1); }
         }, wait);
+
+        throttlers.push([target, method, timer]);
+      },
+
+      debounce: function(target, method /* , args, wait, [immediate] */) {
+        var self = this,
+            args = arguments,
+            immediate = pop.call(args),
+            wait,
+            index,
+            debouncee;
+
+        if (typeof immediate === "number") {
+          wait = immediate;
+          immediate = false;
+        } else {
+          wait = pop.call(args);
+        }
+
+        // Remove debouncee
+        index = findDebouncee(target, method);
+
+        if (index !== -1) {
+          debouncee = debouncees[index];
+          debouncees.splice(index, 1);
+          clearTimeout(debouncee[2]);
+        }
+
+        var timer = window.setTimeout(function() {
+          if (!immediate) {
+            self.run.apply(self, args);
+          }
+          index = findDebouncee(target, method);
+          if (index) {
+            debouncees.splice(index, 1);
+          }
+        }, wait);
+
+        if (immediate && index === -1) {
+          self.run.apply(self, args);
+        }
 
         debouncees.push([target, method, timer]);
       },
 
       cancelTimers: function() {
-        for (var i = 0, l = debouncees.length; i < l; i++) {
+        var i, len;
+
+        for (i = 0, len = throttlers.length; i < len; i++) {
+          clearTimeout(throttlers[i][2]);
+        }
+        throttlers = [];
+
+        for (i = 0, len = debouncees.length; i < len; i++) {
           clearTimeout(debouncees[i][2]);
         }
         debouncees = [];
@@ -4792,7 +5059,7 @@ define("backburner",
 
     function createAutorun(backburner) {
       backburner.begin();
-      autorun = window.setTimeout(function() {
+      autorun = global.setTimeout(function() {
         backburner.end();
         autorun = null;
       });
@@ -4817,7 +5084,7 @@ define("backburner",
       });
 
       if (timers.length) {
-        laterTimer = window.setTimeout(function() {
+        laterTimer = global.setTimeout(function() {
           executeTimers(self);
           laterTimer = null;
           laterTimerExpiresAt = null;
@@ -4826,222 +5093,23 @@ define("backburner",
       }
     }
 
+    function findDebouncee(target, method) {
+      var debouncee,
+          index = -1;
+
+      for (var i = 0, l = debouncees.length; i < l; i++) {
+        debouncee = debouncees[i];
+        if (debouncee[0] === target && debouncee[1] === method) {
+          index = i;
+          break;
+        }
+      }
+
+      return index;
+    }
+
 
     __exports__.Backburner = Backburner;
-  });
-
-define("backburner/deferred_action_queues",
-  ["backburner/queue","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Queue = __dependency1__.Queue;
-
-    function DeferredActionQueues(queueNames, options) {
-      var queues = this.queues = {};
-      this.queueNames = queueNames = queueNames || [];
-
-      var queueName;
-      for (var i = 0, l = queueNames.length; i < l; i++) {
-        queueName = queueNames[i];
-        queues[queueName] = new Queue(this, queueName, options[queueName]);
-      }
-    }
-
-    DeferredActionQueues.prototype = {
-      queueNames: null,
-      queues: null,
-
-      schedule: function(queueName, target, method, args, onceFlag, stack) {
-        var queues = this.queues,
-            queue = queues[queueName];
-
-        if (!queue) { throw new Error("You attempted to schedule an action in a queue (" + queueName + ") that doesn't exist"); }
-
-        if (onceFlag) {
-          return queue.pushUnique(target, method, args, stack);
-        } else {
-          return queue.push(target, method, args, stack);
-        }
-      },
-
-      flush: function() {
-        var queues = this.queues,
-            queueNames = this.queueNames,
-            queueName, queue, queueItems, priorQueueNameIndex,
-            queueNameIndex = 0, numberOfQueues = queueNames.length;
-
-        outerloop:
-        while (queueNameIndex < numberOfQueues) {
-          queueName = queueNames[queueNameIndex];
-          queue = queues[queueName];
-          queueItems = queue._queueBeingFlushed = queue._queue.slice();
-          queue._queue = [];
-
-          var options = queue.options,
-              before = options && options.before,
-              after = options && options.after,
-              target, method, args, stack,
-              queueIndex = 0, numberOfQueueItems = queueItems.length;
-
-          if (numberOfQueueItems && before) { before(); }
-          while (queueIndex < numberOfQueueItems) {
-            target = queueItems[queueIndex];
-            method = queueItems[queueIndex+1];
-            args   = queueItems[queueIndex+2];
-            stack  = queueItems[queueIndex+3]; // Debugging assistance
-
-            if (typeof method === 'string') { method = target[method]; }
-
-            // method could have been nullified / canceled during flush
-            if (method) {
-              // TODO: error handling
-              if (args && args.length > 0) {
-                method.apply(target, args);
-              } else {
-                method.call(target);
-              }
-            }
-
-            queueIndex += 4;
-          }
-          queue._queueBeingFlushed = null;
-          if (numberOfQueueItems && after) { after(); }
-
-          if ((priorQueueNameIndex = indexOfPriorQueueWithActions(this, queueNameIndex)) !== -1) {
-            queueNameIndex = priorQueueNameIndex;
-            continue outerloop;
-          }
-
-          queueNameIndex++;
-        }
-      }
-    };
-
-    function indexOfPriorQueueWithActions(daq, currentQueueIndex) {
-      var queueName, queue;
-
-      for (var i = 0, l = currentQueueIndex; i <= l; i++) {
-        queueName = daq.queueNames[i];
-        queue = daq.queues[queueName];
-        if (queue._queue.length) { return i; }
-      }
-
-      return -1;
-    }
-
-
-    __exports__.DeferredActionQueues = DeferredActionQueues;
-  });
-
-define("backburner/queue",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function Queue(daq, name, options) {
-      this.daq = daq;
-      this.name = name;
-      this.options = options;
-      this._queue = [];
-    }
-
-    Queue.prototype = {
-      daq: null,
-      name: null,
-      options: null,
-      _queue: null,
-
-      push: function(target, method, args, stack) {
-        var queue = this._queue;
-        queue.push(target, method, args, stack);
-        return {queue: this, target: target, method: method};
-      },
-
-      pushUnique: function(target, method, args, stack) {
-        var queue = this._queue, currentTarget, currentMethod, i, l;
-
-        for (i = 0, l = queue.length; i < l; i += 4) {
-          currentTarget = queue[i];
-          currentMethod = queue[i+1];
-
-          if (currentTarget === target && currentMethod === method) {
-            queue[i+2] = args; // replace args
-            queue[i+3] = stack; // replace stack
-            return {queue: this, target: target, method: method}; // TODO: test this code path
-          }
-        }
-
-        this._queue.push(target, method, args, stack);
-        return {queue: this, target: target, method: method};
-      },
-
-      // TODO: remove me, only being used for Ember.run.sync
-      flush: function() {
-        var queue = this._queue,
-            options = this.options,
-            before = options && options.before,
-            after = options && options.after,
-            target, method, args, stack, i, l = queue.length;
-
-        if (l && before) { before(); }
-        for (i = 0; i < l; i += 4) {
-          target = queue[i];
-          method = queue[i+1];
-          args   = queue[i+2];
-          stack  = queue[i+3]; // Debugging assistance
-
-          // TODO: error handling
-          if (args && args.length > 0) {
-            method.apply(target, args);
-          } else {
-            method.call(target);
-          }
-        }
-        if (l && after) { after(); }
-
-        // check if new items have been added
-        if (queue.length > l) {
-          this._queue = queue.slice(l);
-          this.flush();
-        } else {
-          this._queue.length = 0;
-        }
-      },
-
-      cancel: function(actionToCancel) {
-        var queue = this._queue, currentTarget, currentMethod, i, l;
-
-        for (i = 0, l = queue.length; i < l; i += 4) {
-          currentTarget = queue[i];
-          currentMethod = queue[i+1];
-
-          if (currentTarget === actionToCancel.target && currentMethod === actionToCancel.method) {
-            queue.splice(i, 4);
-            return true;
-          }
-        }
-
-        // if not found in current queue
-        // could be in the queue that is being flushed
-        queue = this._queueBeingFlushed;
-        if (!queue) {
-          return;
-        }
-        for (i = 0, l = queue.length; i < l; i += 4) {
-          currentTarget = queue[i];
-          currentMethod = queue[i+1];
-
-          if (currentTarget === actionToCancel.target && currentMethod === actionToCancel.method) {
-            // don't mess with array during flush
-            // just nullify the method
-            queue[i+1] = null;
-            return true;
-          }
-        }
-      }
-    };
-
-
-    __exports__.Queue = Queue;
   });
 })();
 
@@ -5482,8 +5550,15 @@ Ember.run.cancel = function(timer) {
 };
 
 /**
-  Execute the passed method in a specified amount of time, reset timer
-  upon additional calls.
+  Delay calling the target method until the debounce period has elapsed
+  with no additional debounce calls. If `debounce` is called again before
+  the specified time has elapsed, the timer is reset and the entire period
+  must pass again before the target method is called.
+
+  This method should be used when an event may be called multiple times
+  but the action should only be called once when the event is done firing.
+  A common example is for scroll events where you only want updates to
+  happen once scrolling has ceased.
 
   ```javascript
     var myFunc = function() { console.log(this.name + ' ran.'); };
@@ -5507,10 +5582,48 @@ Ember.run.cancel = function(timer) {
     then it will be looked up on the passed target.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
+  @param {Boolean} immediate Trigger the function on the leading instead of the trailing edge of the wait interval.
   @return {void}
 */
 Ember.run.debounce = function() {
   return backburner.debounce.apply(backburner, arguments);
+};
+
+/**
+  Ensure that the target method is never called more frequently than
+  the specified spacing period.
+
+  ```javascript
+    var myFunc = function() { console.log(this.name + ' ran.'); };
+    var myContext = {name: 'throttle'};
+
+    Ember.run.throttle(myContext, myFunc, 150);
+
+    // 50ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
+
+    // 50ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
+
+    // 50ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
+
+    // 150ms passes
+    // myFunc is invoked with context myContext
+    // console logs 'throttle ran.' twice, 150ms apart.
+  ```
+
+  @method throttle
+  @param {Object} [target] target of method to invoke
+  @param {Function|String} method The method to invoke.
+    May be a function or a string. If you pass a string
+    then it will be looked up on the passed target.
+  @param {Object} [args*] Optional arguments to pass to the timeout.
+  @param {Number} spacing Number of milliseconds to space out requests.
+  @return {void}
+*/
+Ember.run.throttle = function() {
+  return backburner.throttle.apply(backburner, arguments);
 };
 
 // Make sure it's not an autorun during testing
@@ -21525,6 +21638,8 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
 var get = Ember.get, set = Ember.set;
 var EmberHandlebars = Ember.Handlebars;
+var LOWERCASE_A_Z = /^[a-z]/;
+var VIEW_PREFIX = /^view\./;
 
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
@@ -21636,7 +21751,18 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
         newView;
 
     if ('string' === typeof path) {
-      newView = EmberHandlebars.get(thisContext, path, options);
+
+      // TODO: this is a lame conditional, this should likely change
+      // but something along these lines will likely need to be added
+      // as deprecation warnings
+      //
+      if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
+        Ember.assert("View requires a container", !!data.view.container);
+        newView = data.view.container.lookupFactory('view:' + path);
+      } else {
+        newView = EmberHandlebars.get(thisContext, path, options);
+      }
+
       Ember.assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
@@ -31468,17 +31594,26 @@ Ember.Application.reopen({
 
 var $ = Ember.$;
 
-/**
- * Determine whether a checkbox checked using jQuery's "click" method will have
- * the correct value for its checked property. In some old versions of jQuery
- * (e.g. 1.8.3) this does not behave correctly.
- *
- * If we determine that the current jQuery version exhibits this behavior,
- * patch it to work correctly as in the commit for the actual fix:
- * https://github.com/jquery/jquery/commit/1fb2f92.
- */
-$('<input type="checkbox">')
-  .on('click', function() {
+function testCheckboxClick(handler) {
+  $('<input type="checkbox">')
+    .css({ position: 'absolute', left: '-1000px', top: '-1000px' })
+    .appendTo('body')
+    .on('click', handler)
+    .click()
+    .remove();
+}
+
+$(function() {
+  /**
+   * Determine whether a checkbox checked using jQuery's "click" method will have
+   * the correct value for its checked property. In some old versions of jQuery
+   * (e.g. 1.8.3) this does not behave correctly.
+   *
+   * If we determine that the current jQuery version exhibits this behavior,
+   * patch it to work correctly as in the commit for the actual fix:
+   * https://github.com/jquery/jquery/commit/1fb2f92.
+   */
+  testCheckboxClick(function() {
     if (!this.checked && !$.event.special.click) {
       $.event.special.click = {
         // For checkbox, fire native event so checked state will be right
@@ -31490,17 +31625,15 @@ $('<input type="checkbox">')
         }
       };
     }
-  })
-  .click();
+  });
 
-/**
- * Try again to verify that the patch took effect or blow up.
- */
-$('<input type="checkbox">')
-  .on('click', function() {
-    Ember.assert("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
-  })
-  .click();
+  /**
+   * Try again to verify that the patch took effect or blow up.
+   */
+  testCheckboxClick(function() {
+    Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+  });
+});
 
 })();
 
