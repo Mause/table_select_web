@@ -93,23 +93,28 @@ class BallTablesHandler(EmberDataRESTEndpoint):
 
 
 class RemovalRequestHandler(BaseHandler):
-    def post(self):
-        attendee_id = self.get_argument('attendee_id')
-        table_id = self.get_argument('table_id')
+    table = db.removal_request_table
+    ember_model_name = 'removal_request'
 
-        logging.info(
-            'recording removal request for attendee with id {}'.format(
-                attendee_id))
+    allowed_methods = ['GET']
 
-        record = {
-            'attendee_id': int(attendee_id),
-            'table_id': int(table_id),
-            'state': 'unresolved'
-        }
+    # def post(self):
+    #     attendee_id = self.get_argument('attendee_id')
+    #     table_id = self.get_argument('table_id')
 
-        with closing(db.Session()) as session:
-            record = db.removal_request_table.insert(record)
-            session.execute(record)
+    #     logging.info(
+    #         'recording removal request for attendee with id {}'.format(
+    #             attendee_id))
+
+    #     record = {
+    #         'attendee_id': int(attendee_id),
+    #         'table_id': int(table_id),
+    #         'state': 'unresolved'
+    #     }
+
+    #     with closing(db.Session()) as session:
+    #         record = db.removal_request_table.insert(record)
+    #         session.execute(record)
 
 
 class AttendeeHandler(EmberDataRESTEndpoint):
@@ -117,7 +122,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
     ember_model_name = 'attendees'
 
     # dont allow anything, we want to roll our own this time
-    allowed_methods = []
+    allowed_methods = ['GET']
 
     def is_table_full(self, session, ball_table_id):
         # query the db for users on this table that can be shown
@@ -139,6 +144,11 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         ball_table_id = attendee['ball_table_id']
         attendee_name = attendee['attendee_name']
 
+        if settings.get('smart_attendee_name_check'):
+            does_attendee_exist = db.does_attendee_exist_smart
+        else:
+            does_attendee_exist = db.does_attendee_exist_dumb
+
         with closing(db.Session()) as session:
 
             if self.is_table_full(session, ball_table_id):
@@ -150,7 +160,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
                 }
                 self.set_status(400)
 
-            elif db.does_attendee_exist_smart(session, attendee_name):
+            elif does_attendee_exist(session, attendee_name):
                 # check if the attendee is already on a table
                 logging.info('attendee_exists: "{}"'.format(
                              attendee_name))
@@ -176,7 +186,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
                     'added attendee "{}" to table {}'.format(
                     attendee_name, ball_table_id))
 
-                # response['attendee'] = record
+                # response['attendee'] = record  # do we return the record?
 
                 self.set_status(201)  # created
 
