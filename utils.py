@@ -42,7 +42,8 @@ class BaseHandler(tornado.web.RequestHandler):
             'commit_hash': None,
             'is_admin': self.is_admin()
         }
-        kwargs.update(defaults)
+        args = defaults
+        args.update(kwargs)
         return super(BaseHandler, self).render(template_name, **kwargs)
 
 
