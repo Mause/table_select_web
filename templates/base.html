@@ -33,7 +33,7 @@
         <!-- Placed at the end of the document so the pages load faster -->
 
         <script src="{{ static_url('js/third-party/jquery-2.0.2.js') }}"></script>
-        <script src="{{ static_url('js/third-party/bootstrap.min.js') }}"></script>
+        <script src="{{ static_url('js/third-party/bootstrap.js') }}"></script>
         <script type="text/javascript">
             if (window.navigator.userAgent.indexOf('Firefox') !== -1) {
                      $('body').addClass('firefox');
@@ -42,7 +42,6 @@
             window.ENV = window.ENV ? window.ENV : {};
             ENV.EXPERIMENTAL_CONTROL_HELPER = true;
         </script>
-
 
         <!-- Libraries -->
         <script src="{{ static_url('js/third-party/handlebars-1.0.0.js') }}"></script>
@@ -65,21 +64,21 @@
         <script src="{{ static_url('js/app/models/store.js') }}"></script>
 
         <!-- Controllers -->
+        <script src="{{ static_url('js/app/controllers/ball_table_controller.js') }}"></script>
         <script src="{{ static_url('js/app/controllers/add_attendee_controller.js') }}"></script>
         <script src="{{ static_url('js/app/controllers/attendee_list_controller.js') }}"></script>
-        <script src="{{ static_url('js/app/controllers/message_modal_controller.js') }}"></script>
 
         <!-- Views -->
         <script src="{{ static_url('js/app/views/add_attendee_view.js') }}"></script>
         <script src="{{ static_url('js/app/views/attendee_list_view.js') }}"></script>
-        <script src="{{ static_url('js/app/views/modal_view.js') }}"></script>
-        <script src="{{ static_url('js/app/views/message_modal_view.js') }}"></script>
+        <script src="{{ static_url('js/app/views/ball_table_view.js') }}"></script>
 
         <!-- Templates -->
         <!-- <script src="{{ static_url('js/app/template.js') }}"></script> -->
 
         <!-- Ember plugins -->
         <!-- <script src="{{ static_url('js/third-party/ember-easyForm-0.1.0.js') }}"></script> -->
+        <script src="{{ static_url('js/third-party/ember_plugins/ember-bootstrap.js') }}"></script>
         <script src="{{ static_url('js/third-party/ember_plugins/ember_control/monkey_patch.js') }}"></script>
         <script src="{{ static_url('js/third-party/ember_plugins/ember_control/control.js') }}"></script>
 
@@ -92,8 +91,6 @@
 
                     {{!outlet 'application'}}
 
-                    {{!outlet 'modalOutlet'}}
-
             </div> <!-- /container -->
         </script>
 
@@ -104,5 +101,4 @@
 
     <body>
     </body>
-
 </html>
