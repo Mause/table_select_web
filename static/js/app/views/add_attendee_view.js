@@ -9,9 +9,6 @@ TableSelectWeb.AddAttendeeView = Ember.View.extend({
         // clear the input field
         this.set('attendee_name', '');
 
-        // // setup a connection to report back
-        // this.get('controller').on('displayModal', $.proxy(this.displayModal, this));
-
         // tell the controller to get its act together
         this.get('controller').send('addAttendeeEvent');
     }
