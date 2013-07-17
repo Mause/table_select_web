@@ -33,38 +33,6 @@ class MainHandler(BaseHandler):
     def get(self):
         self.render('templates.html', path='/')
 
-tornado_settings = {
-    "static_path": os.path.join(os.path.dirname(__file__), "static"),
-    "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
-    'cookie_secret': settings['cookie_secret'],
-    "debug": True,
-}
-
-
-application = tornado.wsgi.WSGIApplication(
-    [
-        (r'/static/(.*)', SmartStaticFileHandler,
-            {'path': tornado_settings['static_path']}),
-
-        # get only for ball table's
-        (r"/api/v1/ball_tables", ajax.BallTablesHandler),
-
-        # this will be update, i suppose
-        (r"/api/v1/attendees/remove", ajax.RemovalRequestHandler),
-
-        # post! (and maybe get for some reason)
-        (r"/api/v1/attendees", ajax.AttendeeHandler),
-
-        (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
-
-        (r"/admin", admin.AdminHandler),
-        (r"/auth", admin.AuthHandler),
-        (r"/logout", admin.LogoutHandler),
-        (r"/.*", MainHandler),
-    ],
-    **tornado_settings
-)
-
 
 def ensure_templates():
     out_file = os.path.join(
@@ -104,6 +72,52 @@ def setup_db():
     return db.Session, conn
 
 
+def get_ip():
+    # import socket
+
+    # ip = socket.gethostbyname(socket.gethostname())
+    # ip = socket.gethostbyname(socket.getfqdn())
+    # s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # s.connect(("gmail.com", 80))
+    # ip = s.getsockname()[0]
+    # s.close()
+
+    # return ip
+    return ''
+
+
+tornado_settings = {
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
+    'cookie_secret': settings['cookie_secret'],
+    "debug": True,
+}
+
+application = tornado.web.Application(
+    [
+        (r'/static/(.*)', SmartStaticFileHandler,
+            {'path': tornado_settings['static_path']}),
+
+        # get only for ball table's
+        (r"/api/v1/ball_tables", ajax.BallTablesHandler),
+
+        # this will be update, i suppose
+        (r"/api/v1/attendees/remove", ajax.RemovalRequestHandler),
+
+        # post! (and maybe get for some reason)
+        (r"/api/v1/attendees", ajax.AttendeeHandler),
+
+        (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
+
+        (r"/admin", admin.AdminHandler),
+        (r"/auth", admin.AuthHandler),
+        (r"/logout", admin.LogoutHandler),
+        (r"/.*", MainHandler),
+    ],
+    **tornado_settings
+)
+
+
 def main():
 
     global Session, conn
@@ -111,14 +125,12 @@ def main():
     ensure_templates()
     Session, conn = setup_db()
 
-    try:
-        http_server = tornado.httpserver.HTTPServer(
-            tornado.wsgi.WSGIContainer(application))
+    port = os.environ.get('PORT', 8888)
+    addr = get_ip()
+    print('{}:{}'.format(addr, port))
 
-        port = os.environ.get('PORT', 8888)
-        print('PORT:', port)
-        http_server.listen(port)
-        # application.listen(port)
+    try:
+        application.listen(port)
         tornado.ioloop.IOLoop.instance().start()
     finally:
         conn.close()
