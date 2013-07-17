@@ -1,7 +1,7 @@
 # stdlib
 # import os
 import json
-import settings
+from settings import settings
 # import logging
 # import datetime
 # import urllib.parse
@@ -17,7 +17,10 @@ def pluralize(name):
     if plurals and name in plurals:
         return plurals[name]
     else:
-        return name + "s"
+        if not name.endswith('s'):
+            return name + "s"
+        else:
+            return name
 
 
 # use the same plurals hash to determine
