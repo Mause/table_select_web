@@ -66,15 +66,13 @@ application = tornado.wsgi.WSGIApplication(
 )
 
 
-def main():
-
+def ensure_templates():
     out_file = os.path.join(
         os.path.dirname(__name__),
         'templates',
         'templates.html')
 
     if not os.path.exists(out_file):
-        print('regen')
         # not ideal, but w/e
         raw_template_dir = os.path.join(
             os.path.dirname(__file__),
@@ -86,6 +84,8 @@ def main():
             in_dir=raw_template_dir,
             out_file=out_file)
 
+
+def setup_db():
     from sqlalchemy import create_engine
 
     default_url = settings.get('DATABASE_URL')
@@ -94,13 +94,22 @@ def main():
     engine = create_engine(db_url)
     engine.echo = False
 
-    db.metadata.create_all(engine)
+    # db.metadata.create_all(engine)
+    db.Base.metadata.create_all(engine)
 
-    global Session
     db.Session.configure(bind=engine)
 
-    global conn
     conn = engine.connect()
+
+    return db.Session, conn
+
+
+def main():
+
+    global Session, conn
+
+    ensure_templates()
+    Session, conn = setup_db()
 
     try:
         http_server = tornado.httpserver.HTTPServer(
