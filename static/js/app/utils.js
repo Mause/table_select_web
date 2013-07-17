@@ -51,7 +51,6 @@ Ember.Handlebars.registerHelper('log_content', function(property, options) {
       path = normalized.path,
       value = (path === 'this') ? pathRoot : Ember.Handlebars.get(pathRoot, path, options);
 
-    // console.log(value.get('isLoaded'), value.get('content'));
     console.log(value.get('isLoaded'), value.get('content').length);
 });
 
@@ -66,10 +65,6 @@ Ember.Handlebars.registerHelper('control_smart', function(path, modelPath, optio
 });
 
 TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
-    init: function(){
-        // console.log('Initialising error handler mixin');
-    },
-
     handle_errors: function(errors, error_handlers, context) {
         'use strict';
         for (var key in errors) {

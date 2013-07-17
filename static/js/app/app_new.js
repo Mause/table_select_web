@@ -6,13 +6,15 @@ var Handlebars;
 Ember.LOG_VERSION = true;
 Ember.ENV.RAISE_ON_DEPRECATION = true;
 Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
+// Ember.STRUCTURED_PROFILE = true;
+Ember.DEBUG = true;
 
 function check(){
     'use strict';
     var keys = function(i){
         Ember.keys(i).forEach(function(elem){
             if (typeof(elem) == "string"){
-                console.log(elem);
+                console.log('*', elem);
             }
         });
     };
