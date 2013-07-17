@@ -3,76 +3,64 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
 
     addAttendeeEvent: function(){
         'use strict';
-        // control content is set by the control helper, second arg to helper
-        var ball_table = this.get('content');
+        var self = this,
+            ball_table,
+            attendee_name,
+            record_data,
+            attendee,
+            prom;
 
-        var attendee_name = this.get('attendee_name');
+        // control content is set by the control helper, second arg to helper
+        ball_table = self.get('content');
+        console.assert(TableSelectWeb.BallTable.detectInstance(ball_table));
+
+        attendee_name = self.get('attendee_name');
         this.set('attendee_name', '');
 
         if (!attendee_name.trim()) { return; }
 
-        var attendee = TableSelectWeb.Attendee.createRecord({
+        record_data = {
             'attendee_name': attendee_name,
             'show': true,
             'ball_table': ball_table
-        });
+        };
+
+        attendee = TableSelectWeb.Attendee.createRecord(record_data);
 
         console.log('Saving');
 
-        // debugger;
-
-        var prom = attendee.save();
-
-        prom.then(function(){
-            console.log('then success:', arguments);
-        }, function(){
-            console.log('then failure:', arguments);
-        });
-
-        var _this = this;
-        delete this;
+        prom = attendee.save();
 
         prom.on('promise:resolved', function(event){
-            // success
             console.log('success:', event);
-            _this.get('controllers.index').rerender();
+            TableSelectWeb.sendNotification('Attendee add was successful');
         });
-
-        var error_handlers = {
-            attendee_name: function (error){
-                if (error === "attendee_exists") {
-                    console.info('attendee_exists: %@'.fmt(attendee_name));
-                    _this.control('MessageModal', {}, {message: "Attendee exists: %@".fmt(attendee_name)});
-                } else {
-                    throw new Error('"attendee_name": %@'.fmt(error));
-                }
-            },
-            ball_table_id: function(error) {
-                console.log('"ball_table_id": %@, with table name "%@"'.fmt(
-                    error,
-                    ball_table.get('ball_table_name')));
-            },
-            show: Ember.K
-        };
 
         prom.on('promise:failed', function(event){
-            // failure
-            console.log('promise:failed');
-
-            // this errors attribute is set when i reopened
-            // the RESTAdapter in store.js
-            var errors = event.detail.errors;
-
-            for (var key in errors) {
-                if (Ember.keys(error_handlers).contains(key)){
-                    // debugger;
-                    errors[key].forEach(error_handlers[key]);
-                } else {
-                    console.warn('An unknown error for "%@" occured: %@'.fmt(
-                        key, errors[key]));
-                }
-            }
+            self.handle_errors(
+                event.detail.errors,
+                self.error_handlers,
+                record_data);
         });
+    },
+
+    error_handlers: {
+        attendee_name: function (error, context) {
+            if (error.machine === "attendee_exists") {
+                console.info('attendee_exists: %@'.fmt(context.attendee_name));
+                TableSelectWeb.sendNotification(error.human.fmt(context.attendee_name));
+            } else {
+                throw new Error('"attendee_name": %@'.fmt(error));
+            }
+        },
+
+        ball_table_id: function(error, context) {
+            console.warn('"ball_table_id": %@, with table name "%@"'.fmt(
+                error,
+                ball_table.get('ball_table_name')));
+        },
+
+        show: Ember.K
     },
 
     becameError: function() {
@@ -87,3 +75,6 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
         console.log('error:', arguments);
     }
 });
+
+console.assert(!Ember.isNone(TableSelectWeb.ErrorHandlerMixin));
+TableSelectWeb.AddAttendeeController.reopen(TableSelectWeb.ErrorHandlerMixin);
