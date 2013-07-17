@@ -35,7 +35,7 @@ class BallTable(Base, BaseMixin):
     ball_table_num = Column(Integer)
 
     # other guys stuff
-    attendees = relationship("attendee", backref="ball_table")
+    attendees = relationship("AttendeeTable", backref="BallTable")
 
 
 class AttendeeTable(Base, BaseMixin):
@@ -124,8 +124,7 @@ def wipe(engine):
         trans.commit()
 
 
-if __name__ == '__main__':
-
+def main():
     # do some stuff to ensure that there are enough ball_entry's in the db
 
     import os
@@ -138,7 +137,7 @@ if __name__ == '__main__':
     engine = create_engine(db_url)
     engine.echo = False
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'wipe':
+    if 'wipe' in sys.argv:
         print('Wiping')
         wipe(engine)
         print('Done wiping')
@@ -149,17 +148,29 @@ if __name__ == '__main__':
     conn = engine.connect()
 
     try:
-        existing_tables = engine.execute(BallTable.__table__.select())
+        if 'interact' in sys.argv:
+            from pprint import pprint as pp
+            ppl = lambda x: pp(list(x))
+            import code
+            l = globals()
+            l.update(locals())
+            code.interact(local=l)
 
-        existing_table_ids = [table.ball_table_num for table in existing_tables]
-        print('existing_table_ids:', existing_table_ids)
+        else:
+            existing_tables = engine.execute(BallTable.__table__.select())
 
-        for table_num in range(1, settings.get('table_num', 17) + 1):
-            if table_num not in existing_table_ids:
-                print('added;', table_num)
-                ball_table_insert = BallTable.__table__.insert({
-                    'ball_table_name': 'Table {}'.format(table_num),
-                    'ball_table_num': table_num})
-                engine.execute(ball_table_insert)
+            existing_table_ids = [table.ball_table_num for table in existing_tables]
+            print('existing_table_ids:', existing_table_ids)
+
+            for table_num in range(1, settings.get('table_num', 17) + 1):
+                if table_num not in existing_table_ids:
+                    print('added;', table_num)
+                    ball_table_insert = BallTable.__table__.insert({
+                        'ball_table_name': 'Table {}'.format(table_num),
+                        'ball_table_num': table_num})
+                    engine.execute(ball_table_insert)
     finally:
         conn.close()
+
+if __name__ == '__main__':
+    main()

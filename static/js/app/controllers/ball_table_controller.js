@@ -14,7 +14,7 @@ TableSelectWeb.BallTableController = Ember.Controller.extend({
             // console.log('attendees:', records);
         });
 
-        model.set('_data.attributes.attendees', attendees);
+        // model.set('_data.attributes.attendees', attendees);
 
         return model;
     }.property(['model'])

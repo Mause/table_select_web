@@ -58,14 +58,16 @@ class BaseRESTEndpoint(object):
         with closing(self.Session()) as session:
             query = session.query(self.table.__table__)
 
-            # import code
-            # code.interact(local=locals())
-
             if conditions:
                 logging.debug('{} filter conditions: {}'.format(
                     self.table.__tablename__,
                     conditions))
                 query = query.filter_by(**conditions)
+
+            import code
+            l = globals()
+            l.update(locals())
+            code.interact(local=l)
 
             records = dict_from_query(query.all())
 
