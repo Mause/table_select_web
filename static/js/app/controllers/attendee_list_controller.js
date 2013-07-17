@@ -1,4 +1,9 @@
 TableSelectWeb.AttendeeListController = Ember.Controller.extend({
+    render: function(){
+        console.log(this.get('model'));
+        return this._super(arguments);
+    },
+
     RequestRemoveAttendee: function() {
         'use strict';
         console.log(this.get('target').toString());
