@@ -3,15 +3,7 @@
         {{! iterate through each table }}
         {{#each ball_table in controller}}
 
-            <div class="enclosure space_below span5">
-                <h2 style="color:black;">{{ball_table.ball_table_name}}</h2>
-
-                {{#unless full }}
-                    {{control_smart 'add_attendee' ball_table}}
-                {{/unless}}
-
-                {{view TableSelectWeb.AttendeeListView contentBinding=this}}
-            </div>
+            {{control_smart 'ball_table' ball_table}}
 
         {{! logic to make sure the tables are evenly layed out }}
         {{#if ball_table.row_end}}

@@ -1,9 +1,12 @@
 <div>
+    {{! {{debugger}}
+    {{! {{log_content attendees}}
+    {{log attendees.isLoaded}}
     {{#if attendees}}
         <div class="custom-dropdown clearfix attendee_list">
             <ul class="custom-dropdown-menu dropdown-menu-customization">
                 {{#each attendees}}
-                    {{log this}}
+                    {{! {{log this}}
                     {{view 'single_attendee' contentBinding=this}}
                 {{/each}}
             </ul>
