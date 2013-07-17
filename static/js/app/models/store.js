@@ -60,7 +60,7 @@ DS.RESTAdapter.reopen({
             // debugger;
             store.recordWasInvalid(record, errors);
         } else {
-            console.log('oh?');
+            console.log('oh?', xhr.status);
             this._super.apply(this, arguments);
         }
     }

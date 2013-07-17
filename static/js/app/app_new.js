@@ -1,12 +1,10 @@
-var $;
-var console;
-var Handlebars;
-
+// these tend to spam :/
 // Ember.LOG_BINDINGS = true;
+// Ember.STRUCTURED_PROFILE = true;
+
 Ember.LOG_VERSION = true;
 Ember.ENV.RAISE_ON_DEPRECATION = true;
 Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
-// Ember.STRUCTURED_PROFILE = true;
 Ember.DEBUG = true;
 
 function check(){
@@ -70,20 +68,7 @@ window.TableSelectWeb = Ember.Application.create({
     rootElement: 'body'
 });
 
-
-// API.prototype.request_remove_attendee = function(attendee_id, table_id, success, failure){
-//     "use strict";
-//     $.ajax({
-//         type: 'POST',
-//         url: this.base_url + '/attendee/remove',
-//         data: {
-//             'attendee_id': attendee_id,
-//             'table_id': table_id},
-//         success: success,
-//         failure: failure
-//     });
-// };
-
+// App = function () {};
 // App.prototype.request_remove_attendee = function(element){
 //     element = $(element);
 //     var attendee_id = element.data('attendeeId');
@@ -132,53 +117,3 @@ window.TableSelectWeb = Ember.Application.create({
 //     $('#myModalLabel').text(text);
 //     $('#myModal').modal();
 // };
-
-
-// App.prototype.submit_attendee = function(event) {
-//     "use strict";
-//     var _this = window.app;
-
-//     var win = function(data){
-//         console.log('successfully added', attendee_name, 'to table with id', table_id);
-//         if (data.success === true){
-//             _this.hideLoadingSpinner();
-//             _this.refresh();
-
-//             _this.notif(element, 'Attendee add was successful');
-//         } else {
-//             console.log('Add attendee failed');
-//             _this.notif(element, data.human_error);
-//         }
-//         return false;
-//     };
-
-//     var element = $(event.target);
-//     var attendee_name = $(event.target.attendee_name).val();
-//     var table_id = $(event.target.table_id).val();
-//     if (attendee_name && table_id){
-//         _this.data.api.add_attendee(attendee_name, table_id, win);
-//         window.setTimeout(app.refresh, 10);
-//     } else {
-
-//     }
-//     // return false to ensure that the browser does not continue posting the
-//     // results of the form itself
-//     return false;
-// };
-
-// App.prototype.showLoadingSpinner = function() {
-//     // show spinner
-//     // (may implement if we end up spending enough time that the user gets frustrated)
-// };
-
-// App.prototype.hideLoadingSpinner = function() {
-//     // hide spinner
-//     // (may implement if we end up spending enough time that the user gets frustrated)
-// };
-
-// var app;
-// $(document).ready(function(){
-//     "use strict";
-//     // when the document is ready, start the app :D
-//     app = new App();
-// });

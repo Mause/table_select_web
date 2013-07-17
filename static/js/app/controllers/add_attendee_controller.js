@@ -31,6 +31,12 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
 
         prom = attendee.save();
 
+        prom.then(function(){
+            console.log('then success;', arguments);
+        }, function(){
+            console.log('then failure:', arguments);
+        });
+
         prom.on('promise:resolved', function(event){
             console.log('success:', event);
             TableSelectWeb.sendNotification('Attendee add was successful');
