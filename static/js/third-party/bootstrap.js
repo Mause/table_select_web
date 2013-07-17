@@ -20,7 +20,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
   /* CSS TRANSITION SUPPORT (http://www.modernizr.com/)
@@ -32,32 +32,32 @@
 
       var transitionEnd = (function () {
 
-        var el = document.createElement('bootstrap')
-          , transEndEventNames = {
-               'WebkitTransition' : 'webkitTransitionEnd'
-            ,  'MozTransition'    : 'transitionend'
-            ,  'OTransition'      : 'oTransitionEnd otransitionend'
-            ,  'transition'       : 'transitionend'
-            }
-          , name
+        var el = document.createElement('bootstrap'),
+          transEndEventNames = {
+            'WebkitTransition': 'webkitTransitionEnd',
+            'MozTransition'   : 'transitionend',
+            'OTransition'     : 'oTransitionEnd otransitionend',
+            'transition'      : 'transitionend'
+          }, name;
 
         for (name in transEndEventNames){
           if (el.style[name] !== undefined) {
-            return transEndEventNames[name]
+            return transEndEventNames[name];
           }
         }
 
-      }())
+      }());
 
       return transitionEnd && {
         end: transitionEnd
-      }
+      };
 
-    })()
+    })();
 
-  })
+  });
 
-}(window.jQuery);/* ==========================================================
+}(window.jQuery);
+/* ==========================================================
  * bootstrap-alert.js v2.3.1
  * http://twitter.github.com/bootstrap/javascript.html#alerts
  * ==========================================================
@@ -79,34 +79,34 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* ALERT CLASS DEFINITION
   * ====================== */
 
-  var dismiss = '[data-dismiss="alert"]'
-    , Alert = function (el) {
-        $(el).on('click', dismiss, this.close)
-      }
+  var dismiss = '[data-dismiss="alert"]',
+      Alert = function (el) {
+        $(el).on('click', dismiss, this.close);
+      };
 
   Alert.prototype.close = function (e) {
-    var $this = $(this)
-      , selector = $this.attr('data-target')
-      , $parent
+    var $this = $(this),
+      selector = $this.attr('data-target'),
+      $parent;
 
     if (!selector) {
-      selector = $this.attr('href')
-      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      selector = $this.attr('href');
+      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, ''); //strip for ie7
     }
 
-    $parent = $(selector)
+    $parent = $(selector);
 
-    e && e.preventDefault()
+    e && e.preventDefault();
 
-    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent())
+    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent());
 
-    $parent.trigger(e = $.Event('close'))
+    $parent.trigger(e = $.Event('close'));
 
     if (e.isDefaultPrevented()) return
 
@@ -177,7 +177,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* BUTTON PUBLIC CLASS DEFINITION
@@ -221,7 +221,7 @@
  /* BUTTON PLUGIN DEFINITION
   * ======================== */
 
-  var old = $.fn.button
+  var old = $.fn.button;
 
   $.fn.button = function (option) {
     return this.each(function () {
@@ -281,7 +281,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* CAROUSEL CLASS DEFINITION
@@ -487,7 +487,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* COLLAPSE PUBLIC CLASS DEFINITION
@@ -653,7 +653,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* DROPDOWN CLASS DEFINITION
@@ -818,7 +818,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* MODAL CLASS DEFINITION
@@ -1066,7 +1066,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* TOOLTIP PUBLIC CLASS DEFINITION
@@ -1426,7 +1426,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* POPOVER PUBLIC CLASS DEFINITION
@@ -1540,7 +1540,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* SCROLLSPY CLASS DEFINITION
@@ -1701,7 +1701,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* TAB CLASS DEFINITION
@@ -1844,7 +1844,7 @@
 
 !function($){
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* TYPEAHEAD PUBLIC CLASS DEFINITION
@@ -2179,7 +2179,7 @@
 
 !function ($) {
 
-  "use strict"; // jshint ;_;
+  "use strict";
 
 
  /* AFFIX CLASS DEFINITION
