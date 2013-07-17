@@ -1,21 +1,45 @@
 # stdlib
 # import os
 import json
+import settings
 # import logging
 # import datetime
 # import urllib.parse
+from sqlalchemy.util import KeyedTuple
 
 # third-party
 import tornado.web
 
 
-def dict_from_query(query):
-    dz = lambda d: dict(zip(d.keys(), d))
+def pluralize(name):
+    plurals = settings.get('plurals')
 
-    if type(query) == list:
-        return list(map(dz, query))
+    if plurals and name in plurals:
+        return plurals[name]
     else:
-        return dz(query)
+        return name + "s"
+
+
+# use the same plurals hash to determine
+# special-case singularization
+def singularize(name):
+    plurals = settings.get('plurals')
+    if plurals:
+        for i in plurals.keys():
+            if plurals[i] == name:
+                return i
+
+    if name.endswith('s'):
+        return name[:-1]
+    else:
+        return name
+
+
+def dict_from_query(query):
+    if type(query) == list:
+        return list(map(KeyedTuple._asdict, query))
+    else:
+        return KeyedTuple._asdict(query)
 
 
 class BaseHandler(tornado.web.RequestHandler):
