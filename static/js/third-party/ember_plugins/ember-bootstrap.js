@@ -1,5 +1,5 @@
-// Version: v0.0.2-1-g9f76f5c
-// Last commit: 9f76f5c (2013-07-10 00:20:23 +0200)
+// Version: v0.0.2-6-g4f8a606
+// Last commit: 4f8a606 (2013-07-15 16:23:44 +0200)
 
 
 (function() {
@@ -42,7 +42,7 @@ var define, requireModule;
   };
 })();
 (function() {
-var Bootstrap = window.Bootstrap = Ember.Namespace.create();
+window.Bootstrap = Ember.Namespace.create();
 
 })();
 
@@ -50,8 +50,6 @@ var Bootstrap = window.Bootstrap = Ember.Namespace.create();
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
-var jQuery = window.jQuery;
 
 var modalPaneTemplate = [
 '<div class="modal-header">',
@@ -69,7 +67,7 @@ var footerTemplate = [
 
 var modalPaneBackdrop = '<div class="modal-backdrop"></div>';
 
-Bootstrap.ModalPane = Ember.View.extend({
+Bootstrap.ModalPane = Ember.View.extend(Ember.DeferredMixin, {
   classNames: 'modal',
   defaultTemplate: Ember.Handlebars.compile(modalPaneTemplate),
   heading: null,
@@ -109,16 +107,11 @@ Bootstrap.ModalPane = Ember.View.extend({
     var target = event.target,
         targetRel = target.getAttribute('rel');
 
-    if (targetRel === 'close') {
-      this._triggerCallbackAndDestroy({ close: true }, event);
-      return false;
+    if (targetRel) {
+      var options = {};
+      options[targetRel] = true;
 
-    } else if (targetRel === 'primary') {
-      this._triggerCallbackAndDestroy({ primary: true }, event);
-      return false;
-
-    } else if (targetRel === 'secondary') {
-      this._triggerCallbackAndDestroy({ secondary: true }, event);
+      this._triggerCallbackAndDestroy(options, event);
       return false;
     }
   },
@@ -141,12 +134,20 @@ Bootstrap.ModalPane = Ember.View.extend({
     jQuery(window.document).unbind('keyup', this._keyUpHandler);
   },
 
+  _resolveOrReject: function(options, event) {
+    if (options.primary) this.resolve(options, event);
+    else this.reject(options, event);
+  },
+
   _triggerCallbackAndDestroy: function(options, event) {
     var destroy;
     if (this.callback) {
       destroy = this.callback(options, event);
     }
-    if (destroy === undefined || destroy) this.destroy();
+    if (destroy === undefined || destroy) {
+      this._resolveOrReject(options, event);
+      this.destroy();
+    }
   }
 });
 
@@ -169,7 +170,6 @@ Bootstrap.ModalPane.reopenClass({
 
 (function() {
 var get = Ember.get, set = Ember.set;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.TypeSupport = Ember.Mixin.create({
   baseClassName: Ember.required(String),
@@ -188,8 +188,6 @@ Bootstrap.TypeSupport = Ember.Mixin.create({
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
-
 Bootstrap.AlertMessage = Ember.View.extend(Bootstrap.TypeSupport, {
   classNames: ['alert', 'alert-message'],
   baseClassName: 'alert',
@@ -220,8 +218,6 @@ Bootstrap.AlertMessage = Ember.View.extend(Bootstrap.TypeSupport, {
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
-
 Bootstrap.BlockAlertMessage = Bootstrap.AlertMessage.extend({
   classNames: ['alert', 'alert-block']
 });
@@ -232,7 +228,6 @@ Bootstrap.BlockAlertMessage = Bootstrap.AlertMessage.extend({
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.ItemViewValueSupport = Ember.Mixin.create({
   value: Ember.computed(function() {
@@ -250,8 +245,7 @@ Bootstrap.ItemViewValueSupport = Ember.Mixin.create({
 
 
 (function() {
-var get = Ember.get,
-    Bootstrap = window.Bootstrap;
+var get = Ember.get;
 
 Bootstrap.ItemViewTitleSupport = Ember.Mixin.create({
   title: Ember.computed(function() {
@@ -276,7 +270,6 @@ Bootstrap.ItemViewTitleSupport = Ember.Mixin.create({
 
 (function() {
 var get = Ember.get, set = Ember.set;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.ItemSelectionSupport = Ember.Mixin.create(Bootstrap.ItemViewValueSupport, Bootstrap.ItemViewTitleSupport, {
   classNameBindings: ["isActive:active"],
@@ -310,7 +303,6 @@ Bootstrap.ItemSelectionSupport = Ember.Mixin.create(Bootstrap.ItemViewValueSuppo
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.ItemViewHrefSupport = Ember.Mixin.create({
   href: Ember.computed(function() {
@@ -330,7 +322,6 @@ Bootstrap.ItemViewHrefSupport = Ember.Mixin.create({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.PillItem = Ember.View.extend(Bootstrap.ItemSelectionSupport, Bootstrap.ItemViewHrefSupport, {
   template: Ember.Handlebars.compile('{{view view.item}}'),
 
@@ -347,7 +338,6 @@ Bootstrap.PillItem = Ember.View.extend(Bootstrap.ItemSelectionSupport, Bootstrap
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Pills = Ember.CollectionView.extend({
   classNames: ['nav', 'nav-pills'],
   classNameBindings: ['isStacked:nav-stacked'],
@@ -361,7 +351,6 @@ Bootstrap.Pills = Ember.CollectionView.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Tabs = Ember.CollectionView.extend({
   classNames: ['nav', 'nav-tabs'],
   classNameBindings: ['isStacked:nav-stacked'],
@@ -375,7 +364,6 @@ Bootstrap.Tabs = Ember.CollectionView.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.NavList = Ember.CollectionView.extend({
   classNames: ['nav', 'nav-list'],
   tagName: 'ul',
@@ -388,9 +376,7 @@ Bootstrap.NavList = Ember.CollectionView.extend({
 
 
 (function() {
-var get = Ember.get;
-var fmt = Ember.String.fmt;
-var Bootstrap = window.Bootstrap;
+var get = Ember.get, fmt = Ember.String.fmt;
 
 Bootstrap.ProgressBar = Ember.View.extend({
   classNames: ['progress'],
@@ -412,7 +398,6 @@ Bootstrap.ProgressBar = Ember.View.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Badge = Ember.View.extend(Bootstrap.TypeSupport, {
   tagName: 'span',
   classNames: ['badge'],
@@ -425,8 +410,6 @@ Bootstrap.Badge = Ember.View.extend(Bootstrap.TypeSupport, {
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
-
 Bootstrap.Label = Ember.View.extend(Bootstrap.TypeSupport, {
   tagName: 'span',
   classNames: ['label'],
@@ -440,7 +423,6 @@ Bootstrap.Label = Ember.View.extend(Bootstrap.TypeSupport, {
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.Well = Ember.View.extend({
   template: Ember.Handlebars.compile('{{view.content}}'),
@@ -453,8 +435,7 @@ Bootstrap.Well = Ember.View.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set, A = Ember.A;
-var Bootstrap = window.Bootstrap;
+var A = Ember.A;
 
 Bootstrap.Pagination = Ember.CollectionView.extend({
   tagName: 'ul',
@@ -478,7 +459,6 @@ Bootstrap.Pagination = Ember.CollectionView.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Pager = Ember.CollectionView.extend({
   tagName: 'ul',
   classNames: ['pager'],
@@ -511,7 +491,6 @@ Bootstrap.Pager = Ember.CollectionView.extend({
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.FirstLastViewSupport = Ember.Mixin.create({
   createChildView: function(view, attrs) {
@@ -537,7 +516,6 @@ Bootstrap.FirstLastViewSupport = Ember.Mixin.create({
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.Breadcrumb = Ember.CollectionView.extend(Bootstrap.FirstLastViewSupport, {
   tagName: 'ul',
@@ -599,24 +577,12 @@ Bootstrap.Breadcrumb = Ember.CollectionView.extend(Bootstrap.FirstLastViewSuppor
   })
 });
 
-// 1 2 3
-// 1 2 3 4 5 6
-// [] 3 0 3
-
-// 1 2 3
-// 1 2 3 4
-// [] 3 0 1
-
-
-
-
-
 })();
 
 
 
 (function() {
-window.Bootstrap.Forms = Ember.Namespace.create({
+Bootstrap.Forms = Ember.Namespace.create({
 
   human: function(value) {
     if (value === undefined || value === false)
@@ -637,7 +603,6 @@ window.Bootstrap.Forms = Ember.Namespace.create({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Forms.Field = Ember.View.extend({
   tagName: 'div',
   classNames: ['control-group'],
@@ -757,8 +722,6 @@ Bootstrap.Forms.Field = Ember.View.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
-
 Bootstrap.Forms.Select = Bootstrap.Forms.Field.extend({
   optionLabelPath: 'content',
   optionValuePath: 'content',
@@ -787,7 +750,6 @@ Bootstrap.Forms.Select = Bootstrap.Forms.Field.extend({
 
 (function() {
 var get = Ember.get;
-var Bootstrap = window.Bootstrap;
 
 Bootstrap.TextSupport = Ember.Mixin.create({
   valueBinding: 'parentView.value',
@@ -806,7 +768,6 @@ Bootstrap.TextSupport = Ember.Mixin.create({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Forms.TextArea = Bootstrap.Forms.Field.extend({
 
   inputField: Ember.TextArea.extend(Bootstrap.TextSupport, {
@@ -820,7 +781,6 @@ Bootstrap.Forms.TextArea = Bootstrap.Forms.Field.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Forms.TextField = Bootstrap.Forms.Field.extend({
   type: 'text',
 
@@ -835,7 +795,6 @@ Bootstrap.Forms.TextField = Bootstrap.Forms.Field.extend({
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Forms.Checkbox = Bootstrap.Forms.Field.extend({
 
   inputField: Ember.Checkbox.extend({
@@ -848,12 +807,12 @@ Bootstrap.Forms.Checkbox = Bootstrap.Forms.Field.extend({
     }).property('parentView.name', 'parentView.label')
   })
 });
+
 })();
 
 
 
 (function() {
-var Bootstrap = window.Bootstrap;
 Bootstrap.Forms.UneditableInput = Bootstrap.Forms.Field.extend({
 
   inputField: Ember.View.extend({
@@ -869,6 +828,7 @@ Bootstrap.Forms.UneditableInput = Bootstrap.Forms.Field.extend({
     }).property('parentView.name', 'parentView.label')
   })
 });
+
 })();
 
 
