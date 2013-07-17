@@ -2,61 +2,97 @@
 
 # third-party
 from sqlalchemy import (
-    Table,
-    MetaData,
     Integer,
     String,
     Column,
     ForeignKey,
     Boolean)
+from sqlalchemy.ext.declarative import declarative_base
+
 from fuzzywuzzy import fuzz
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 
 # application specific
 from settings import settings
 from utils import dict_from_query
 
 
-metadata = MetaData()
+Base = declarative_base()
 
-ball_table = Table(
-    'ball_table', metadata,
-    Column('ball_table_id', Integer, primary_key=True),
-    Column('ball_table_name', String),
-    Column('ball_table_num', Integer)
-)
 
-attendee_table = Table(
-    'attendee', metadata,
-    Column('attendee_id', Integer, primary_key=True),
-    Column('attendee_name', String),
-    Column('show', Boolean),
-    Column('ball_table_id', ForeignKey('ball_table.ball_table_id')))
+class BaseMixin(object):
+    def items(self):
+        for key in self.__mapper__.attrs.keys():
+            yield (key, getattr(self, key))
 
-removal_request_table = Table(
-    'removal_request', metadata,
-    Column('request_id', Integer, primary_key=True),
-    Column('attendee_id', ForeignKey('attendee.attendee_id')),
-    Column('ball_table_id', ForeignKey('ball_table.ball_table_id')),
-    Column('remover_ident', String),
-    Column('state', String)
-)
+
+class BallTable(Base, BaseMixin):
+    __tablename__ = 'ball_table'
+
+    # our stuff
+    ball_table_id = Column(Integer, primary_key=True)
+    ball_table_name = Column(String)
+    ball_table_num = Column(Integer)
+
+    # other guys stuff
+    attendees = relationship("attendee", backref="ball_table")
+
+
+class AttendeeTable(Base, BaseMixin):
+    __tablename__ = 'attendee'
+
+    # our stuff
+    attendee_id = Column(Integer, primary_key=True)
+    attendee_name = Column(String)
+    show = Column(Boolean, default=True)
+
+    # other guys stuff
+    ball_table_id = Column(Integer, ForeignKey('ball_table.ball_table_id'))
+
+
+class RemovalRequestTable(Base, BaseMixin):
+    __tablename__ = 'removal_request'
+
+    request_id = Column(Integer, primary_key=True)
+    attendee_id = Column(Integer, ForeignKey('attendee.attendee_id'))
+    ball_table_id = Column(Integer, ForeignKey('ball_table.ball_table_id'))
+    remover_ident = Column(String)
+    state = Column(String)
+
+
+# ball_table = Table(
+#     'ball_table', metadata,
+#     Column('ball_table_id', Integer, primary_key=True),
+#     Column('ball_table_name', String),
+#     Column('ball_table_num', Integer),
+#     Column('attendees', HasMany(
+#         own='ball_table.ball_table_id',
+#         theirs='attendee.ball_table_id'))
+# )
+
+# attendee_table = Table(
+#     'attendee', metadata,
+#     Column('attendee_id', Integer, primary_key=True),
+#     Column('attendee_name', String),
+#     Column('show', Boolean, default=True),
+#     Column('ball_table_id', ForeignKey('ball_table.ball_table_id'))
+# )
+
+# removal_request_table = Table(
+#     'removal_request', metadata,
+#     Column('request_id', Integer, primary_key=True),
+#     Column('attendee_id', ForeignKey('attendee.attendee_id')),
+#     Column('ball_table_id', ForeignKey('ball_table.ball_table_id')),
+#     Column('remover_ident', String),
+#     Column('state', String)
+# )
 
 Session = sessionmaker()
 
 
-def wipe(engine, meta):
-    import contextlib
-    with contextlib.closing(engine.connect()) as con:
-        trans = con.begin()
-        for table in reversed(meta.sorted_tables):
-            con.execute(table.delete())
-        trans.commit()
-
-
 def does_attendee_exist_dumb(session, attendee_name):
     "does a simple check if any other attendees have the same name"
-    query = session.query(attendee_table).filter_by(
+    query = session.query(AttendeeTable).filter_by(
         attendee_name=attendee_name, show=True)
     query = query.all()
     return dict_from_query(query)
@@ -67,7 +103,8 @@ def does_attendee_exist_smart(session, attendee_name):
     whether someone is trying to dupe the app"""
     attendee_name = attendee_name.lower().strip()
 
-    query = session.query(attendee_table).filter_by(show=True).all()
+    query = session.query(AttendeeTable.__table__)
+    query = query.filter_by(show=True).all()
     query = dict_from_query(query)
     for attendee in query:
 
@@ -78,12 +115,21 @@ def does_attendee_exist_smart(session, attendee_name):
     return False
 
 
+def wipe(engine):
+    import contextlib
+    with contextlib.closing(engine.connect()) as con:
+        trans = con.begin()
+        for table in reversed(Base.metadata.sorted_tables):
+            con.execute(table.delete())
+        trans.commit()
+
+
 if __name__ == '__main__':
-    # wipe(engine, metadata)
 
     # do some stuff to ensure that there are enough ball_entry's in the db
 
     import os
+    import sys
     from sqlalchemy import create_engine
 
     default_url = settings.get('DATABASE_URL')
@@ -92,23 +138,26 @@ if __name__ == '__main__':
     engine = create_engine(db_url)
     engine.echo = False
 
+    if len(sys.argv) > 1 and sys.argv[1] == 'wipe':
+        print('Wiping')
+        wipe(engine)
+        print('Done wiping')
+
     Session.configure(bind=engine)
-    metadata.create_all(engine)
+    Base.metadata.create_all(engine)
 
     conn = engine.connect()
 
     try:
-        s = ball_table.select()
-        rs = engine.execute(s)
-        already_there = [
-            int(x['table_name'].split()[-1])
-            for x in rs]
-        print('already_there:', already_there)
+        existing_tables = engine.execute(BallTable.__table__.select())
+
+        existing_table_ids = [table.ball_table_num for table in existing_tables]
+        print('existing_table_ids:', existing_table_ids)
 
         for table_num in range(1, settings.get('table_num', 17) + 1):
-            if table_num not in already_there:
+            if table_num not in existing_table_ids:
                 print('added;', table_num)
-                ball_table_insert = ball_table.insert({
+                ball_table_insert = BallTable.__table__.insert({
                     'ball_table_name': 'Table {}'.format(table_num),
                     'ball_table_num': table_num})
                 engine.execute(ball_table_insert)
