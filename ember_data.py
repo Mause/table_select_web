@@ -92,23 +92,28 @@ class BaseRESTEndpoint(object):
 
         response = {}
 
+        # get the singular version of the model name
         singular_model_name = singularize(self.ember_model_name)
 
+        # grab the new record data
         record_data = body[singular_model_name]
 
         with closing(self.Session()) as session:
+            # perform any specified checks
             errors = self.perform_checks(session, record_data)
 
             if errors:
+                # report any errors
                 response['errors'] = errors
             else:
-                record_insert = self.table(record_data)
+                # create a new record using the data
+                new_record = self.table(**record_data)
 
-                session.execute(record_insert)
+                session.add(new_record)
                 session.commit()
 
                 logging.info(
-                    'added {} {}to db'.format(
+                    'added {} {} to db'.format(
                     singular_model_name, record_data))
 
                 self.set_status(201)  # created
@@ -118,16 +123,20 @@ class BaseRESTEndpoint(object):
     def build_conditions_from_args(self, args, table):
         try:
             conditions = {}
+            # iterate through the key value pairs
             for key, val in args.items():
+                val = val[0].decode('utf-8')
+
+                # check if the filter is valid for the table
                 if key and key in table.__table__.columns.keys():
-                    conditions[key] = val[0].decode('utf-8')
+                    conditions[key] = val
                 else:
-                    logging.debug('Bad filter')
+                    logging.debug('Bad filter: {}={}'.format(key, val))
 
                     self.set_bad_error(400)
 
         except UnicodeDecodeError:
-            logging.debug('UnicodeDecodeError when decoding filters')
+            logging.debug('UnicodeDecodeError whilst decoding filters')
             self.set_bad_error(400)
 
         return conditions
@@ -136,13 +145,13 @@ class BaseRESTEndpoint(object):
         try:
             body = body.decode('utf-8')
         except UnicodeDecodeError:
-            logging.debug('UnicodeDecodeError when decoding fields')
+            logging.debug('UnicodeDecodeError whilst decoding fields')
             self.set_bad_error(400)
 
         try:
             body = json.loads(body)
         except ValueError:
-            logging.debug('ValueError when loading fields')
+            logging.debug('ValueError whilst loading fields')
             self.set_bad_error(400)
 
         return body
