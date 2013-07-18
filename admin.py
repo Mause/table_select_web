@@ -46,15 +46,14 @@ class AdminHandler(BaseHandler):
                 # keep removals persistant, for future reference
                 # give every user a UUID, stored as a cookie,
                 # that can be used to group requests
-                query = (session.query(db.removal_request_table)
-                                .filter_by(state='unresolved')
-                                .all())
+                query = session.query(db.removal_request_table)
+                query = query.filter_by(state='unresolved')
+                requests = dict_from_query(query.all())
 
-                requests = dict_from_query(query)
                 for request in requests:
-                    query = (session.query(db.attendee_table)
-                                    .filter_by(attendee_id=request['attendee_id'])
-                                    .one())
+                    query = session.query(db.attendee_table)
+                    query = query.filter_by(attendee_id=request['attendee_id'])
+                    query = query.one()
 
                     request['attendee_name'] = (
                         dict_from_query(query)['attendee_name'])

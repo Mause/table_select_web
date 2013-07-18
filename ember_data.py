@@ -56,18 +56,14 @@ class BaseRESTEndpoint(object):
             self.request.arguments, self.table)
 
         with closing(self.Session()) as session:
-            query = session.query(self.table.__table__)
+            query = session.query(self.table)
 
             if conditions:
                 logging.debug('{} filter conditions: {}'.format(
                     self.table.__tablename__,
                     conditions))
-                query = query.filter_by(**conditions)
 
-            import code
-            l = globals()
-            l.update(locals())
-            code.interact(local=l)
+                query = query.filter_by(**conditions)
 
             records = dict_from_query(query.all())
 
@@ -86,7 +82,10 @@ class BaseRESTEndpoint(object):
 
     def post(self):
         # check the setup
-        self.check_setup('POST')
+        errors = self.check_setup('POST')
+        if errors:
+            self.write(json.dumps(errors, indent=4))
+            return
 
         # load in the filters
         body = self.decode_and_load(self.request.body)
@@ -103,8 +102,7 @@ class BaseRESTEndpoint(object):
             if errors:
                 response['errors'] = errors
             else:
-                record_insert = self.table.__table__.insert(
-                    record_data)
+                record_insert = self.table(record_data)
 
                 session.execute(record_insert)
                 session.commit()
@@ -121,13 +119,10 @@ class BaseRESTEndpoint(object):
         try:
             conditions = {}
             for key, val in args.items():
-                if val and key in table.__table__.columns.keys():
+                if key and key in table.__table__.columns.keys():
                     conditions[key] = val[0].decode('utf-8')
                 else:
-                    if not val:
-                        logging.debug('Bad value; {}'.format(val))
-                    else:
-                        logging.debug('Bad filter')
+                    logging.debug('Bad filter')
 
                     self.set_bad_error(400)
 

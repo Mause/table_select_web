@@ -17,8 +17,8 @@ class TornadoWebInterface(BaseHandler):
     def set_bad_error(self, status_code):
         raise tornado.web.HTTPError(status_code)
 
-    def set_status(self, status_code):
-        super(TornadoWebInterface, self).set_status(status_code)
+    def set_status(self, *args, **kwargs):
+        super(TornadoWebInterface, self).set_status(*args, **kwargs)
 
 
 class EmberDataRESTEndpoint(BaseRESTEndpoint, TornadoWebInterface):
@@ -61,11 +61,10 @@ class RemovalRequestHandler(BaseHandler):
 
 
 class AttendeeHandler(EmberDataRESTEndpoint):
-    table = db.AttendeeTable
+    table = db.Attendee
     ember_model_name = 'attendees'
     needs_admin = False
 
-    # dont allow anything, we want to roll our own this time
     allowed_methods = ['GET', 'POST']
 
     def check_if_table_full(self, session, attendee):
@@ -87,7 +86,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
     def is_table_full(self, session, ball_table_id):
         # query the db for users on this table that can be shown
-        query = session.query(db.AttendeeTable.__table__)
+        query = session.query(db.Attendee)
         query = query.filter_by(ball_table_id=ball_table_id, show=True)
 
         attendees = dict_from_query(query.all())
@@ -163,20 +162,18 @@ class ActionHandler(BaseHandler):
                     db.removal_request_table.columns.attendee_id)
 
                 # grab the attendee record in question
-                attendee_table_update = (
-                    session.query(db.attendee_table)
-                           .filter(condition)
-                           .filter(removal_request_condition)
-                )
+                query = session.query(db.attendee_table)
+                query = query.filter(condition)
+                query = query.filter(removal_request_condition)
 
-                to_update = dict_from_query(attendee_table_update.all())
+                to_update = dict_from_query(query.all())
                 to_update = [attendee['attendee_id'] for attendee in to_update]
 
-                attendee_table_update = (
-                    session.query(db.attendee_table)
-                           .filter(db.attendee_table.columns.attendee_id.in_(to_update)))
+                query = session.query(db.attendee_table)
+                query = query.filter(
+                    db.attendee_table.columns.attendee_id.in_(to_update))
 
-                attendee_table_update.update(
+                query.update(
                     {db.attendee_table.columns.show: False},
                     synchronize_session=False
                 )

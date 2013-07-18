@@ -5,7 +5,8 @@ from settings import settings
 # import logging
 # import datetime
 # import urllib.parse
-from sqlalchemy.util import KeyedTuple
+from sqlalchemy.orm.collections import InstrumentedList
+# from sqlalchemy.util import KeyedTuple
 
 # third-party
 import tornado.web
@@ -38,11 +39,30 @@ def singularize(name):
         return name
 
 
-def dict_from_query(query):
+def dict_from_query(query, debug=False):
+    def get_primary_key(record):
+        key = record.__table__.primary_key.columns.keys()[0]
+        return record.__dict__[key]
+
+    def serialize(record, ids_only=False):
+
+        if type(record) in (list, InstrumentedList):
+            return [serialize(sub, ids_only=True) for sub in record]
+
+        if ids_only:
+            return get_primary_key(record)
+        else:
+            out = {}
+            for key, value in record.items():
+                if type(value) == InstrumentedList:
+                    value = serialize(value, ids_only=True)
+                out[key] = value
+            return out
+
     if type(query) == list:
-        return list(map(KeyedTuple._asdict, query))
+        return list(map(serialize, query))
     else:
-        return KeyedTuple._asdict(query)
+        return serialize(query)
 
 
 class BaseHandler(tornado.web.RequestHandler):
