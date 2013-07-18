@@ -31,7 +31,9 @@ class BallTablesHandler(EmberDataRESTEndpoint):
     ember_model_name = 'ball_tables'
 
     allowed_methods = ['GET']
-    needs_admin = False
+    needs_admin = {
+        'GET': False
+    }
 
 
 class RemovalRequestHandler(BaseHandler):
@@ -39,7 +41,9 @@ class RemovalRequestHandler(BaseHandler):
     ember_model_name = 'removal_request'
 
     allowed_methods = ['GET']
-    needs_admin = False
+    needs_admin = {
+        'GET': False
+    }
 
     # def post(self):
     #     attendee_id = self.get_argument('attendee_id')
@@ -63,7 +67,10 @@ class RemovalRequestHandler(BaseHandler):
 class AttendeeHandler(EmberDataRESTEndpoint):
     table = db.Attendee
     ember_model_name = 'attendees'
-    needs_admin = False
+    needs_admin = {
+        'GET': False,
+        'POST': False
+    }
 
     allowed_methods = ['GET', 'POST']
 
