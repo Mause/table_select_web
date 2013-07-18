@@ -104,8 +104,12 @@ def does_attendee_exist_dumb(session, attendee_name):
 
 
 def does_attendee_exist_smart(session, attendee_name):
-    """uses fuzzy matching to determine
-    whether someone is trying to dupe the app"""
+    """
+    uses fuzzy matching to determine
+    whether someone is trying to dupe the app
+
+    TODO: determine whether the overhead is worth it
+    """
     attendee_name = attendee_name.lower().strip()
 
     query = session.query(Attendee)

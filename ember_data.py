@@ -2,7 +2,6 @@ import json
 import logging
 from contextlib import closing
 from utils import (
-    # BaseHandler,
     dict_from_query,
     # pluralize,
     singularize
@@ -13,24 +12,33 @@ class BaseRESTEndpoint(object):
     """
     A base generic handler for the Ember DATA RESTAdapter
 
-    set the table to the declarative
+    set 'table' to the declarative sqlalchemy table model defintion
+    set 'ember_model_name' to the EmberJS model name
+    set 'allowed_methods' to the allowed methods; GET, POST, etc
+    set 'needs_admin' to a dict for methods that needs admin
 
+    set 'Session' to a session creater created by the session_maker
     """
 
     table = None
     ember_model_name = None
 
     allowed_methods = None
-    needs_admin = False
-
+    needs_admin = {
+        'GET': False,
+        'POST': False
+    }
     Session = None
 
-    def check_setup(self, method):
+    def check_setup(self):
+        method = self.request.method
+
         # ensure that we have enabled the <method> method
         if method not in self.allowed_methods:
             self.set_bad_error(405)
 
-        if self.needs_admin and not self.is_admin():
+        # check if you need to be an admin to access this method
+        if self.needs_admin[method] and not self.is_admin():
             self.set_status(401)
             return {
                 'errors': [
@@ -46,7 +54,7 @@ class BaseRESTEndpoint(object):
         assert self.ember_model_name is not None, 'Bad EmberJS model name'
 
     def get(self):
-        errors = self.check_setup('GET')
+        errors = self.check_setup()
         if errors:
             self.write(json.dumps(errors, indent=4))
             return
@@ -82,7 +90,7 @@ class BaseRESTEndpoint(object):
 
     def post(self):
         # check the setup
-        errors = self.check_setup('POST')
+        errors = self.check_setup()
         if errors:
             self.write(json.dumps(errors, indent=4))
             return
