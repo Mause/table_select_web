@@ -58,10 +58,15 @@ class BaseRESTEndpoint(object):
         if errors:
             self.write(json.dumps(errors, indent=4))
             return
+        else:
+            logging.debug('Setup is good')
 
         # parse the conditions
         conditions = self.build_conditions_from_args(
             self.request.arguments, self.table)
+
+        # TODO: for later :P
+        # requested_ids = self.get_arguments('ids[]')
 
         with closing(self.Session()) as session:
             query = session.query(self.table)

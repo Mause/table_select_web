@@ -11,6 +11,53 @@ function traverse_mixin(mixin){
     }
 }
 
+function check(){
+    'use strict';
+    var keys = function(i){
+        Ember.keys(i).forEach(function(elem){
+            if (typeof(elem) == "string"){
+                console.log('*', elem);
+            }
+        });
+    };
+
+    console.log('Routes;');
+    keys(TableSelectWeb.Router.router.recognizer.names);
+    console.log('Templates;');
+    keys(Ember.TEMPLATES);
+}
+
+function check_records(){
+    'use strict';
+
+    function get_records(sub_map){
+        var records = {};
+        for (var key in sub_map.idToReference) {
+            records[key] = sub_map.idToReference[key].record;
+        }
+        return records;
+    }
+
+    var store = TableSelectWeb.__container__.lookup('store:main');
+    var types = [];
+    for (var key in store.typeMaps) {
+        types.push(get_records(
+            store.typeMaps[key]));
+    }
+    return types;
+}
+
+
+function run() {
+    var attendee = check_records()[1][42];
+    debugger;
+    attendee.get('content');
+    // var table = check_records()[0][46];
+    // var attendees = table.get('attendees');
+    // attendees.get('content');
+}
+
+
 function get_keys(obj) {
     'use strict';
     // Helpers that operate with 'this' within an #each
@@ -44,25 +91,6 @@ TableSelectWeb.sendNotification = function (text, callback) {
     return modalPane;
 };
 
-Ember.Handlebars.registerHelper('log_content', function(property, options) {
-  var context = (options.contexts && options.contexts[0]) || this,
-      normalized = Ember.Handlebars.normalizePath(context, property, options.data),
-      pathRoot = normalized.root,
-      path = normalized.path,
-      value = (path === 'this') ? pathRoot : Ember.Handlebars.get(pathRoot, path, options);
-
-    console.log(value.get('isLoaded'), value.get('content').length);
-});
-
-Ember.Handlebars.registerHelper('control_smart', function(path, modelPath, options) {
-    // to make sure each table has a unique controller,
-    // and hence a controller that has the right info,
-    // we give it a new controlID each time.
-    // not ideal, but w/e
-    options.hash.controlID = 'control-smart-' + String(options.data.keywords.ball_table.id);
-
-    Ember.Handlebars.helpers.control.call(this, path, modelPath, options);
-});
 
 TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
     handle_errors: function(errors, error_handlers, context) {
