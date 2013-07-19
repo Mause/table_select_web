@@ -1,6 +1,6 @@
 TableSelectWeb.AttendeeListController = Ember.Controller.extend({
     render: function(){
-        console.log(this.get('model'));
+        console.log('Attendee list Model:', this.get('model'));
         return this._super(arguments);
     },
 
