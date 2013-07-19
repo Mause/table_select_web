@@ -7,22 +7,6 @@ Ember.ENV.RAISE_ON_DEPRECATION = true;
 Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
 Ember.DEBUG = true;
 
-function check(){
-    'use strict';
-    var keys = function(i){
-        Ember.keys(i).forEach(function(elem){
-            if (typeof(elem) == "string"){
-                console.log('*', elem);
-            }
-        });
-    };
-
-    console.log('Routes;');
-    keys(TableSelectWeb.Router.router.recognizer.names);
-    console.log('Templates;');
-    keys(Ember.TEMPLATES);
-}
-
 // Em.View.reopen({
 //     templateForName: function(name, type) {
 //         if (!name) { return; }
@@ -61,10 +45,10 @@ function check(){
 window.TableSelectWeb = Ember.Application.create({
     title: 'Ball Table Select',
     author: 'Dominic May (http://mause.me)',
-    LOG_TRANSITIONS: true,
-    LOG_ACTIVE_GENERATION: true,
-    LOG_TRANSITIONS_INTERNAL: true,
-    LOG_VIEW_LOOKUPS: true,
+    // LOG_TRANSITIONS: true,
+    // LOG_ACTIVE_GENERATION: true,
+    // LOG_TRANSITIONS_INTERNAL: true,
+    // LOG_VIEW_LOOKUPS: true,
     rootElement: 'body'
 });
 
