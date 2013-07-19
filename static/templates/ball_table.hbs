@@ -1,14 +1,15 @@
 <div class="enclosure space_below span5">
     {{! {{log model_with_attendees}}
-    {{#with model_with_attendees as ball_table}}
+    {{! {{#with model_with_attendees as ball_table}}
         <h2 style="color:black;">{{ball_table.ball_table_name}}</h2>
 
         {{#unless full }}
             {{control_smart 'add_attendee' ball_table}}
         {{/unless}}
 
+        {{log ball_table.attendees.content}}
         {{#with ball_table.attendees as attendees}}
             {{view TableSelectWeb.AttendeeListView contentBinding=attendees}}
         {{/with}}
-    {{/with}}
+    {{! {{/with}}
 </div>
