@@ -1,5 +1,6 @@
-TableSelectWeb.BallTable = DS.Model.extend({
-    // ball_table_id: DS.attr('integer'),
+TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
+    // primaryKey: 'ball_table_id',
+    // ball_table_id: DS.attr('number'),
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),
@@ -13,6 +14,10 @@ TableSelectWeb.BallTable = DS.Model.extend({
         return row_end;
     }.property('ball_table_num').cacheable()
 });
+
+// DS.RESTAdapter.map('TableSelectWeb.BallTable', {
+//     primaryKey: 'ball_table_id'
+// });
 
 // DS.RESTAdapter.map("TableSelectWeb.BallTable", {
 //     name: { key: 'ball_table_id' }
