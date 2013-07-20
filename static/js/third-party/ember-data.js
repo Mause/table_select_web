@@ -1,5 +1,5 @@
-// Version: v0.13-59-ge999edb
-// Last commit: e999edb (2013-07-06 06:03:59 -0700)
+// Version: v0.13-61-gd24b7dc
+// Last commit: d24b7dc (2013-07-20 08:07:43 -0700)
 
 
 (function() {
@@ -8194,8 +8194,7 @@ DS.FixtureSerializer = DS.Serializer.extend({
 */
 
 var get = Ember.get, fmt = Ember.String.fmt,
-    indexOf = Ember.EnumerableUtils.indexOf,
-    dump = Ember.get(window, 'JSON.stringify') || function(object) { return object.toString(); };
+    indexOf = Ember.EnumerableUtils.indexOf;
 
 /**
   `DS.FixtureAdapter` is an adapter that loads records from memory.
@@ -8228,7 +8227,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
       return fixtures.map(function(fixture){
         var fixtureIdType = typeof fixture.id;
         if(fixtureIdType !== "number" && fixtureIdType !== "string"){
-          throw new Error(fmt('the id property must be defined as a number or string for fixture %@', [dump(fixture)]));
+          throw new Error(fmt('the id property must be defined as a number or string for fixture %@', [fixture]));
         }
         fixture.id = fixture.id + '';
         return fixture;

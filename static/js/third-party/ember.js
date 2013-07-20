@@ -156,8 +156,8 @@ Ember.deprecateFunc = function(message, func) {
 
 })();
 
-// Version: v1.0.0-rc.6-138-gea4f0d1
-// Last commit: ea4f0d1 (2013-07-16 15:21:39 -0700)
+// Version: v1.0.0-rc.6-155-g6754343
+// Last commit: 6754343 (2013-07-20 06:18:24 -0700)
 
 
 (function() {
@@ -1997,14 +1997,10 @@ function suspendListener(obj, eventName, target, method, callback) {
 /**
   @private
 
-  Suspend listener during callback.
+  Suspends multiple listeners during a callback.
 
-  This should only be used by the target of the event listener
-  when it is taking an action that would cause the event, e.g.
-  an object might suspend its property change listener while it is
-  setting that property.
-
-  @method suspendListener
+  
+  @method suspendListeners
   @for Ember
   @param obj
   @param {Array} eventName Array of event names
@@ -2066,12 +2062,17 @@ function watchedEvents(obj) {
 }
 
 /**
+  Send an event. The execution of suspended listeners
+  is skipped, and once listeners are removed. A listener without
+  a target is executed on the passed object. If an array of actions
+  is not passed, the actions stored on the passed object are invoked.
+  
   @method sendEvent
   @for Ember
   @param obj
   @param {String} eventName
-  @param {Array} params
-  @param {Array} actions
+  @param {Array} params Optional parameters for each listener.
+  @param {Array} actions Optional array of actions (listeners).
   @return true
 */
 function sendEvent(obj, eventName, params, actions) {
@@ -4001,7 +4002,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       oldSuspended = this._suspended,
       hadCachedValue = false,
       cache = meta.cache,
-      cachedValue, ret;
+      funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
     throw new Error('Cannot Set: ' + keyName + ' on: ' + obj.toString() );
@@ -4016,17 +4017,18 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       hadCachedValue = true;
     }
 
-    // Check if the CP has been wrapped
-    if (func.wrappedFunction) { func = func.wrappedFunction; }
+    // Check if the CP has been wrapped. If if has, use the
+    // length from the wrapped function.
+    funcArgLength = (func.wrappedFunction ? func.wrappedFunction.length : func.length);
 
     // For backwards-compatibility with computed properties
     // that check for arguments.length === 2 to determine if
     // they are being get or set, only pass the old cached
     // value if the computed property opts into a third
     // argument.
-    if (func.length === 3) {
+    if (funcArgLength === 3) {
       ret = func.call(obj, keyName, value, cachedValue);
-    } else if (func.length === 2) {
+    } else if (funcArgLength === 2) {
       ret = func.call(obj, keyName, value);
     } else {
       Ember.defineProperty(obj, keyName, null, cachedValue);
@@ -8315,7 +8317,11 @@ Ember.copy = function(obj, deep) {
   @return {String} A description of the object
 */
 Ember.inspect = function(obj) {
-  if (typeof obj !== 'object' || obj === null) {
+  var type = Ember.typeOf(obj);
+  if (type === 'array') {
+    return '[' + obj + ']';
+  }
+  if (type !== 'object') {
     return obj + '';
   }
 
@@ -8498,9 +8504,9 @@ Ember.String = {
     // first, replace any ORDERED replacements.
     var idx  = 0; // the current index for non-numerical replacements
     return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
-      argIndex = (argIndex) ? parseInt(argIndex,0) - 1 : idx++ ;
+      argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
       s = formats[argIndex];
-      return ((s === null) ? '(null)' : (s === undefined) ? '' : s).toString();
+      return (s === null) ? '(null)' : (s === undefined) ? '' : Ember.inspect(s);
     }) ;
   },
 
@@ -20271,7 +20277,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
 
   ```javascript
   Ember.Handlebars.registerBoundHelper('concatenate', function() {
-    var values = arguments[arguments.length - 1];
+    var values = Array.prototype.slice.call(arguments, 0, -1);
     return values.join('||');
   });
   ```
@@ -20489,10 +20495,17 @@ Ember.Handlebars.template = function(spec) {
 
 (function() {
 /**
-  @method htmlSafe
-  @for Ember.String
-  @static
-*/
+ * Mark a string as safe for raw output with Handlebars. If you
+ * return HTML from a Handlebars helper, use this function to
+ * ensure Handlebars does not escape the HTML.
+ *
+ * `Ember.String.htmlSafe('<div>someString</div>')`
+ *
+ * @method htmlSafe
+ * @for Ember.String
+ * @static
+ * @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
+ */
 Ember.String.htmlSafe = function(str) {
   return new Handlebars.SafeString(str);
 };
@@ -20502,11 +20515,15 @@ var htmlSafe = Ember.String.htmlSafe;
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
-    See `Ember.String.htmlSafe`.
-
-    @method htmlSafe
-    @for String
-  */
+   * Use `'<div>someString</div>'.htmlSafe()` to mark a string as being
+   * safe for raw output with Handlebars.
+   *
+   * See `Ember.String.htmlSafe`.
+   *
+   * @method htmlSafe
+   * @for String
+   * @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
+   */
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);
   };
@@ -22296,7 +22313,7 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-Ember.Handlebars.registerHelper('debugger', function() {
+Ember.Handlebars.registerHelper('debugger', function(options) {
   debugger;
 });
 
@@ -24072,7 +24089,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   if (inputType === 'checkbox') {
     return Ember.Handlebars.helpers.view.call(this, Ember.Checkbox, options);
   } else {
-    hash.type = inputType;
+    if (inputType) { hash.type = inputType; }
     hash.onEvent = onEvent || 'enter';
     return Ember.Handlebars.helpers.view.call(this, Ember.TextField, options);
   }
@@ -24740,7 +24757,7 @@ define("route-recognizer",
 
 (function() {
 define("router",
-  ["route-recognizer", "rsvp"],
+  ["route-recognizer","rsvp"],
   function(RouteRecognizer, RSVP) {
     "use strict";
     /**
@@ -25047,6 +25064,8 @@ define("router",
 
         if (!targetHandlerInfos) { return false; }
 
+        var recogHandlers = this.recognizer.handlersFor(targetHandlerInfos[targetHandlerInfos.length - 1].name);
+
         for (var i=targetHandlerInfos.length-1; i>=0; i--) {
           handlerInfo = targetHandlerInfos[i];
           if (handlerInfo.name === handlerName) { found = true; }
@@ -25056,7 +25075,13 @@ define("router",
 
             if (handlerInfo.isDynamic) {
               object = contexts.pop();
-              if (handlerInfo.context !== object) { return false; }
+
+              if (isParam(object)) {
+                var recogHandler = recogHandlers[i], name = recogHandler.names[0];
+                if (object.toString() !== this.currentParams[name]) { return false; }
+              } else if (handlerInfo.context !== object) { 
+                return false; 
+              }
             }
           }
         }
@@ -25594,11 +25619,12 @@ define("router",
       log(router, seq, "Validation succeeded, finalizing transition;");
 
       // Collect params for URL.
-      var objects = [];
-      for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+      var objects = [], providedModels = transition.providedModelsArray.slice();
+      for (var i = handlerInfos.length - 1; i>=0; --i) {
         var handlerInfo = handlerInfos[i];
         if (handlerInfo.isDynamic) {
-          objects.push(handlerInfo.context);
+          var providedModel = providedModels.pop();
+          objects.unshift(isParam(providedModel) ? providedModel.toString() : handlerInfo.context);
         }
       }
 
@@ -25702,13 +25728,15 @@ define("router",
 
         log(router, seq, handlerName + ": calling beforeModel hook");
 
-        return handler.beforeModel && handler.beforeModel(transition);
+        var p = handler.beforeModel && handler.beforeModel(transition);
+        return (p instanceof Transition) ? null : p;
       }
 
       function model() {
         log(router, seq, handlerName + ": resolving model");
 
-        return getModel(handlerInfo, transition, handlerParams[handlerName], index >= matchPoint);
+        var p = getModel(handlerInfo, transition, handlerParams[handlerName], index >= matchPoint);
+        return (p instanceof Transition) ? null : p;
       }
 
       function afterModel(context) {
@@ -25720,7 +25748,9 @@ define("router",
         // always resolve with the original `context` object.
 
         transition.resolvedModels[handlerInfo.name] = context;
-        return handler.afterModel && handler.afterModel(context, transition);
+
+        var p = handler.afterModel && handler.afterModel(context, transition);
+        return (p instanceof Transition) ? null : p;
       }
 
       function proceed() {
@@ -25839,6 +25869,7 @@ define("router",
       }
       return object;
     }
+
 
     return Router;
   });
