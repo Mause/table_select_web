@@ -48,7 +48,7 @@ DS.RESTSerializer.reopen({
 DS.RESTAdapter.reopen({
     didError: function(store, type, record, xhr) {
         if (acceptable.contains(xhr.status)) {
-
+            console.log('Acceptable!', xhr.status);
             // debugger;
             var json = JSON.parse(xhr.responseText),
                 serializer = Ember.get(this, 'serializer'),
