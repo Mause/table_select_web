@@ -1,13 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # stdlib
 import os
 import sys
+import logging
 
-# # setup newrelic
-# if 'HEROKU' in os.environ:
-#     import newrelic.agent
-#     newrelic.agent.initialize('newrelic.ini')
+# setup newrelic
+if 'HEROKU' in os.environ:
+    import newrelic.agent
+    newrelic.agent.initialize('newrelic.ini')
 
 # third party
 import tornado
@@ -34,23 +35,36 @@ class MainHandler(BaseHandler):
         self.render('templates.html', path='/')
 
 
-def ensure_templates():
+class TemplateHandler(BaseHandler):
+    def get(self):
+        logging.debug('Recompiled templates')
+        args = ensure_templates(force=True)
+        template = (
+            'in_dir: {in_dir}<br/>'
+            'out_file: {out_file}<br/>')
+        self.write(template.format(**args))
+
+
+def ensure_templates(force=False):
     out_file = os.path.join(
         os.path.dirname(__name__),
-        'templates',
-        'templates.html')
+        'templates/templates.html')
 
-    if not os.path.exists(out_file):
+    if not os.path.exists(out_file) or force:
         # not ideal, but w/e
         raw_template_dir = os.path.join(
             os.path.dirname(__file__),
-            'static',
-            'templates')
+            'static/templates')
+
+        args = {
+            'in_dir': raw_template_dir,
+            'out_file': out_file
+        }
 
         from static.templates.compact import compact
-        compact(
-            in_dir=raw_template_dir,
-            out_file=out_file)
+        compact(**args)
+
+        return args
 
 
 def setup_db():
@@ -112,6 +126,7 @@ application = tornado.web.Application(
         (r"/admin", admin.AdminHandler),
         (r"/auth", admin.AuthHandler),
         (r"/logout", admin.LogoutHandler),
+        (r"/templates", TemplateHandler),
         (r"/.*", MainHandler),
     ],
     **tornado_settings
