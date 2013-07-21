@@ -62,34 +62,6 @@ class RemovalRequestTable(Base, BaseMixin):
     remover_ident = Column(String)
     state = Column(String)
 
-
-# ball_table = Table(
-#     'ball_table', metadata,
-#     Column('ball_table_id', Integer, primary_key=True),
-#     Column('ball_table_name', String),
-#     Column('ball_table_num', Integer),
-#     Column('attendees', HasMany(
-#         own='ball_table.ball_table_id',
-#         theirs='attendee.ball_table_id'))
-# )
-
-# attendee_table = Table(
-#     'attendee', metadata,
-#     Column('attendee_id', Integer, primary_key=True),
-#     Column('attendee_name', String),
-#     Column('show', Boolean, default=True),
-#     Column('ball_table_id', ForeignKey('ball_table.ball_table_id'))
-# )
-
-# removal_request_table = Table(
-#     'removal_request', metadata,
-#     Column('request_id', Integer, primary_key=True),
-#     Column('attendee_id', ForeignKey('attendee.attendee_id')),
-#     Column('ball_table_id', ForeignKey('ball_table.ball_table_id')),
-#     Column('remover_ident', String),
-#     Column('state', String)
-# )
-
 Session = sessionmaker()
 
 
