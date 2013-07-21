@@ -48,7 +48,7 @@ var define, requireModule;
 */
 
 /**
-  All Ember Data methods and functions are defined inside of this namespace. 
+  All Ember Data methods and functions are defined inside of this namespace.
 
   @class DS
   @static
@@ -4260,8 +4260,8 @@ DS.RelationshipChange.determineRelationshipType = function(recordType, knownSide
     else{
       return knownKind === "belongsTo" ? "oneToMany" : "manyToMany";
     }
-  } 
- 
+  }
+
 };
 
 DS.RelationshipChange.createChange = function(firstRecordReference, secondRecordReference, store, options){
@@ -7390,7 +7390,7 @@ DS.loaderFor = loaderFor;
 
   For an example implementation, see {{#crossLink "DS.RestAdapter"}} the
   included REST adapter.{{/crossLink}}.
-  
+
   @class Adapter
   @namespace DS
   @extends Ember.Object
