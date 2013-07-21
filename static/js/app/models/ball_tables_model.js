@@ -1,10 +1,9 @@
 TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
-    // primaryKey: 'ball_table_id',
-    // ball_table_id: DS.attr('number'),
+    primaryKey: 'ball_table_id',
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),
-    attendees: DS.hasMany('TableSelectWeb.Attendee'),
+    attendees: DS.hasMany('TableSelectWeb.Attendee', {embedded: 'load'}),
 
     row_end: function() {
         // this is for display purposes only
@@ -14,11 +13,3 @@ TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
         return row_end;
     }.property('ball_table_num').cacheable()
 });
-
-// DS.RESTAdapter.map('TableSelectWeb.BallTable', {
-//     primaryKey: 'ball_table_id'
-// });
-
-// DS.RESTAdapter.map("TableSelectWeb.BallTable", {
-//     name: { key: 'ball_table_id' }
-// });

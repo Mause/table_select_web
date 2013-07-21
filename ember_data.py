@@ -61,6 +61,7 @@ class BaseRESTEndpoint(object):
         else:
             logging.debug('Setup is good')
 
+        response = {}
         # parse the conditions
         conditions = self.build_conditions_from_args(
             self.request.arguments, self.table)
@@ -80,16 +81,7 @@ class BaseRESTEndpoint(object):
 
             records = dict_from_query(query.all())
 
-            id_field_name = self.table.__tablename__ + '_id'
-
-            for record in records:
-                if id_field_name in record:
-                    record['id'] = record[id_field_name]
-                    del record[id_field_name]
-
-            response = {
-                self.ember_model_name: records
-            }
+            response[self.ember_model_name] = records
 
             self.write(json.dumps(response, indent=4))
 
