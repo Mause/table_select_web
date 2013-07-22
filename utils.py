@@ -39,22 +39,31 @@ def singularize(name):
         return name
 
 
+# these functions assume that there is only one primary key
+def get_primary_key_name_from_table(table):
+    if hasattr(table, '__table__'):
+        table = table.__table__
+    assert len(table.primary_key.columns.keys()) < 2
+    return table.primary_key.columns.keys()[0]
+
+
+def get_primary_key_from_record(record):
+    key = get_primary_key_name_from_table(record)
+    return record.__dict__[key]
+
+
 def dict_from_query(query, debug=False):
-    def get_primary_key(record):
-        key = record.__table__.primary_key.columns.keys()[0]
-        return record.__dict__[key]
-
     def serialize(record, ids_only=False):
-
         if type(record) in (list, InstrumentedList):
             return [serialize(sub, ids_only=True) for sub in record]
 
         if ids_only:
-            return get_primary_key(record)
+            return get_primary_key_from_record(record)
         else:
             out = {}
             for key, value in record.items():
                 if type(value) == InstrumentedList:
+                    key = singularize(key) + '_ids'
                     value = serialize(value, ids_only=True)
                 out[key] = value
             return out
