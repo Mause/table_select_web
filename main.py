@@ -113,15 +113,15 @@ application = tornado.web.Application(
             {'path': tornado_settings['static_path']}),
 
         # get only for ball table's
-        (r"/api/v1/ball_tables", ajax.BallTablesHandler),
+        (r"/api/v1/ball_tables(?:/(?P<record_id>\d+))?", ajax.BallTablesHandler),
 
         # this will be update, i suppose
-        (r"/api/v1/attendees/remove", ajax.RemovalRequestHandler),
+        (r"/api/v1/removal_requests(?:/(?P<record_id>\d+))?", ajax.RemovalRequestHandler),
 
         # post! (and maybe get for some reason)
-        (r"/api/v1/attendees", ajax.AttendeeHandler),
+        (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
-        (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
+        # (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
 
         (r"/admin", admin.AdminHandler),
         (r"/auth", admin.AuthHandler),
