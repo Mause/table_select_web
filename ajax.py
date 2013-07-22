@@ -36,13 +36,14 @@ class BallTablesHandler(EmberDataRESTEndpoint):
     }
 
 
-class RemovalRequestHandler(BaseHandler):
+class RemovalRequestHandler(EmberDataRESTEndpoint):
     table = db.RemovalRequestTable
     ember_model_name = 'removal_request'
 
-    allowed_methods = ['GET']
+    allowed_methods = ['GET', 'POST']
     needs_admin = {
-        'GET': False
+        'GET': False,
+        'POST': False
     }
 
     # def post(self):
@@ -74,7 +75,12 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
     allowed_methods = ['GET', 'POST']
 
+    def check_record(self, attendee):
+        if attendee['ball_table_id'] is None:
+            self.set_bad_error(400)
+
     def check_if_table_full(self, session, attendee):
+
         if self.is_table_full(session, attendee['ball_table_id']):
             logging.info('table_full')
             errors = {
@@ -92,6 +98,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
             return {}
 
     def is_table_full(self, session, ball_table_id):
+
         # query the db for users on this table that can be shown
         query = session.query(db.Attendee)
         query = query.filter_by(ball_table_id=ball_table_id, show=True)
@@ -127,6 +134,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
             return {}
 
     checks = [
+        check_record,
         check_if_table_full,
         check_if_attendee_exists
     ]
