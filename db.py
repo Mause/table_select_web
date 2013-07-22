@@ -45,6 +45,7 @@ class Attendee(Base, BaseMixin):
     attendee_id = Column(Integer, primary_key=True)
     attendee_name = Column(String)
     show = Column(Boolean, default=True)
+    removal_request_exists = Column(Boolean, default=False)
 
     # other guys stuff
     ball_table_id = Column(
