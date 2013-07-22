@@ -4,7 +4,8 @@ from contextlib import closing
 from utils import (
     dict_from_query,
     # pluralize,
-    singularize
+    singularize,
+    get_primary_key_name_from_table
 )
 
 
@@ -28,6 +29,7 @@ class BaseRESTEndpoint(object):
         'GET': False,
         'POST': False
     }
+    checks = []
     Session = None
 
     def check_setup(self):
@@ -53,7 +55,7 @@ class BaseRESTEndpoint(object):
         assert self.table is not None, 'Bad table name'
         assert self.ember_model_name is not None, 'Bad EmberJS model name'
 
-    def get(self):
+    def get(self, record_id):
         errors = self.check_setup()
         if errors:
             self.write(json.dumps(errors, indent=4))
@@ -66,42 +68,38 @@ class BaseRESTEndpoint(object):
         conditions = self.build_conditions_from_args(
             self.request.arguments, self.table)
 
-        # TODO: for later :P
-        # requested_ids = self.get_arguments('ids[]')
-
         with closing(self.Session()) as session:
             query = session.query(self.table)
 
-            if conditions:
+            if conditions and not record_id:
                 logging.debug('{} filter conditions: {}'.format(
                     self.table.__tablename__,
                     conditions))
 
-                query = query.filter_by(**conditions)
+                # apply the conditions
+                query = self.apply_conditions(query, conditions)
+            elif record_id:
+                key = get_primary_key_name_from_table(self.table)
+                key = getattr(self.table, key)
+                query = query.filter(key == record_id)
 
             records = dict_from_query(query.all())
 
-            response[self.ember_model_name] = records
+            key = self.ember_model_name
+            response[key] = records
 
             self.write(json.dumps(response, indent=4))
 
-    def post(self):
+    def post(self, record_id):
         # check the setup
         errors = self.check_setup()
         if errors:
             self.write(json.dumps(errors, indent=4))
             return
 
-        # load in the filters
-        body = self.decode_and_load(self.request.body)
-
         response = {}
 
-        # get the singular version of the model name
-        singular_model_name = singularize(self.ember_model_name)
-
-        # grab the new record data
-        record_data = body[singular_model_name]
+        record_data = self.get_record_data(self.request.body)
 
         with closing(self.Session()) as session:
             # perform any specified checks
@@ -114,27 +112,89 @@ class BaseRESTEndpoint(object):
                 # create a new record using the data
                 new_record = self.table(**record_data)
 
+                # instruct the session to save the record
                 session.add(new_record)
-                session.commit()
+                session.flush()
+
+                # refresh the in memory record with its corresponding id
+                session.refresh(new_record)
+
+                # update the frontends representation of the record with an id
+                response[self.ember_model_name] = dict_from_query(new_record)
 
                 logging.info(
                     'added {} {} to db'.format(
-                    singular_model_name, record_data))
+                    self.table.__tablename__, record_data))
 
                 self.set_status(201)  # created
 
         self.write(json.dumps(response, indent=4))
 
+    def put(self, record_id):
+        response = {}
+
+        record_data = self.get_record_data(self.request.body)
+
+        with closing(self.Session()) as session:
+            # get the primary key for the table
+            key = get_primary_key_name_from_table(self.table)
+
+            # need to make it a dict so that the args come out right
+            conditions = {
+                key: record_id
+            }
+
+            # grab the record we are updating
+            query = session.query(self.table)
+            query = query.filter_by(**conditions)
+            record = query.one()
+
+            # make the changes
+            for key, value in record_data.items():
+                if getattr(record, key) != value:
+                    # don't change anything unless we have to
+                    # i'm not sure how the sqlalchmemy internals work,
+                    # this might make for less work on the db interaction
+                    setattr(record, key, value)
+
+            session.add(record)
+
+            session.commit()
+
+        self.write(json.dumps(response, indent=4))
+
+    def get_record_data(self, request_body):
+        body = self.decode_and_load(request_body)
+
+        # get the singular version of the model name
+        singular_model_name = singularize(self.ember_model_name)
+
+        record = body.get(singular_model_name)
+
+        if record is None:
+            self.set_bad_error(400)
+        else:
+            return record
+
     def build_conditions_from_args(self, args, table):
+        decode = lambda x: x.decode('utf-8')
         try:
-            conditions = {}
+            out = {
+                'conditions': {},
+                'ids': []
+            }
             # iterate through the key value pairs
             for key, val in args.items():
-                val = val[0].decode('utf-8')
+
+                if key == 'ids[]':
+                    out['ids'] = val
+                    continue
+
+                val = decode(val[0])
 
                 # check if the filter is valid for the table
                 if key and key in table.__table__.columns.keys():
-                    conditions[key] = val
+                    out['conditions'][key] = val
                 else:
                     logging.debug('Bad filter: {}={}'.format(key, val))
 
@@ -144,7 +204,25 @@ class BaseRESTEndpoint(object):
             logging.debug('UnicodeDecodeError whilst decoding filters')
             self.set_bad_error(400)
 
-        return conditions
+        try:
+            out['ids'] = [decode(sub_val) for sub_val in out['ids']]
+            out['ids'] = [int(id) for id in out['ids']]
+            logging.info('Requested ids: {}'.format(out['ids']))
+        except ValueError as e:
+            logging.error(e)
+            self.set_bad_error(400)
+
+        return out
+
+    def apply_conditions(self, query, conditions):
+        if conditions['ids']:
+            primary_key = get_primary_key_name_from_table(self.table)
+            in_ = getattr(self.table, primary_key).in_
+            query = query.filter(in_(conditions['ids']))
+
+        query = query.filter_by(**conditions['conditions'])
+
+        return query
 
     def decode_and_load(self, body):
         try:
