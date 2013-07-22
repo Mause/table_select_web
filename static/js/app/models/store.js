@@ -16,9 +16,9 @@ DS.RESTSerializer.reopen({
             return original;
         }
 
-        var attributes = Ember.copy(Ember.get(type, 'attributes'));
+        var attributes = Ember.get(type, 'attributes').copy();
         // attributes = attributes.keys.list;
-        var relationships = Ember.copy(Ember.get(type, 'relationshipsByName'));
+        var relationships = Ember.get(type, 'relationshipsByName').copy();
         attributes = merge(attributes.keys.list, relationships.keys.list);
 
         function get_error(name) {
@@ -30,7 +30,7 @@ DS.RESTSerializer.reopen({
 
         function get_errors(name) {
             get_error.call(_this, name);
-            // get_error.call(_this, name + '_id');
+            get_error.call(_this, name + '_id');
         }
 
         try {
@@ -54,7 +54,7 @@ DS.RESTAdapter.reopen({
                 serializer = Ember.get(this, 'serializer'),
                 // errors = serializer.extractValidationErrors(type, json);
                 errors = serializer.extractExtendedValidationErrors(type, json);
-
+            console.assert(serializer === TableSelectWeb.Serializer);
             // record.errors = errors;
 
             // debugger;
@@ -66,6 +66,9 @@ DS.RESTAdapter.reopen({
     }
 });
 
+// we create it here so that we can configure
+// it for models in their definition files
+TableSelectWeb.Serializer = DS.RESTSerializer.create({});
 
 TableSelectWeb.Adapter = DS.RESTAdapter.create({
     namespace: 'api/v1',
@@ -73,8 +76,11 @@ TableSelectWeb.Adapter = DS.RESTAdapter.create({
     mappings: {
         ball_tables: TableSelectWeb.BallTable,
         errors: TableSelectWeb.Error
-    }
+    },
+
+    serializer: TableSelectWeb.Serializer
 }),
+
 
 TableSelectWeb.Store = DS.Store.extend({
     adapter: TableSelectWeb.Adapter,

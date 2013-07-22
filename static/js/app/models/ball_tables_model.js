@@ -1,5 +1,4 @@
 TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
-    primaryKey: 'ball_table_id',
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),
@@ -12,4 +11,8 @@ TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
 
         return row_end;
     }.property('ball_table_num').cacheable()
+});
+
+TableSelectWeb.Serializer.configure('TableSelectWeb.BallTable', {
+    primaryKey: 'ball_table_id'
 });
