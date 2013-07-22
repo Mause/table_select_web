@@ -3,8 +3,7 @@
         <div class="custom-dropdown clearfix attendee_list">
             <ul class="custom-dropdown-menu dropdown-menu-customization">
                 {{#each attendee in attendees}}
-                    {{log attendee.isLoaded}}
-                    {{control_smart 'single_attendee' attendee}}
+                    {{partial 'single_attendee'}}
                 {{/each}}
             </ul>
         </div>

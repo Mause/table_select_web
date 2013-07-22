@@ -1,11 +1,11 @@
 <div class="enclosure space_below span5">
     <h2 style="color:black;">{{ball_table.ball_table_name}}</h2>
 
-    {{#unless full }}
+    {{#unless ball_table.full}}
         {{control_smart 'add_attendee' ball_table}}
     {{/unless}}
 
     {{#with ball_table.attendees as attendees}}
-        {{view TableSelectWeb.AttendeeListView contentBinding=attendees}}
+        {{control_smart 'attendee_list' attendees}}
     {{/with}}
 </div>
