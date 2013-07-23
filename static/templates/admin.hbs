@@ -1,38 +1,33 @@
-{% extends "base.html" %}
-{% block title %}Ball Table Select{% end %}
-{% block content %}
-    <div class="row">
-        <div class="enclosure">
-            <h3>Admin</h3>
+<div class="row">
+    <div class="enclosure">
+        <h3>Admin</h3>
 
-            <p>
-                "Allow" will remove that attendee from that table.
-                "Deny" will leave them on that table.
-            </p>
-            <p>
-                Both remove the request from this page
-            </p>
+        <p>
+            "Allow" will remove that attendee from that table.
+            "Deny" will leave them on that table.
+        </p>
+        <p>
+            Both remove the request from this page
+        </p>
 
-            <ul class="well no-decoration">
-            {% for request in requests %}
-                <li>
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="action_marker"
-                            data-request-id="{{request['request_id']}}"/>
-                        <span style="margin-top:-1px;">
-                            requesting that "{{request['attendee_name']}}" be removed from table {{request['table_id']}}
-                        </span>
-                    </label>
-                </li>
-            {%end%}
-            </ul>
+        <ul class="well no-decoration">
+        {{#each request in requests}}
+            <li>
+                <label>
+                    <input
+                        type="checkbox"
+                        class="action_marker"
+                    <span style="margin-top:-1px;">
+                        requesting that "{{request.attendee_name}}" be removed from table {{request.ball_table_id}}
+                    </span>
+                </label>
+            </li>
+        {{/each}}
+        </ul>
 
-            <div class="request_actions">
-                <button class="btn btn-success" id="allow_button">Allow</button>
-                <button class="btn btn-danger" id="deny_button">Deny</button>
-            </div>
+        <div class="request_actions">
+            <button class="btn btn-success" {{action allow}}>Allow</button>
+            <button class="btn btn-danger" {{action deny}}>Deny</button>
         </div>
     </div>
-{% end %}
+</div>
