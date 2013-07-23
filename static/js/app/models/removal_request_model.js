@@ -1,4 +1,4 @@
-TableSelectWeb.RemovalRequest = TableSelectWeb.Model.extend({
+TableSelectWeb.RemovalRequest = DS.Model.extend({
     attendee: DS.belongsTo('TableSelectWeb.Attendee'),
     ball_table: DS.belongsTo('TableSelectWeb.BallTable'),
     remover_ident: DS.attr('string'),
@@ -6,5 +6,6 @@ TableSelectWeb.RemovalRequest = TableSelectWeb.Model.extend({
 });
 
 TableSelectWeb.Serializer.configure('TableSelectWeb.RemovalRequest', {
-    primaryKey: 'request_id'
+    primaryKey: 'request_id',
+    alias: 'removal_request'
 });

@@ -1,4 +1,4 @@
-TableSelectWeb.BallTable = TableSelectWeb.Model.extend({
+TableSelectWeb.BallTable = DS.Model.extend({
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),

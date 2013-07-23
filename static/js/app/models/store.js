@@ -75,7 +75,7 @@ TableSelectWeb.Adapter = DS.RESTAdapter.create({
 
     mappings: {
         ball_tables: TableSelectWeb.BallTable,
-        errors: TableSelectWeb.Error
+        removal_request: TableSelectWeb.RemovalRequest
     },
 
     serializer: TableSelectWeb.Serializer
