@@ -1,5 +1,5 @@
 <nav>
-    <a {{action 'refresh'}} class="btn refresh">Refresh</a>
+    {{#linkTo 'admin' class="btn"}}Admin{{/linkTo}}
     {{#linkTo 'info' class="btn"}}Info{{/linkTo}}
 
     {{#if is_admin}}
