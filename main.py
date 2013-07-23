@@ -105,6 +105,7 @@ tornado_settings = {
     "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
     'cookie_secret': settings['cookie_secret'],
     "debug": True,
+    "gzip": True,
 }
 
 application = tornado.web.Application(
@@ -123,7 +124,7 @@ application = tornado.web.Application(
 
         # (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
 
-        (r"/admin", admin.AdminHandler),
+        # (r"/admin", admin.AdminHandler),
         (r"/auth", admin.AuthHandler),
         (r"/logout", admin.LogoutHandler),
         (r"/templates", TemplateHandler),
