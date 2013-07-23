@@ -3,7 +3,7 @@ import logging
 from contextlib import closing
 from utils import (
     dict_from_query,
-    # pluralize,
+    pluralize,
     singularize,
     get_primary_key_name_from_table
 )
@@ -69,6 +69,8 @@ class BaseRESTEndpoint(object):
         with closing(self.Session()) as session:
             query = session.query(self.table)
 
+            records_key = self.ember_model_name
+
             if conditions and not record_id:
                 logging.debug('{} filter conditions: {}'.format(
                     self.table.__tablename__,
@@ -76,16 +78,18 @@ class BaseRESTEndpoint(object):
 
                 # apply the conditions
                 query = self.apply_conditions(query, conditions)
+                records = dict_from_query(query.all())
+
+                response[pluralize(records_key)] = records
 
             elif record_id:
+                # we are returning a single record
                 key = get_primary_key_name_from_table(self.table)
                 key = getattr(self.table, key)
                 query = query.filter(key == record_id)
 
-            records = dict_from_query(query.all())
-
-            key = self.ember_model_name
-            response[key] = records
+                record = dict_from_query(query.one())
+                response[singularize(records_key)] = record
 
             self.write(json.dumps(response, indent=4))
 
