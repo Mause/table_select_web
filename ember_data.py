@@ -60,8 +60,6 @@ class BaseRESTEndpoint(object):
         if errors:
             self.write(json.dumps(errors, indent=4))
             return
-        else:
-            logging.debug('Setup is good')
 
         response = {}
         # parse the conditions
@@ -78,6 +76,7 @@ class BaseRESTEndpoint(object):
 
                 # apply the conditions
                 query = self.apply_conditions(query, conditions)
+
             elif record_id:
                 key = get_primary_key_name_from_table(self.table)
                 key = getattr(self.table, key)
@@ -91,6 +90,9 @@ class BaseRESTEndpoint(object):
             self.write(json.dumps(response, indent=4))
 
     def post(self, record_id):
+        if record_id is not None:
+            raise NotImplementedError()
+
         # check the setup
         errors = self.check_setup()
         if errors:
@@ -115,6 +117,7 @@ class BaseRESTEndpoint(object):
                 # instruct the session to save the record
                 session.add(new_record)
                 session.flush()
+                session.commit()
 
                 # refresh the in memory record with its corresponding id
                 session.refresh(new_record)
@@ -131,6 +134,12 @@ class BaseRESTEndpoint(object):
         self.write(json.dumps(response, indent=4))
 
     def put(self, record_id):
+        # check the setup
+        errors = self.check_setup()
+        if errors:
+            self.write(json.dumps(errors, indent=4))
+            return
+
         response = {}
 
         record_data = self.get_record_data(self.request.body)
@@ -163,6 +172,12 @@ class BaseRESTEndpoint(object):
 
         self.write(json.dumps(response, indent=4))
 
+    def delete(self):
+        raise NotImplementedError()
+
+    def patch(self):
+        raise NotImplementedError()
+
     def get_record_data(self, request_body):
         body = self.decode_and_load(request_body)
 
@@ -177,7 +192,12 @@ class BaseRESTEndpoint(object):
             return record
 
     def build_conditions_from_args(self, args, table):
-        decode = lambda x: x.decode('utf-8')
+        def decode(x):
+            if type(x) == list:
+                return [decode(sub_val) for sub_val in x]
+            else:
+                return x.decode('utf-8')
+
         try:
             out = {
                 'conditions': {},
@@ -190,11 +210,9 @@ class BaseRESTEndpoint(object):
                     out['ids'] = val
                     continue
 
-                val = decode(val[0])
-
                 # check if the filter is valid for the table
                 if key and key in table.__table__.columns.keys():
-                    out['conditions'][key] = val
+                    out['conditions'][key] = decode(val[0])
                 else:
                     logging.debug('Bad filter: {}={}'.format(key, val))
 
@@ -205,9 +223,7 @@ class BaseRESTEndpoint(object):
             self.set_bad_error(400)
 
         try:
-            out['ids'] = [decode(sub_val) for sub_val in out['ids']]
-            out['ids'] = [int(id) for id in out['ids']]
-            logging.info('Requested ids: {}'.format(out['ids']))
+            out['ids'] = [int(id) for id in decode(out['ids'])]
         except ValueError as e:
             logging.error(e)
             self.set_bad_error(400)

@@ -75,7 +75,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
     allowed_methods = ['GET', 'POST']
 
-    def check_record(self, attendee):
+    def check_record(self, session, attendee):
         if attendee['ball_table_id'] is None:
             self.set_bad_error(400)
 
