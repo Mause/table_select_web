@@ -2,32 +2,35 @@
     <div class="enclosure">
         <h3>Admin</h3>
 
-        <p>
+        <p class="well no-decoration">
             "Allow" will remove that attendee from that table.
             "Deny" will leave them on that table.
-        </p>
-        <p>
+            <br/>
             Both remove the request from this page
         </p>
 
-        <ul class="well no-decoration">
-        {{#each request in requests}}
-            <li>
-                <label>
-                    <input
-                        type="checkbox"
-                        class="action_marker"
-                    <span style="margin-top:-1px;">
-                        requesting that "{{request.attendee_name}}" be removed from table {{request.ball_table_id}}
-                    </span>
-                </label>
-            </li>
-        {{/each}}
-        </ul>
+        <form>
+            <ul class="well no-decoration">
+            {{#each request in controller}}
+                <li>
+                    <label>
+                        {{view TableSelectWeb.RemovalRequestCheckboxView
+                        valueBinding="request"}}
+                        <span style="margin-top:-1px;">
+                            requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}""
+                        </span>
+                    </label>
+                </li>
+            {{/each}}
+            </ul>
 
-        <div class="request_actions">
-            <button class="btn btn-success" {{action allow}}>Allow</button>
-            <button class="btn btn-danger" {{action deny}}>Deny</button>
-        </div>
+            <div class="request_actions">
+                <button class="btn btn-success" {{action allow}}>Allow</button>
+                <button class="btn btn-danger" {{action deny}}>Deny</button>
+            {{action addAttendeeFormEvent view.attendee_name target="view"}}
+            </div>
+        </form>
     </div>
 </div>
+
+
