@@ -58,8 +58,7 @@
         <script src="{{ static_url('js/app/routes/router.js') }}"></script>
         <script src="{{ static_url('js/app/routes/index_route.js') }}"></script>
         <script src="{{ static_url('js/app/routes/info_route.js') }}"></script>
-
-        <script src="{{ static_url('js/third-party/ember_plugins/better_models.js') }}"></script>
+        <script src="{{ static_url('js/app/routes/admin_route.js') }}"></script>
 
         <!-- Models -->
         <script src="{{ static_url('js/app/models/store.js') }}"></script>
@@ -71,22 +70,20 @@
         <script src="{{ static_url('js/app/controllers/ball_table_controller.js') }}"></script>
         <script src="{{ static_url('js/app/controllers/add_attendee_controller.js') }}"></script>
         <script src="{{ static_url('js/app/controllers/attendee_list_controller.js') }}"></script>
-        <script src="{{ static_url('js/app/controllers/single_attendee_controller.js') }}"></script>
+        <script src="{{ static_url('js/app/controllers/admin_controller.js') }}"></script>
 
         <!-- Views -->
         <script src="{{ static_url('js/app/views/add_attendee_view.js') }}"></script>
         <script src="{{ static_url('js/app/views/attendee_list_view.js') }}"></script>
         <script src="{{ static_url('js/app/views/ball_table_view.js') }}"></script>
-        <script src="{{ static_url('js/app/views/single_attendee_view.js') }}"></script>
+        <script src="{{ static_url('js/app/views/admin_view.js') }}"></script>
+        <script src="{{ static_url('js/app/views/removal_request_checkbox_view.js') }}"></script>
 
-        <!-- Templates -->
-        <!-- <script src="{{ static_url('js/app/template.js') }}"></script> -->
 
         <!-- Ember plugins -->
-        <!-- <script src="{{ static_url('js/third-party/ember-easyForm-0.1.0.js') }}"></script> -->
         <script src="{{ static_url('js/third-party/ember_plugins/ember-bootstrap.js') }}"></script>
-        <script src="{{ static_url('js/third-party/ember_plugins/ember_control/monkey_patch.js') }}"></script>
-        <script src="{{ static_url('js/third-party/ember_plugins/ember_control/control.js') }}"></script>
+        <!-- // <script src="{{ static_url('js/third-party/ember_plugins/ember_control/monkey_patch.js') }}"></script> -->
+        <!-- // <script src="{{ static_url('js/third-party/ember_plugins/ember_control/control.js') }}"></script> -->
 
         <!-- // <script type="text/javascript" src="{{ static_url('js/app/admin_logic.js') }}"></script> -->
 
@@ -96,10 +93,10 @@
                     {{!partial header}}
 
                     {{!outlet 'application'}}
-
             </div> <!-- /container -->
         </script>
 
+        <!-- here go the templates -->
         {% block content %}
         {% end %}
 
