@@ -1,5 +1,5 @@
-// Version: v0.0.2-6-g4f8a606
-// Last commit: 4f8a606 (2013-07-15 16:23:44 +0200)
+// Version: v0.0.2-18-g0c1983c
+// Last commit: 0c1983c (2013-07-23 05:19:49 -0700)
 
 
 (function() {
@@ -250,7 +250,7 @@ var get = Ember.get;
 Bootstrap.ItemViewTitleSupport = Ember.Mixin.create({
   title: Ember.computed(function() {
     var parentView = get(this, 'parentView'),
-        content,
+        content, 
         titleKey;
 
     content = get(this, 'content');
@@ -468,7 +468,7 @@ Bootstrap.Pager = Ember.CollectionView.extend({
     this._super();
     if (!this.get('content')) {
       this.set('content', Ember.A([
-                                  Ember.Object.create({ title: '&larr;' }),
+                                  Ember.Object.create({ title: '&larr;' }), 
                                   Ember.Object.create({ title: '&rarr;' })
       ]));
     }
@@ -522,8 +522,8 @@ Bootstrap.Breadcrumb = Ember.CollectionView.extend(Bootstrap.FirstLastViewSuppor
   classNames: ['breadcrumb'],
   divider: '/',
   arrayDidChange: function(content, start, removed, added) {
-    var view,
-        index,
+    var view, 
+        index, 
         length,
         item,
         lastItemViewClass = get(this, 'lastItemViewClass'),
@@ -577,6 +577,141 @@ Bootstrap.Breadcrumb = Ember.CollectionView.extend(Bootstrap.FirstLastViewSuppor
   })
 });
 
+})();
+
+
+
+(function() {
+/**
+* @property buttonDropdownTemplate
+* @type {String}
+*/
+var buttonDropdownTemplate = [
+    '<a {{bindAttr class="view.typeClass :btn :dropdown-toggle" }} data-toggle="dropdown" href="#">',
+        '{{view.label}}',
+        '<span class="caret"></span>',
+    '</a>',
+    '<ul class="dropdown-menu">',
+    '   {{#if view.items}}',
+    '       {{#each item in view.items}}',
+    '           <li {{bindAttr class="item.disabled:disabled"}}>{{view view.Item contextBinding="item"}}</li>',
+    '       {{/each}}',
+    '   {{/if}}',
+    '</ul>'
+].join("\n");
+
+/**
+* @property Bootstrap.ButtonDropdown
+* @type {Ember.View}
+*/
+Bootstrap.ButtonDropdown = Ember.View.extend({
+
+    /**
+     * @property label
+     * @type {String}
+     */
+    label: null,
+
+    /**
+     * @property items
+     * @type {Array}
+     */
+    items: [],
+
+    /**
+     * @property classNames
+     * @type {Array}
+     */
+    classNames: ['btn-group'],
+
+    /**
+     * @property defaultTemplate
+     * @type {String}
+     */
+    defaultTemplate: Ember.Handlebars.compile(buttonDropdownTemplate),
+
+    /**
+     * @method didInsertElement
+     * @return {void}
+     */
+    didInsertElement: function() {
+
+        var items   = Ember.get(this, 'items'),
+            forEach = Ember.EnumerableUtils.forEach;
+
+        forEach(items, function(item) {
+
+            // Iterate over the items, and if the `disabled` property changes, notify the
+            // view of an update.
+            Ember.addObserver(item, 'disabled', function() {
+                this.notifyPropertyChange('view.items');
+            });
+
+        }, this);
+
+    },
+
+    /**
+     * @property Item
+     * @type {Ember.View}
+     */
+    Item: Ember.View.extend({
+
+        /**
+         * @property tagName
+         * @type {String}
+         * @default "a"
+         */
+        tagName: 'a',
+
+        /**
+         * @property attributeBindings
+         * @type {Array}
+         */
+        attributeBindings: ['href'],
+
+        /**
+         * @property template
+         * @type {Function}
+         */
+        template: Ember.Handlebars.compile('{{label}}'),
+
+        /**
+         * @property href
+         * @type {Object}
+         * @return {String}
+         */
+        href: Ember.computed(function() {
+            return '#';
+        }),
+
+        /**
+         * @method click
+         * Attempt to invoke the specified action name on the controller.
+         * @return {void}
+         */
+        click: function() {
+
+            var item        = Ember.get(this, 'context'),
+                actionName  = Ember.get(item, 'actionName'),
+                controller  = Ember.get(this, 'controller');
+
+            if (Ember.get(item, 'disabled') === true) {
+                // We won't invoke the action if it's disabled.
+                return;
+            }
+
+            Ember.assert('View `Bootstrap.ButtonDropdown` does not have a controller attached.', !!Ember.get(this, 'controller'));
+            Ember.assert('Controller `%@` does not have an action `%@`!'.fmt(controller, actionName), !!Ember.canInvoke(controller, actionName));
+
+            // Invoke the action on the controller, passing in the item as the first param.
+            Ember.tryInvoke(controller, actionName, item);
+
+        }
+
+    })
+
+});
 })();
 
 
@@ -740,7 +875,7 @@ Bootstrap.Forms.Select = Bootstrap.Forms.Field.extend({
     classNameBindings:      ['parentView.inputClassNames'],
     name: Ember.computed(function() {
       return this.get('parentView.name') || this.get('parentView.label');
-    }).property('parentView.name', 'parentView.label')
+    }).property('parentView.name', 'parentView.label')    
   })
 });
 
@@ -772,7 +907,7 @@ Bootstrap.Forms.TextArea = Bootstrap.Forms.Field.extend({
 
   inputField: Ember.TextArea.extend(Bootstrap.TextSupport, {
     rowsBinding: 'parentView.rows',
-    colsBinding: 'parentView.cols'
+    colsBinding: 'parentView.cols' 
   })
 });
 
