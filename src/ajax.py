@@ -40,10 +40,11 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
     table = db.RemovalRequestTable
     ember_model_name = 'removal_request'
 
-    allowed_methods = ['GET', 'POST']
+    allowed_methods = ['GET', 'POST', 'PUT']
     needs_admin = {
         'GET': False,
-        'POST': False
+        'POST': False,
+        'PUT': True
     }
 
     # def post(self):
@@ -70,10 +71,11 @@ class AttendeeHandler(EmberDataRESTEndpoint):
     ember_model_name = 'attendees'
     needs_admin = {
         'GET': False,
-        'POST': False
+        'POST': False,
+        'PUT': False
     }
 
-    allowed_methods = ['GET', 'POST']
+    allowed_methods = ['GET', 'POST', 'PUT']
 
     def check_record(self, session, attendee):
         if attendee['ball_table_id'] is None:
