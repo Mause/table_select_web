@@ -1,10 +1,16 @@
-TableSelectWeb.Router.reopen({
-    location: 'history'
-});
+define(['ember'], function(Ember){
+    'use strict';
+    var Router = Ember.Router;
 
+    Router.reopen({
+        location: 'history'
+    });
 
-TableSelectWeb.Router.map(function(){
-    this.resource('index', {path: '/'});
-    this.resource('info', {path: '/info'});
-    this.resource('admin', {path: '/admin'});
+    Router.map(function(){
+        this.resource('index', {path: '/'});
+        this.resource('info', {path: '/info'});
+        this.resource('admin', {path: '/admin'});
+    });
+
+    return Router;
 });
