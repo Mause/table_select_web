@@ -14,8 +14,7 @@
             {{#each request in controller}}
                 <li>
                     <label>
-                        {{view TableSelectWeb.RemovalRequestCheckboxView
-                        valueBinding="request"}}
+                        {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
                         <span style="margin-top:-1px;">
                             requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}""
                         </span>
@@ -25,9 +24,8 @@
             </ul>
 
             <div class="request_actions">
-                <button class="btn btn-success" {{action allow}}>Allow</button>
-                <button class="btn btn-danger" {{action deny}}>Deny</button>
-            {{action addAttendeeFormEvent view.attendee_name target="view"}}
+                <button class="btn btn-success" {{action allow target="view"}}>Allow</button>
+                <button class="btn btn-danger" {{action deny target="view"}}>Deny</button>
             </div>
         </form>
     </div>
