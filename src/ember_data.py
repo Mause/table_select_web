@@ -127,7 +127,8 @@ class BaseRESTEndpoint(object):
                 session.refresh(new_record)
 
                 # update the frontends representation of the record with an id
-                response[self.ember_model_name] = dict_from_query(new_record)
+                record_key = singularize(self.ember_model_name)
+                response[record_key] = dict_from_query(new_record)
 
                 logging.info(
                     'added {} {} to db'.format(
@@ -171,8 +172,10 @@ class BaseRESTEndpoint(object):
                     setattr(record, key, value)
 
             session.add(record)
-
             session.commit()
+
+            # update the frontends representation of the record with an id
+            response[self.ember_model_name] = dict_from_query(record)
 
         self.write(json.dumps(response, indent=4))
 
@@ -246,9 +249,14 @@ class BaseRESTEndpoint(object):
 
     def decode_and_load(self, body):
         try:
-            body = body.decode('utf-8')
+            if type(body) == bytes:
+                body = body.decode('utf-8')
         except UnicodeDecodeError:
             logging.debug('UnicodeDecodeError whilst decoding fields')
+            self.set_bad_error(400)
+
+        if body == '':
+            logging.debug('Bad JSON')
             self.set_bad_error(400)
 
         try:
