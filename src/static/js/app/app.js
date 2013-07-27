@@ -1,18 +1,41 @@
-// these tend to spam :/
-Ember.LOG_BINDINGS = true;
-// Ember.STRUCTURED_PROFILE = true;
+require.config(
+    {
+        app_name: 'TableSelectWeb',
+        baseUrl: 'static/js',
+        shim: {
+            'ember': {
+                deps: ['handlebars', 'jquery'],
+                exports: 'Ember'
+            },
+            'bootstrap': {
+                deps: ['jquery']
+            },
+            'ember-data': {
+                deps: ['ember'],
+                exports: 'DS'
+            },
+            'ember-bootstrap': {
+                deps: ['ember', 'bootstrap'],
+                exports: 'Bootstrap'
+            }
+        },
+        paths: {
+            'TableSelectWeb': 'app/main',
+            'models': 'app/models',
+            'views': 'app/views',
+            'controllers': 'app/controllers',
+            'routes': 'app/routes',
+            'mixins': 'app/mixins',
+            'utils': 'app/utils',
 
-Ember.LOG_VERSION = true;
-Ember.ENV.RAISE_ON_DEPRECATION = true;
-Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
-Ember.DEBUG = true;
-
-window.TableSelectWeb = Ember.Application.create({
-    title: 'Ball Table Select',
-    author: 'Dominic May (http://mause.me)',
-    // LOG_TRANSITIONS: true,
-    // LOG_ACTIVE_GENERATION: true,
-    // LOG_TRANSITIONS_INTERNAL: true,
-    // LOG_VIEW_LOOKUPS: true,
-    rootElement: 'body'
+            /* libs */
+            'jquery': 'third-party/jquery',
+            'handlebars': 'third-party/handlebars',
+            'ember': 'third-party/ember',
+            'ember-data': 'third-party/ember-data',
+            'bootstrap': 'third-party/bootstrap',
+            'ember-bootstrap': 'third-party/ember_plugins/ember-bootstrap_load'
+    }
 });
+
+require(['app/main']);
