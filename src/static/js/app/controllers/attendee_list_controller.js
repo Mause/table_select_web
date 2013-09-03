@@ -9,7 +9,8 @@ TableSelectWeb.AttendeeListController = Ember.Controller.extend({
 
         var ball_table = attendee.get('ball_table');
 
-        console.assert(TableSelectWeb.BallTable.detectInstance(ball_table));
+        console.assert(
+            this.store.modelFor('ball_table').detectInstance(ball_table));
 
         var record_data = {
             attendee: attendee,
