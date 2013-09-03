@@ -1,0 +1,83 @@
+main:
+    prefix: js/
+    postfix: .js
+    order: [third_party, app]
+
+    third_party:
+        prefix: third-party/
+        files:
+         - jquery
+         - handlebars
+         - ember
+         - ember-data
+         - bootstrap
+         - ember_plugins/ember-bootstrap
+
+    app:
+        prefix: app/
+        order:
+         - mixins
+         - controllers
+         - views
+         - models
+         - support_objects
+         - routes
+
+        mixins:
+            prefix: mixins/
+            postfix: _mixin
+            files:
+             - error_handler
+
+        controllers:
+            prefix: controllers/
+            postfix: _controller
+            files:
+             - add_attendee
+             - admin
+             - attendee_list
+             - ball_table
+
+        views:
+            prefix: views/
+            postfix: _view
+            files:
+             - add_attendee
+             - admin
+             - attendee_list
+             - ball_table
+             - removal_request_checkbox
+
+        models:
+            prefix: models/
+            postfix: _model
+            files:
+             - attendee
+             - ball_table
+             - removal_request
+
+        support_objects:
+            data:
+                prefix: models/
+                postfix:
+                files:
+                 - adapter
+                 - serializer
+                 - store
+
+            misc:
+                files:
+                 - routes/router
+
+        routes:
+            prefix: routes/
+            postfix: _route
+            files:
+             - admin
+             - index
+             - info
+
+        files:
+         - main
+         - handlebars_utils
+         - utils
