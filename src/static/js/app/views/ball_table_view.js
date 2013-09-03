@@ -1,2 +1,1 @@
-TableSelectWeb.BallTableView = Ember.View.extend({
-});
+TableSelectWeb.BallTableView = Ember.View.extend({});
