@@ -4,8 +4,3 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
     remover_ident: DS.attr('string'),
     state: DS.attr('string')
 });
-
-TableSelectWeb.Serializer.configure('TableSelectWeb.RemovalRequest', {
-    primaryKey: 'request_id',
-    alias: 'removal_request'
-});
