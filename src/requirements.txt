@@ -4,3 +4,4 @@ sqlalchemy
 pg8000-py3
 psycopg2
 simplejson
+PyYaml
