@@ -1,4 +1,4 @@
-(function(){
+(function(Ember){
     'use strict';
     var acceptable = [
         422,
@@ -29,4 +29,4 @@
             removal_request: this.store.modelFor('removal_request')
         }
     });
-})();
+})(Ember);
