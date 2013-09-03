@@ -31,6 +31,7 @@ class BaseRESTEndpoint(object):
     }
     checks = []
     Session = None
+    json_indent = 4
 
     def check_setup(self):
         method = self.request.method
@@ -91,7 +92,7 @@ class BaseRESTEndpoint(object):
                 record = dict_from_query(query.one())
                 response[singularize(records_key)] = record
 
-            self.write(json.dumps(response, indent=4))
+            self.write_json(response)
 
     def post(self, record_id):
         if record_id is not None:
@@ -136,7 +137,7 @@ class BaseRESTEndpoint(object):
 
                 self.set_status(201)  # created
 
-        self.write(json.dumps(response, indent=4))
+        self.write_json(response)
 
     def put(self, record_id):
         # check the setup
@@ -177,7 +178,7 @@ class BaseRESTEndpoint(object):
             # update the frontends representation of the record with an id
             response[self.ember_model_name] = dict_from_query(record)
 
-        self.write(json.dumps(response, indent=4))
+        self.write_json(response)
 
     def delete(self):
         raise NotImplementedError()
@@ -279,3 +280,7 @@ class BaseRESTEndpoint(object):
                 return errors
 
         return None
+
+    def write_json(self, data):
+        self.set_header('Content-Type', 'application/json')
+        return self.write(json.dumps(data, indent=self.json_indent))
