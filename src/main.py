@@ -22,6 +22,7 @@ import tornado.httpserver
 import db
 import ajax
 import admin
+from includes import JS_INCLUDES
 from settings import settings
 from utils import BaseHandler, SmartStaticFileHandler
 
@@ -32,7 +33,17 @@ tornado.options.parse_command_line()
 # simple & dumb renderers; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
-        self.render('templates.html', path='/')
+        self.render(
+            'templates.html',
+            path='/',
+            js_includes=self.js_includes(JS_INCLUDES))
+
+    def js_includes(self, listing):
+        output = []
+        for filename in listing:
+            filename = self.static_url(filename)
+            output.append('<script src="{}"></script>'.format(filename))
+        return '\n'.join(output)
 
 
 class TemplateHandler(BaseHandler):
