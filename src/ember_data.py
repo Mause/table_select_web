@@ -116,6 +116,7 @@ class BaseRESTEndpoint(object):
                 response['errors'] = errors
             else:
                 # create a new record using the data
+
                 new_record = self.table(**record_data)
 
                 # instruct the session to save the record
@@ -130,8 +131,7 @@ class BaseRESTEndpoint(object):
                 record_key = singularize(self.ember_model_name)
                 response[record_key] = dict_from_query(new_record)
 
-                logging.info(
-                    'added {} {} to db'.format(
+                logging.info('added {} {} to db'.format(
                     self.table.__tablename__, record_data))
 
                 self.set_status(201)  # created
