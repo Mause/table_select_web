@@ -22,7 +22,12 @@ Base = declarative_base()
 
 class BaseMixin(object):
     def items(self):
-        for key in self.__table__.columns.keys():
+        keys = (
+            prop.key
+            for prop in self.__mapper__.iterate_properties
+        )
+
+        for key in keys:
             yield (key, getattr(self, key))
 
 
