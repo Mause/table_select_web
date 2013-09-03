@@ -6,7 +6,6 @@ TableSelectWeb.AttendeeListController = Ember.Controller.extend({
 
     RequestRemoveAttendee: function(attendee) {
         'use strict';
-        // debugger;
 
         var ball_table = attendee.get('ball_table');
 
@@ -19,8 +18,8 @@ TableSelectWeb.AttendeeListController = Ember.Controller.extend({
             state: 'unresolved'
         };
 
-        var removal_request = TableSelectWeb.RemovalRequest.createRecord(
-            record_data);
+        var removal_request = this.store.createRecord(
+            'removal_request', record_data);
         var prom = removal_request.save();
 
         prom.then(function(event){
@@ -35,3 +34,4 @@ TableSelectWeb.AttendeeListController = Ember.Controller.extend({
         });
     }
 });
+
