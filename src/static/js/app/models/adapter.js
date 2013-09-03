@@ -25,8 +25,8 @@
         namespace: 'api/v1',
 
         mappings: {
-            ball_tables: this.store.modelFor('ball_table'),
-            removal_request: this.store.modelFor('removal_request')
+            ball_tables: TableSelectWeb.BallTable,
+            removal_request: TableSelectWeb.RemovalRequest
         }
     });
 })(Ember);
