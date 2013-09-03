@@ -22,7 +22,7 @@ Base = declarative_base()
 
 class BaseMixin(object):
     def items(self):
-        for key in self.__mapper__.attrs.keys():
+        for key in self.__table__.columns.keys():
             yield (key, getattr(self, key))
 
 
