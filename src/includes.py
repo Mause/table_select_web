@@ -1,5 +1,4 @@
 import yaml
-from pprint import pprint
 
 
 def parse_subsection(subsection):
