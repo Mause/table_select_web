@@ -1,4 +1,4 @@
-(function(Ember){
+(function(){
     Ember.Handlebars.registerHelper('log_content', function(property, options) {
         var context = (options.contexts && options.contexts[0]) || this,
             normalized = Ember.Handlebars.normalizePath(context, property, options.data),
@@ -20,4 +20,4 @@
 
         Ember.Handlebars.helpers.control.call(this, path, modelPath, options);
     });
-})(Ember);
+})();
