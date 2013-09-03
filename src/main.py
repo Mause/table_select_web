@@ -38,13 +38,6 @@ class MainHandler(BaseHandler):
             path='/',
             js_includes=self.js_includes(JS_INCLUDES))
 
-    def js_includes(self, listing):
-        output = []
-        for filename in listing:
-            filename = self.static_url(filename)
-            output.append('<script src="{}"></script>'.format(filename))
-        return '\n'.join(output)
-
 
 class TemplateHandler(BaseHandler):
     def get(self):

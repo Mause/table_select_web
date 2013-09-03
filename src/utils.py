@@ -1,6 +1,6 @@
 # stdlib
 # import os
-import json
+# import json
 from settings import settings
 # import logging
 # import datetime
@@ -76,21 +76,22 @@ def dict_from_query(query, debug=False):
 
 class BaseHandler(tornado.web.RequestHandler):
     def is_admin(self):
-        is_admin = self.get_secure_cookie('is_admin')
-        self.admin_cookied_yes = False
+        return True
+        # is_admin = self.get_secure_cookie('is_admin')
+        # self.admin_cookied_yes = False
 
-        if is_admin:
-            try:
-                is_admin = json.loads(is_admin.decode('utf-8'))
-            except ValueError:
-                self.admin_cookied_yes = False
-            else:
-                if is_admin:
-                    self.admin_cookied_yes = True
-                else:
-                    self.admin_cookied_yes = False
+        # if is_admin:
+        #     try:
+        #         is_admin = json.loads(is_admin.decode('utf-8'))
+        #     except ValueError:
+        #         self.admin_cookied_yes = False
+        #     else:
+        #         if is_admin:
+        #             self.admin_cookied_yes = True
+        #         else:
+        #             self.admin_cookied_yes = False
 
-        return self.admin_cookied_yes
+        # return self.admin_cookied_yes
 
     def render(self, template_name, **kwargs):
         # we do it this way so that the handler can overwrite defaults :D
@@ -101,6 +102,16 @@ class BaseHandler(tornado.web.RequestHandler):
         args = defaults
         args.update(kwargs)
         return super(BaseHandler, self).render(template_name, **kwargs)
+
+    def js_includes(self, listing):
+        output = []
+        for filename in listing:
+            if filename == '':
+                output.append('')
+            else:
+                filename = self.static_url(filename)
+                output.append('<script src="{}"></script>'.format(filename))
+        return '\n'.join(output)
 
 
 class SmartStaticFileHandler(tornado.web.StaticFileHandler):
