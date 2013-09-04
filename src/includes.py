@@ -48,7 +48,7 @@ def generate_includes():
     with open('includes.yaml') as fh:
         data = yaml.load(fh)
 
-    my_env = Environment('static/', 'static/')
+    my_env = Environment('static/', '/static/')
     my_env.config['HANDLEBARS_BIN'] = 'ember-precompile'
 
     filters = None  # 'jsmin'
@@ -77,11 +77,11 @@ def generate_includes():
         my_env['handlebars_templates'].urls()
     )
 
-    return add_pre_post('/', '', JS_INCLUDES)
+    return JS_INCLUDES
 
 
 def js_includes():
-    return '\n'.join([
+    return '\n'.join(
         '<script src="{}"></script>'.format(filename)
         for filename in generate_includes()
-    ])
+    )
