@@ -49,29 +49,28 @@ def generate_includes():
         data = yaml.load(fh)
 
     my_env = Environment('static/', 'static/')
+    my_env.config['HANDLEBARS_BIN'] = 'ember-precompile'
 
     filters = None  # 'jsmin'
 
+    # third party libraries
     third_party_bundle = sub_bundle(data, 'third_party', filters)
     my_env.register('js_third_party', third_party_bundle)
 
+    # application specific
     app_bundle = sub_bundle(data, 'app', filters)
     my_env.register('js_app', app_bundle)
 
+    # precompiled templates
     handlebars_template_bundle = Bundle(
         'templates/*.handlebars',
         filters='handlebars',
-        output='js/compiled_templates.js',
-        extra={
-            'extra_args': ['-e', '""']
-        }
+        output='js/compiled_templates.js'
     )
     my_env.register('handlebars_templates', handlebars_template_bundle)
 
-    if settings['release'].lower() == 'debug':
-        my_env.debug = True
+    my_env.debug = settings['release'].upper() == 'DEBUG'
 
-    # my_env.debug = False
     JS_INCLUDES = (
         my_env['js_third_party'].urls() +
         my_env['js_app'].urls() +
