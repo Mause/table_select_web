@@ -103,16 +103,6 @@ class BaseHandler(tornado.web.RequestHandler):
         args.update(kwargs)
         return super(BaseHandler, self).render(template_name, **kwargs)
 
-    def js_includes(self, listing):
-        output = []
-        for filename in listing:
-            if filename == '':
-                output.append('')
-            else:
-                filename = self.static_url(filename)
-                output.append('<script src="{}"></script>'.format(filename))
-        return '\n'.join(output)
-
 
 class SmartStaticFileHandler(tornado.web.StaticFileHandler):
     pass

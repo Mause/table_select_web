@@ -22,7 +22,7 @@ import tornado.httpserver
 import db
 import ajax
 import admin
-from includes import JS_INCLUDES
+from includes import js_includes
 from settings import settings
 from utils import BaseHandler, SmartStaticFileHandler
 
@@ -36,7 +36,7 @@ class MainHandler(BaseHandler):
         self.render(
             'templates.html',
             path='/',
-            js_includes=self.js_includes(JS_INCLUDES))
+            js_includes=js_includes())
 
 
 class TemplateHandler(BaseHandler):

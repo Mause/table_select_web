@@ -42,5 +42,7 @@ __pycache__
 # application specific
 *.sublime-workspace
 *.swp
-*src/templates/templates.html
-main-built.js
+src/static/js/app.js
+src/static/js/third_party.js
+src/static/js/compiled_templates.js
+src/static/js/combined.js
