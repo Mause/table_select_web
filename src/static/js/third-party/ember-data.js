@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-67-gce00457
-// Last commit: ce00457 (2013-09-03 14:14:55 -0700)
+// Version: v1.0.0-beta.1-85-g68051c9
+// Last commit: 68051c9 (2013-09-03 22:13:07 -0700)
 
 
 (function() {
@@ -147,21 +147,8 @@ DS.JSONSerializer = Ember.Object.extend({
       }
     }
 
-    var attrs = get(this, 'attrs');
-
     record.eachAttribute(function(key, attribute) {
-      var value = get(record, key), type = attribute.type;
-
-      if (type) {
-        var transform = this.transformFor(type);
-        value = transform.serialize(value);
-      }
-
-      // if provided, use the mapping provided by `attrs` in
-      // the serializer
-      key = attrs && attrs[key] || key;
-
-      json[key] = value;
+      this.serializeAttribute(record, json, key, attribute);
     }, this);
 
     record.eachRelationship(function(key, relationship) {
@@ -173,6 +160,22 @@ DS.JSONSerializer = Ember.Object.extend({
     }, this);
 
     return json;
+  },
+
+  serializeAttribute: function(record, json, key, attribute) {
+    var attrs = get(this, 'attrs');
+    var value = get(record, key), type = attribute.type;
+
+    if (type) {
+      var transform = this.transformFor(type);
+      value = transform.serialize(value);
+    }
+
+    // if provided, use the mapping provided by `attrs` in
+    // the serializer
+    key = attrs && attrs[key] || key;
+
+    json[key] = value;
   },
 
   serializeBelongsTo: function(record, json, relationship) {
@@ -193,7 +196,7 @@ DS.JSONSerializer = Ember.Object.extend({
     var key = relationship.key;
 
     var relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
-    
+
     if (relationshipType === 'manyToNone' || relationshipType === 'manyToMany') {
       json[key] = get(record, key).mapBy('id');
       // TODO support for polymorphic manyToNone and manyToMany relationships
@@ -248,10 +251,6 @@ DS.JSONSerializer = Ember.Object.extend({
 
   transformFor: function(attributeType) {
     return this.container.lookup('transform:' + attributeType);
-  },
-
-  eachEmbeddedRecord: function() {
-    // this is used by transaction.add
   }
 });
 
@@ -4422,7 +4421,7 @@ function asyncBelongsTo(type, options, meta) {
       return value === undefined ? null : value;
     }
 
-    return store.fetchRecord(data[key]);
+    return !isNone(data[key]) ? store.fetchRecord(data[key]) : null;
   }).property('data').meta(meta);
 }
 
@@ -6498,7 +6497,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     @returns Promise
   */
   find: function(store, type, id) {
-    return this.ajax(this.buildURL(type, id), 'GET');
+    return this.ajax(this.buildURL(type.typeKey, id), 'GET');
   },
 
   /**
@@ -6523,7 +6522,7 @@ DS.RESTAdapter = DS.Adapter.extend({
       query = { since: sinceToken };
     }
 
-    return this.ajax(this.buildURL(type), 'GET', { data: query });
+    return this.ajax(this.buildURL(type.typeKey), 'GET', { data: query });
   },
 
   /**
@@ -6545,7 +6544,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     @returns Promise
   */
   findQuery: function(store, type, query) {
-    return this.ajax(this.buildURL(type), 'GET', { data: query });
+    return this.ajax(this.buildURL(type.typeKey), 'GET', { data: query });
   },
 
   /**
@@ -6584,8 +6583,8 @@ DS.RESTAdapter = DS.Adapter.extend({
     @param {Array<String>} ids
     @returns Promise
   */
-  findMany: function(store, type, ids) {
-    return this.ajax(this.buildURL(type), 'GET', { data: { ids: ids } });
+  findMany: function(store, type, ids, owner) {
+    return this.ajax(this.buildURL(type.typeKey), 'GET', { data: { ids: ids } });
   },
 
   /**
@@ -6643,7 +6642,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     var data = {};
     data[type.typeKey] = store.serializerFor(type.typeKey).serialize(record, { includeId: true });
 
-    return this.ajax(this.buildURL(type), "POST", { data: data });
+    return this.ajax(this.buildURL(type.typeKey), "POST", { data: data });
   },
 
   /**
@@ -6669,7 +6668,7 @@ DS.RESTAdapter = DS.Adapter.extend({
 
     var id = get(record, 'id');
 
-    return this.ajax(this.buildURL(type, id), "PUT", { data: data });
+    return this.ajax(this.buildURL(type.typeKey, id), "PUT", { data: data });
   },
 
   /**
@@ -6689,7 +6688,7 @@ DS.RESTAdapter = DS.Adapter.extend({
   deleteRecord: function(store, type, record) {
     var id = get(record, 'id');
 
-    return this.ajax(this.buildURL(type, id), "DELETE");
+    return this.ajax(this.buildURL(type.typeKey, id), "DELETE");
   },
 
   /**
@@ -6702,7 +6701,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     of the type, separated by a `/`.
 
     @method buildURL
-    @param {subclass of DS.Model} type
+    @param {String} type
     @param {String} id
     @returns String
   */
@@ -6714,7 +6713,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     if (host) { url.push(host); }
     if (namespace) { url.push(namespace); }
 
-    url.push(Ember.String.pluralize(type.typeKey));
+    url.push(Ember.String.pluralize(type));
     if (id) { url.push(id); }
 
     url = url.join('/');

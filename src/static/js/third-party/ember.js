@@ -170,8 +170,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-29-gf8fecd2
-// Last commit: f8fecd2 (2013-09-03 15:01:38 -0700)
+// Version: v1.0.0-33-ge98c33c
+// Last commit: e98c33c (2013-09-03 19:19:25 -0700)
 
 
 (function() {
@@ -11542,7 +11542,7 @@ Ember.reduceComputed = function (options) {
     throw new Error("Reduce Computed Property declared without an options hash");
   }
 
-  if (!options.initialValue) {
+  if (Ember.isNone(options.initialValue)) {
     throw new Error("Reduce Computed Property declared without an initial value");
   }
 
@@ -30486,8 +30486,10 @@ Ember.Router = Ember.Object.extend({
 
     transitionPromise.then(function(route) {
       self._transitionCompleted(route);
-    }, function(error){
-      Ember.assert("The URL '" + error.message + "' did not match any routes in your application", error.name !== "UnrecognizedURLError");
+    }, function(error) {
+      if (error.name === "UnrecognizedURLError") {
+        Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
+      }
     });
 
     // We want to return the configurable promise object
