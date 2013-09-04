@@ -2,7 +2,7 @@ TableSelectWeb.BallTable = DS.Model.extend({
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),
-    attendees: DS.hasMany('attendee', {embedded: 'load'}),
+    attendee_ids: DS.hasMany('attendee', {embedded: 'load', async: true}),
 
     row_end: function() {
         // this is for display purposes only
