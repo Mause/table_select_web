@@ -3,7 +3,6 @@
 # stdlib
 import os
 import sys
-import logging
 
 # setup newrelic
 if 'HEROKU' in os.environ:
@@ -34,41 +33,9 @@ tornado.options.parse_command_line()
 class MainHandler(BaseHandler):
     def get(self):
         self.render(
-            'templates.html',
+            'base.html',
             path='/',
             js_includes=js_includes())
-
-
-class TemplateHandler(BaseHandler):
-    def get(self):
-        logging.debug('Recompiled templates')
-        args = ensure_templates(force=True)
-        template = (
-            'in_dir: {in_dir}<br/>'
-            'out_file: {out_file}<br/>')
-        self.write(template.format(**args))
-
-
-def ensure_templates(force=False):
-    out_file = os.path.join(
-        os.path.dirname(__name__),
-        'templates/templates.html')
-
-    if not os.path.exists(out_file) or force:
-        # not ideal, but w/e
-        raw_template_dir = os.path.join(
-            os.path.dirname(__file__),
-            'static/templates')
-
-        args = {
-            'in_dir': raw_template_dir,
-            'out_file': out_file
-        }
-
-        from static.templates.compact import compact
-        compact(**args)
-
-        return args
 
 
 def setup_db():
@@ -80,7 +47,6 @@ def setup_db():
     engine = create_engine(db_url)
     engine.echo = False
 
-    # db.metadata.create_all(engine)
     db.Base.metadata.create_all(engine)
 
     db.Session.configure(bind=engine)
@@ -126,12 +92,9 @@ application = tornado.web.Application(
         # post! (and maybe get for some reason)
         (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
-        # (r"/api/v1/attendee/(?P<action>deny|allow)_bulk", ajax.ActionHandler),
-
         # (r"/admin", admin.AdminHandler),
         (r"/auth", admin.AuthHandler),
         (r"/logout", admin.LogoutHandler),
-        (r"/templates", TemplateHandler),
         (r"/.*", MainHandler),
     ],
     **tornado_settings
@@ -142,7 +105,6 @@ def main():
 
     global Session, conn
 
-    ensure_templates()
     Session, conn = setup_db()
 
     port = os.environ.get('PORT', 8888)
