@@ -1,4 +1,5 @@
-DS.RESTSerializer.reopen({
+// taken from the TRANSITION.md file for Ember.js
+var ApplicationSerializer = DS.RESTSerializer.extend({
     extractExtendedValidationErrors: function(type, json) {
         var errors = {};
         var _this = this;
@@ -12,7 +13,6 @@ DS.RESTSerializer.reopen({
         }
 
         var attributes = Ember.get(type, 'attributes').copy();
-        // attributes = attributes.keys.list;
         var relationships = Ember.get(type, 'relationshipsByName').copy();
         attributes = merge(attributes.keys.list, relationships.keys.list);
 
@@ -39,25 +39,16 @@ DS.RESTSerializer.reopen({
     }
 });
 
-// we create it here so that we can configure
-// it for models in their definition files
-
-TableSelectWeb.RemovalRequestSerializer = DS.RESTSerializer.extend({
+TableSelectWeb.RemovalRequestSerializer = ApplicationSerializer.extend({
     primaryKey: 'request_id',
     alias: 'removal_request'
 });
 
-TableSelectWeb.BallTableSerializer = DS.RESTSerializer.extend({
+TableSelectWeb.BallTableSerializer = ApplicationSerializer.extend({
     primaryKey: 'ball_table_id',
     attendees: { embedded: 'load' }
-    // attendees: {embedded: 'always'},
-
-    // extractSingle: function(store, primaryType, payload, recordId, requestType) {
-    //     debugger;
-    //     return this._super.apply(this, arguments);
-    // }
 });
 
-TableSelectWeb.AttendeeSerializer = DS.RESTSerializer.extend({
+TableSelectWeb.AttendeeSerializer = ApplicationSerializer.extend({
     primaryKey: 'attendee_id'
 });
