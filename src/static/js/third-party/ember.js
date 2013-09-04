@@ -170,8 +170,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-17-g4cff2a4
-// Last commit: 4cff2a4 (2013-09-02 15:39:12 -0400)
+// Version: v1.0.0-29-gf8fecd2
+// Last commit: f8fecd2 (2013-09-03 15:01:38 -0700)
 
 
 (function() {
@@ -4704,9 +4704,9 @@ registerComputed('none', function(dependentKey) {
     isAnonymous: Ember.computed.not('loggedIn')
   });
   var user = User.create({loggedIn: false});
-  user.get('isAnonymous'); // false
-  user.set('loggedIn', true);
   user.get('isAnonymous'); // true
+  user.set('loggedIn', true);
+  user.get('isAnonymous'); // false
   ```
 
   @method computed.not
@@ -8267,7 +8267,10 @@ define("rsvp",
 
 (function() {
 /**
-@module container
+@private
+Public api for the container is still in flux.
+The public api, specified on the application namespace should be considered the stable api.
+// @module container
 */
 
 /*
@@ -8284,7 +8287,7 @@ define("container",
    /**
      A safe and simple inheriting object.
 
-     @class InheritingDict
+     // @class InheritingDict
    */
     function InheritingDict(parent) {
       this.parent = parent;
@@ -8395,7 +8398,10 @@ define("container",
    /**
      A lightweight container that helps to assemble and decouple components.
 
-     @class Container
+     @private
+     Public api for the container is still in flux.
+     The public api, specified on the application namespace should be considered the stable api.
+     // @class Container
    */
     function Container(parent) {
       this.parent = parent;
@@ -22957,7 +22963,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
         isVirtual: true,
         tagName: '',
         _contextView: parentView,
-        template: get(this, 'template'),
+        template: template,
         context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
         templateData: { keywords: parentView.cloneKeywords() }
@@ -30481,7 +30487,7 @@ Ember.Router = Ember.Object.extend({
     transitionPromise.then(function(route) {
       self._transitionCompleted(route);
     }, function(error){
-      Ember.assert("The URL '" + error.message + "' did match any routes in your application", error.name !== "UnrecognizedURLError");
+      Ember.assert("The URL '" + error.message + "' did not match any routes in your application", error.name !== "UnrecognizedURLError");
     });
 
     // We want to return the configurable promise object
@@ -31133,7 +31139,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     resolved.
 
     ```js
-    App.PostRoute = Ember.Route.extend({
+    App.PostsRoute = Ember.Route.extend({
       afterModel: function(posts, transition) {
         if (posts.length === 1) {
           this.transitionTo('post.show', posts[0]);
@@ -36492,7 +36498,23 @@ function generateRemovedClass(className) {
 }
 
 Ember.StateManager = generateRemovedClass("Ember.StateManager");
+
+/**
+  This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
+  
+  @class StateManager
+  @namespace Ember
+*/
+
 Ember.State = generateRemovedClass("Ember.State");
+
+/**
+  This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
+  
+  @class State
+  @namespace Ember
+*/
+
 })();
 
 
