@@ -82,7 +82,7 @@ def sub_bundle(data, key, filters):
     js_files = add_pre_post('js/', '.js', js_files)
 
     js_bundle = Bundle(
-        *js_files, filters=filters, output='js/{}.js'.format(key))
+        *js_files, filters=filters, output='gen/{}.js'.format(key))
     return js_bundle
 
 
@@ -94,7 +94,7 @@ def generate_includes():
     static_dir = os.path.join(dirname, 'static/')
     my_env = Environment(static_dir, '/static/')
 
-    filters = None  # 'jsmin'
+    filters = None
 
     # third party libraries
     third_party_bundle = sub_bundle(data, 'third_party', filters)
@@ -109,17 +109,27 @@ def generate_includes():
         'templates/*.hbs',
         'templates/components/*.hbs',
         filters='ember_handlebars',
-        output='js/compiled_templates.js'
+        output='gen/compiled_templates.js'
     )
     my_env.register('handlebars_templates', handlebars_template_bundle)
 
-    my_env.debug = settings['release'].upper() == 'DEBUG'
+    my_env.debug = not settings['release'].upper() == 'DEBUG'
 
-    JS_INCLUDES = (
-        my_env['js_third_party'].urls() +
-        my_env['js_app'].urls() +
-        my_env['handlebars_templates'].urls()
-    )
+    if my_env.debug:
+        JS_INCLUDES = (
+            my_env['js_third_party'].urls() +
+            my_env['js_app'].urls() +
+            my_env['handlebars_templates'].urls()
+        )
+    else:
+        my_env.register('combined',
+                        third_party_bundle,
+                        app_bundle,
+                        handlebars_template_bundle,
+                        filters=filters,
+                        output='gen/combined.js')
+
+        JS_INCLUDES = my_env['combined'].urls()
 
     return JS_INCLUDES
 
