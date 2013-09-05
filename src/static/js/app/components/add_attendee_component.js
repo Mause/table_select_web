@@ -1,4 +1,4 @@
-TableSelectWeb.AddAttendeeView = Ember.View.extend({
+TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
     templateName: 'addAttendee',
     attendee_name: '',
 
@@ -12,6 +12,7 @@ TableSelectWeb.AddAttendeeView = Ember.View.extend({
             // clear the input field
             this.set('attendee_name', '');
 
+            debugger;
             // tell the controller to get its act together
             controller.send('addAttendeeEvent');
         }
