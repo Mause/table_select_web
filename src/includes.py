@@ -1,10 +1,50 @@
 import os
+import subprocess
 
 import yaml
 from settings import settings
 from webassets import Environment, Bundle
+from webassets.exceptions import FilterError
+from webassets.filter import Filter, handlebars, register_filter
 
 add_pre_post = lambda pre, post, lst: [pre + thing + post for thing in lst]
+
+
+class EmberHandlebarsFilter(handlebars.Handlebars, Filter):
+    name = 'ember_handlebars'
+
+    def process_templates(self, out,  hunks, **kw):
+        templates = [info['source_path'] for _, info in hunks]
+
+        if self.root is True:
+            root = self.get_config('directory')
+        elif self.root:
+            root = os.path.join(self.get_config('directory'), self.root)
+        else:
+            root = self._find_base_path(templates)
+
+        args = [self.binary or 'ember-precompile']
+        if root:
+            args.extend(['-b', root + '/'])
+        if self.extra_args:
+            args.extend(self.extra_args)
+        args.extend(templates)
+
+        proc = subprocess.Popen(
+            args, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+
+        if proc.returncode != 0:
+            raise FilterError(
+                ('ember-precompile: subprocess had error: stderr=%s, '
+                 'stdout=%s, returncode=%s') % (stderr, stdout, proc.returncode))
+        out_data = stdout.decode('utf-8').strip() + ';'
+        out_data = out_data.replace('Ember.TEMPLATES["/', 'Ember.TEMPLATES["')
+        out.write(out_data)
+
+register_filter(EmberHandlebarsFilter)
 
 
 def parse_subsection(subsection):
@@ -51,10 +91,8 @@ def generate_includes():
     with open(os.path.join(dirname, 'includes.yaml')) as fh:
         data = yaml.load(fh)
 
-    static_dir = os.path.join(dirname, 'static')
+    static_dir = os.path.join(dirname, 'static/')
     my_env = Environment(static_dir, '/static/')
-
-    my_env.config['HANDLEBARS_BIN'] = 'ember-precompile'
 
     filters = None  # 'jsmin'
 
@@ -68,9 +106,9 @@ def generate_includes():
 
     # precompiled templates
     handlebars_template_bundle = Bundle(
-        'templates/**.handlebars',
-        'templates/components/*.handlebars',
-        filters='handlebars',
+        'templates/*.handlebars',
+        'templates/components/*.hbs',
+        filters='ember_handlebars',
         output='js/compiled_templates.js'
     )
     my_env.register('handlebars_templates', handlebars_template_bundle)
