@@ -16,8 +16,10 @@ if settings['release'] == "PRODUCTION":
     else:
         environment = 'production'
 
+    path = os.path.join(os.path.dirname(__file__), 'newrelic.ini')
+
     logging.debug("Initializing New Relic client...")
-    newrelic.agent.initialize('newrelic.ini', environment=environment)
+    newrelic.agent.initialize(path, environment=environment)
 
 # third party
 import tornado
