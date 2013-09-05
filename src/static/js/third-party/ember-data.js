@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-93-g84c2bfe
-// Last commit: 84c2bfe (2013-09-04 14:53:49 -0700)
+// Version: v1.0.0-beta.1-101-g4f41395
+// Last commit: 4f41395 (2013-09-04 21:05:23 -0700)
 
 
 (function() {
@@ -55,7 +55,7 @@ var define, requireModule;
 
 if ('undefined' === typeof DS) {
   DS = Ember.Namespace.create({
-    VERSION: '1.0.0-beta.1'
+    VERSION: '1.0.0-beta.2'
   });
 
   if ('undefined' !== typeof window) {
@@ -99,8 +99,6 @@ DS.JSONSerializer = Ember.Object.extend({
   // SERIALIZE
 
   serialize: function(record, options) {
-    var store = get(this, 'store');
-
     var json = {};
 
     if (options && options.includeId) {
@@ -4663,7 +4661,7 @@ DS.Model.reopen({
     being defined. So, for example, when the user does this:
 
       DS.Model.extend({
-        parent: DS.belongsTo(App.User)
+        parent: DS.belongsTo('user')
       });
 
     This hook would be called with "parent" as the key and the computed
@@ -4717,7 +4715,7 @@ DS.Model.reopenClass({
     For example, if you define a model like this:
 
         App.Post = DS.Model.extend({
-          comments: DS.hasMany(App.Comment)
+          comments: DS.hasMany('comment')
         });
 
     Calling `App.Post.typeForRelationship('comments')` will return `App.Comment`.
@@ -4791,9 +4789,9 @@ DS.Model.reopenClass({
     For example, given the following model definition:
 
         App.Blog = DS.Model.extend({
-          users: DS.hasMany(App.User),
-          owner: DS.belongsTo(App.User),
-          posts: DS.hasMany(App.Post)
+          users: DS.hasMany('user'),
+          owner: DS.belongsTo('user'),
+          posts: DS.hasMany('post')
         });
 
     This computed property would return a map describing these
@@ -4841,10 +4839,10 @@ DS.Model.reopenClass({
     definition:
 
         App.Blog = DS.Model.extend({
-          users: DS.hasMany(App.User),
-          owner: DS.belongsTo(App.User),
+          users: DS.hasMany('user'),
+          owner: DS.belongsTo('user'),
 
-          posts: DS.hasMany(App.Post)
+          posts: DS.hasMany('post')
         });
 
     This property would contain the following:
@@ -4880,9 +4878,10 @@ DS.Model.reopenClass({
     For example, given a model with this definition:
 
         App.Blog = DS.Model.extend({
-          users: DS.hasMany(App.User),
-          owner: DS.belongsTo(App.User),
-          posts: DS.hasMany(App.Post)
+          users: DS.hasMany('user'),
+          owner: DS.belongsTo('user'),
+  
+          posts: DS.hasMany('post')
         });
 
     This property would contain the following:
@@ -4930,10 +4929,10 @@ DS.Model.reopenClass({
     definition:
 
         App.Blog = DS.Model.extend({
-          users: DS.hasMany(App.User),
-          owner: DS.belongsTo(App.User),
+          users: DS.hasMany('user'),
+          owner: DS.belongsTo('user'),
 
-          posts: DS.hasMany(App.Post)
+          posts: DS.hasMany('post')
         });
 
     This property would contain the following:
@@ -4976,10 +4975,10 @@ DS.Model.reopenClass({
     For example:
 
         App.Blog = DS.Model.extend({
-          users: DS.hasMany(App.User),
-          owner: DS.belongsTo(App.User),
+          users: DS.hasMany('user'),
+          owner: DS.belongsTo('user'),
 
-          posts: DS.hasMany(App.Post),
+          posts: DS.hasMany('post'),
 
           title: DS.attr('string')
         });
@@ -5945,6 +5944,31 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   },
 
   /**
+    You can use this method to normalize all payloads, regardless of whether they
+    represent single records or an array.
+
+    For example, you might want to remove some extraneous data from the payload:
+
+    ```js
+    App.ApplicationSerializer = DS.RESTSerializer.extend({
+      normalizePayload: function(type, payload) {
+        delete payload.version;
+        delete payload.status;
+        return payload;
+      }
+    });
+    ```
+
+    @method normalizePayload
+    @param {subclass of DS.Model} type
+    @param {Object} hash
+    @returns Object the normalized payload
+  */
+  normalizePayload: function(type, payload) {
+    return payload;
+  },
+
+  /**
     @method normalizeId
     @private
   */
@@ -6087,6 +6111,8 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     @returns Object the primary response to the original request
   */
   extractSingle: function(store, primaryType, payload, recordId, requestType) {
+    payload = this.normalizePayload(primaryType, payload);
+
     var primaryTypeName = primaryType.typeKey,
         primaryRecord;
 
@@ -6220,6 +6246,8 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
       to the original query.
   */
   extractArray: function(store, primaryType, payload) {
+    payload = this.normalizePayload(primaryType, payload);
+
     var primaryTypeName = primaryType.typeKey,
         primaryArray;
 

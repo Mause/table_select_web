@@ -170,8 +170,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-35-g20439bf
-// Last commit: 20439bf (2013-09-04 10:30:04 -0700)
+// Version: v1.0.0-37-gee5d12a
+// Last commit: ee5d12a (2013-09-04 21:17:11 -0700)
 
 
 (function() {
@@ -32755,6 +32755,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       return isSimpleClick(event);
     }
 
+    if (allowedKeys.indexOf("any") >= 0) {
+      return true;
+    }
+
     var allowed = true;
 
     forEach.call(keys, function(key) {
@@ -32915,6 +32919,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     This way the `{{action}}` will fire when clicking with the alt key pressed down.
+
+    Alternatively, supply "any" to the `allowedKeys` option to accept any combination of modifier keys.
+
+    ```handlebars
+    <script type="text/x-handlebars" data-template-name='a-template'>
+      <div {{action 'anActionName' allowedKeys="any"}}>
+        click me with any key pressed
+      </div>
+    </script>
+    ```
 
     ### Specifying a Target
 
