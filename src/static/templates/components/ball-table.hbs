@@ -2,10 +2,8 @@
     <h2 style="color:black;">{{ball_table.ball_table_name}}</h2>
 
     {{#unless ball_table.full}}
-        {{control_smart 'add_attendee' ball_table}}
+        {{add-attendee ball_table=ball_table}}
     {{/unless}}
 
-    {{#with ball_table.attendees as attendees}}
-        {{control_smart 'attendee_list' attendees}}
-    {{/with}}
+    {{attendee-list attendees=ball_table.attendee_ids}}
 </div>
