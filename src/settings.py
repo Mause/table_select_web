@@ -1,7 +1,7 @@
+import os
 import json
-with open('settings.json') as fh:
+with open(os.path.join(os.path.dirname(__file__), 'settings.json')) as fh:
     settings = json.load(fh)
 
-import os
 if 'HEROKU' in os.environ:
     settings['release'] = 'PRODUCTION'

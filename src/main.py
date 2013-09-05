@@ -60,17 +60,17 @@ def setup_db():
 
 
 def get_ip():
-    # import socket
+    import socket
 
-    # ip = socket.gethostbyname(socket.gethostname())
-    # ip = socket.gethostbyname(socket.getfqdn())
-    # s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # s.connect(("gmail.com", 80))
-    # ip = s.getsockname()[0]
-    # s.close()
+    ip = socket.gethostbyname(socket.gethostname())
+    ip = socket.gethostbyname(socket.getfqdn())
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("gmail.com", 80))
+    ip = s.getsockname()[0]
+    s.close()
 
-    # return ip
-    return ''
+    return ip
+    # return ''
 
 
 tornado_settings = {
@@ -95,7 +95,6 @@ application = tornado.web.Application(
         # post! (and maybe get for some reason)
         (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
-        # (r"/admin", admin.AdminHandler),
         (r"/auth", admin.AuthHandler),
         (r"/logout", admin.LogoutHandler),
         (r"/.*", MainHandler),
@@ -112,7 +111,7 @@ def main():
 
     port = os.environ.get('PORT', 8888)
     addr = get_ip()
-    print('{}:{}'.format(addr, port))
+    logging.debug('{}:{}'.format(addr, port))
 
     try:
         application.listen(port)

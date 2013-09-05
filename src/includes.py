@@ -1,3 +1,5 @@
+import os
+
 import yaml
 from settings import settings
 from webassets import Environment, Bundle
@@ -45,10 +47,13 @@ def sub_bundle(data, key, filters):
 
 
 def generate_includes():
-    with open('includes.yaml') as fh:
+    dirname = os.path.dirname(__file__)
+    with open(os.path.join(dirname, 'includes.yaml')) as fh:
         data = yaml.load(fh)
 
-    my_env = Environment('static/', '/static/')
+    static_dir = os.path.join(dirname, 'static')
+    my_env = Environment(static_dir, '/static/')
+
     my_env.config['HANDLEBARS_BIN'] = 'ember-precompile'
 
     filters = None  # 'jsmin'
@@ -63,7 +68,8 @@ def generate_includes():
 
     # precompiled templates
     handlebars_template_bundle = Bundle(
-        'templates/*.handlebars',
+        'templates/**.handlebars',
+        'templates/components/*.handlebars',
         filters='handlebars',
         output='js/compiled_templates.js'
     )
