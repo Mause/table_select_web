@@ -3,6 +3,7 @@
 # stdlib
 import os
 import sys
+import logging
 
 # setup newrelic
 if 'HEROKU' in os.environ:
@@ -43,6 +44,8 @@ def setup_db():
 
     default_url = settings.get('DATABASE_URL')
     db_url = os.environ.get("DATABASE_URL", default_url)
+
+    logging.debug('Database url is: {}'.format(db_url))
 
     engine = create_engine(db_url)
     engine.echo = False
