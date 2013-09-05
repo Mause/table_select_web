@@ -5,10 +5,19 @@ import os
 import sys
 import logging
 
+from settings import settings
+
 # setup newrelic
-if 'HEROKU' in os.environ:
+if settings['release'] == "PRODUCTION":
     import newrelic.agent
-    newrelic.agent.initialize('newrelic.ini')
+
+    if 'STAGING' in os.environ:
+        environment = 'staging'
+    else:
+        environment = 'production'
+
+    logging.debug("Initializing New Relic client...")
+    newrelic.agent.initialize('newrelic.ini', environment=environment)
 
 # third party
 import tornado
@@ -23,7 +32,6 @@ import db
 import ajax
 import admin
 from includes import js_includes
-from settings import settings
 from utils import BaseHandler, SmartStaticFileHandler
 
 sys.argv.append('--logging=DEBUG')
