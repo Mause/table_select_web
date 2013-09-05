@@ -111,7 +111,9 @@ def main():
 
     port = os.environ.get('PORT', 8888)
     addr = get_ip()
-    logging.debug('{}:{}'.format(addr, port))
+    logging.debug('Running in {} mode, on {}:{}'.format(
+        settings['release'],
+        addr, port))
 
     try:
         application.listen(port)
