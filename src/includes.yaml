@@ -18,6 +18,7 @@ main:
         order:
          - mixins
          - controllers
+         - components
          - views
          - models
          - support_objects
@@ -42,11 +43,16 @@ main:
             prefix: views/
             postfix: _view
             files:
-             - add_attendee
              - admin
              - attendee_list
              - ball_table
              - removal_request_checkbox
+
+        components:
+            prefix: components/
+            postfix: _component
+            files:
+             - add_attendee
 
         models:
             prefix: models/
