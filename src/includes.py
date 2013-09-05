@@ -106,7 +106,7 @@ def generate_includes():
 
     # precompiled templates
     handlebars_template_bundle = Bundle(
-        'templates/*.handlebars',
+        'templates/*.hbs',
         'templates/components/*.hbs',
         filters='ember_handlebars',
         output='js/compiled_templates.js'
