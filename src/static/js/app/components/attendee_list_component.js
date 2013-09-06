@@ -25,6 +25,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
                 // and when it is saved, mark the attendee
                 attendee.set('removal_request_exists', true);
                 attendee.save();
+                sendNotification('Removal request successfully submitted');
             });
         }
     }
