@@ -9,7 +9,9 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
                 attendee_name,
                 record_data,
                 attendee,
-                prom;
+                prom,
+                success_handler,
+                failure_handler;
 
             // control content is set by the control helper, second arg to helper
             ball_table = self.get('content');
@@ -25,25 +27,23 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
 
             if (!attendee_name) { return; }
 
-            record_data = {
+
+            console.log(attendee.ball_table);
+            console.log('Saving');
+
+            this.get('store').push('attendee', {
                 'attendee_name': attendee_name,
                 'show': true,
                 'ball_table_id': ball_table
-            };
-
-            attendee = this.store.createRecord('attendee', record_data);
-
-            console.log(attendee.ball_table);
-
-            console.log('Saving');
-            // debugger;
-            prom = attendee.save();
+            }).then(
+                success_handler, failure_handler
+            );
 
 
-            var success_handler = function(event) {
+            success_handler = function(event) {
                 console.log('success:', event);
                 sendNotification('Attendee add was successful');
-            },
+            };
             failure_handler = function(event) {
                 // debugger;
                 var record;
@@ -61,7 +61,6 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
                     record_data);
             };
 
-            prom.then(success_handler, failure_handler);
         },
     },
 
