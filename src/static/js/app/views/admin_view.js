@@ -14,7 +14,11 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
     action: function(state, sh){
         'use strict';
-        var records = this.get_values();
+        var records = this.get_values(),
+            self = this,
+            promises,
+            success,
+            failure;
 
         records.forEach(function(record){
             record.set('state', state);
@@ -25,30 +29,21 @@ TableSelectWeb.AdminView = Ember.View.extend({
             }
         });
 
-        var promises = [];
+        promises = records.invoke('save');
+        Ember.RSVP.all(promises).then(
+            success, failure
+        );
 
-        records.forEach(function(record){
-            var prom = record.save();
-            promises.push(prom);
-        });
-
-        var prom = Ember.RSVP.all(promises);
-
-        var self = this;
-        var success = function(requested){
+        success = function(requested){
             debugger;
             self.clear_checkboxes();
-            sendNotification(
-                'Success');
-        };
-        var failure = function(){
-            debugger;
-            sendNotification(
-                'Failure');
+            sendNotification('Success');
         };
 
-        prom.then(success, failure);
-        // prom.then(success);
+        failure = function(){
+            debugger;
+            sendNotification('Failure');
+        };
     },
 
     get_checked: function() {
@@ -72,8 +67,7 @@ TableSelectWeb.AdminView = Ember.View.extend({
     },
 
     get_checkboxes: function(){
-        var children = this.get('childViews');
-        return children;
+        return this.get('childViews');
     },
 
     get_values: function(){
