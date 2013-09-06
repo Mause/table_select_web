@@ -102,23 +102,26 @@ def generate_js():
         data = yaml.load(fh)
 
     # third party libraries
-    third_party_bundle = sub_bundle(data, 'third_party', GLOBAL_FILTERS)
-    my_env.register('js_third_party', third_party_bundle)
+    if 'js_third_party' not in my_env:
+        third_party_bundle = sub_bundle(data, 'third_party', GLOBAL_FILTERS)
+        my_env.register('js_third_party', third_party_bundle)
 
     # application specific
-    app_bundle = sub_bundle(data, 'app', GLOBAL_FILTERS)
-    my_env.register('js_app', app_bundle)
+    if 'js_app' not in my_env:
+        app_bundle = sub_bundle(data, 'app', GLOBAL_FILTERS)
+        my_env.register('js_app', app_bundle)
 
 
 def generate_templates():
     # precompiled templates
-    handlebars_template_bundle = Bundle(
-        'templates/*.hbs',
-        'templates/components/*.hbs',
-        filters='ember_handlebars',
-        output='gen/compiled_templates.js'
-    )
-    my_env.register('handlebars_templates', handlebars_template_bundle)
+    if 'handlebars_templates' not in my_env:
+        handlebars_template_bundle = Bundle(
+            'templates/*.hbs',
+            'templates/components/*.hbs',
+            filters='ember_handlebars',
+            output='gen/compiled_templates.js'
+        )
+        my_env.register('handlebars_templates', handlebars_template_bundle)
 
 
 def combine_bundles(*bundles):
