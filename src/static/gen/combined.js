@@ -58434,6 +58434,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
             'use strict';
             var ball_table = attendee.get('ball_table_id'),
                 store = this.get('parentView.targetObject.store'),
+                record_data,
                 record;
 
             // ensure we are getting valid objects from Ember
@@ -58442,13 +58443,18 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
             Ember.assert('Not an attendee object',
                 store.modelFor('attendee').detectInstance(attendee));
 
-            // create the record...
-            record = store.createRecord('removal_request', {
+
+            record_data = {
                 attendee_id: attendee,
                 ball_table_id: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
-            });
+            };
+
+            console.log(record_data);
+
+            // create the record...
+            record = store.createRecord('removal_request', record_data);
 
             // save it...
             record.save().then(function(event){
@@ -58740,7 +58746,11 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 
 function program1(depth0,data) {
   
-  var buffer = '', hashContexts, hashTypes;
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\r\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.log.call(depth0, "request", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\r\n                <li>\r\n                    <label>\r\n                        ");
   hashContexts = {'valueBinding': depth0};
   hashTypes = {'valueBinding': "STRING"};
@@ -58760,6 +58770,10 @@ function program1(depth0,data) {
   }
 
   data.buffer.push("<div class=\"row\">\r\n    <div class=\"enclosure\">\r\n        <h3>Admin</h3>\r\n\r\n        <p class=\"well no-decoration\">\r\n            \"Allow\" will remove that attendee from that table.\r\n            \"Deny\" will leave them on that table.\r\n            <br/>\r\n            Both remove the request from this page\r\n        </p>\r\n\r\n        <form>\r\n            <ul class=\"well no-decoration\">\r\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.log.call(depth0, "controller", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\r\n            ");
   hashTypes = {};
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "request", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
