@@ -23,6 +23,7 @@ main:
          - models
          - support_objects
          - routes
+         - utils
 
         mixins:
             prefix: mixins/
@@ -80,6 +81,12 @@ main:
              - admin
              - index
              - info
+
+        utils:
+            prefix: utils/
+            postfix: _util
+            files:
+             - send_notification
 
         files:
          - main
