@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import logging
 import subprocess
@@ -133,7 +134,7 @@ def combine_bundles(*bundles):
     return my_env['combined'].urls()
 
 
-def gen_assets():
+def _gen_assets():
     generate_js()
     generate_templates()
 
@@ -150,19 +151,21 @@ def gen_assets():
             my_env['js_app'],
             my_env['handlebars_templates']
         )
+    return JS_INCLUDES
 
+
+def gen_assets():
     return '\n'.join(
         '<script src="{}"></script>'.format(filename)
-        for filename in JS_INCLUDES
+        for filename in _gen_assets()
     )
 
 
 def main():
-    settings['release'] = 'PRODUCTION'
+    my_env.debug = False
 
-    gen_assets()
-
-    settings['release'] = 'DEBUG'
+    from pprint import pprint
+    pprint(_gen_assets())
 
 
 if __name__ == '__main__':
