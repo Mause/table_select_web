@@ -41,13 +41,21 @@ sys.argv.append('--logging=DEBUG')
 tornado.options.parse_command_line()
 
 
+# only regen assets on each load when not in production mode... :P
+ASSETS = None
+if settings['release'].upper() == 'PRODUCTION':
+    ASSETS = gen_assets()
+
+
+
+
 # simple & dumb renderer; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
         self.render(
             'base.html',
             path='/',
-            assets=gen_assets())
+            assets=ASSETS or gen_assets())
 
 
 def setup_db():
