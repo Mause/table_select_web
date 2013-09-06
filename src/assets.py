@@ -127,10 +127,11 @@ def generate_templates():
 
 
 def combine_bundles(*bundles):
-    my_env.register('combined',
-                    *bundles,
-                    filters=GLOBAL_FILTERS,
-                    output='gen/combined.js')
+    if 'combined' not in my_env:
+        my_env.register('combined',
+                        *bundles,
+                        filters=GLOBAL_FILTERS,
+                        output='gen/combined.js')
     return my_env['combined'].urls()
 
 
