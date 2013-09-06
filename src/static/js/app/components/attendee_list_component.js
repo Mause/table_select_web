@@ -1,33 +1,31 @@
 TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
-    render: function(){
-        console.log('Attendee list Model:', this.get('model'));
-        return this._super.apply(this, arguments);
-    },
+    actions: {
+        requestRemoveAttendee: function(attendee) {
+            'use strict';
+            var ball_table = attendee.get('ball_table_id'),
+                store = this.get('parentView.targetObject.store'),
+                record;
 
-    RequestRemoveAttendee: function(attendee) {
-        'use strict';
+            // ensure we are getting valid objects from Ember
+            Ember.assert('Not a ball_table object',
+                store.modelFor('ball_table').detectInstance(ball_table));
+            Ember.assert('Not an attendee object',
+                store.modelFor('attendee').detectInstance(attendee));
 
-        var ball_table = attendee.get('ball_table');
-
-        console.assert(
-            this.get('store').modelFor('ball_table').detectInstance(ball_table));
-
-        var prom = this.get('store').push('removal_request', {
-            attendee: attendee,
-            ball_table: ball_table,
-            remover_ident: 'unknown',
-            state: 'unresolved'
-        });
-
-        prom.then(function(event){
-            console.assert(attendee.id);
-            debugger;
-            console.log('p1 done');
-            attendee.set('removal_request_exists', true);
-
-            attendee.save().then(function(event){
-                console.log('p2 done');
+            // create the record...
+            record = store.createRecord('removal_request', {
+                attendee_id: attendee,
+                ball_table_id: ball_table,
+                remover_ident: 'unknown',
+                state: 'unresolved'
             });
-        });
+
+            // save it...
+            record.save().then(function(event){
+                // and when it is saved, mark the attendee
+                attendee.set('removal_request_exists', true);
+                attendee.save();
+            });
+        }
     }
 });
