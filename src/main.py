@@ -47,8 +47,6 @@ if settings['release'].upper() == 'PRODUCTION':
     ASSETS = gen_assets()
 
 
-
-
 # simple & dumb renderer; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
@@ -96,7 +94,7 @@ tornado_settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "template_path": os.path.join(os.path.dirname(__file__), 'templates'),
     'cookie_secret': settings['cookie_secret'],
-    "debug": True,
+    "debug": settings['release'].upper() == "PRODUCTION",
     "gzip": True,
 }
 
