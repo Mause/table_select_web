@@ -8,7 +8,7 @@ import logging
 from settings import settings
 
 # setup newrelic
-if settings['release'] == "PRODUCTION":
+if settings['release'].upper() == "PRODUCTION":
     import newrelic.agent
 
     if 'STAGING' in os.environ:
@@ -20,6 +20,7 @@ if settings['release'] == "PRODUCTION":
 
     logging.debug("Initializing New Relic client...")
     newrelic.agent.initialize(path, environment=environment)
+
 
 # third party
 import tornado
@@ -33,20 +34,20 @@ import tornado.httpserver
 import db
 import ajax
 import admin
-from includes import js_includes
+from assets import gen_assets
 from utils import BaseHandler, SmartStaticFileHandler
 
 sys.argv.append('--logging=DEBUG')
 tornado.options.parse_command_line()
 
 
-# simple & dumb renderers; nothing fancy here
+# simple & dumb renderer; nothing fancy here
 class MainHandler(BaseHandler):
     def get(self):
         self.render(
             'base.html',
             path='/',
-            js_includes=js_includes())
+            assets=gen_assets())
 
 
 def setup_db():
@@ -96,13 +97,10 @@ application = tornado.web.Application(
         (r'/static/(.*)', SmartStaticFileHandler,
             {'path': tornado_settings['static_path']}),
 
-        # get only for ball table's
         (r"/api/v1/ball_tables(?:/(?P<record_id>\d+))?", ajax.BallTablesHandler),
 
-        # this will be update, i suppose
         (r"/api/v1/removal_requests(?:/(?P<record_id>\d+))?", ajax.RemovalRequestHandler),
 
-        # post! (and maybe get for some reason)
         (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
         (r"/auth", admin.AuthHandler),
