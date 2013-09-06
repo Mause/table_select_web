@@ -1,4 +1,5 @@
 import os
+import logging
 import subprocess
 from itertools import chain
 
@@ -143,6 +144,7 @@ def gen_assets():
             my_env['handlebars_templates'].urls()
         )
     else:
+        logging.debug('Combining bundles...')
         JS_INCLUDES = combine_bundles(
             my_env['js_third_party'],
             my_env['js_app'],
@@ -153,3 +155,15 @@ def gen_assets():
         '<script src="{}"></script>'.format(filename)
         for filename in JS_INCLUDES
     )
+
+
+def main():
+    settings['release'] = 'PRODUCTION'
+
+    gen_assets()
+
+    settings['release'] = 'DEBUG'
+
+
+if __name__ == '__main__':
+    main()
