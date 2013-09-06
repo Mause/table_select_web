@@ -34,9 +34,7 @@ main:
             prefix: controllers/
             postfix: _controller
             files:
-             - add_attendee
              - admin
-             - attendee_list
              - ball_table
 
         views:
@@ -44,7 +42,6 @@ main:
             postfix: _view
             files:
              - admin
-             - attendee_list
              - ball_table
              - removal_request_checkbox
 
@@ -53,6 +50,7 @@ main:
             postfix: _component
             files:
              - add_attendee
+             - attendee_list
 
         models:
             prefix: models/
