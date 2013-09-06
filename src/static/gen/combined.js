@@ -58582,16 +58582,6 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
     state: DS.attr('string')
 });
 
-TableSelectWeb.Router.reopen({
-    location: 'history'
-});
-
-TableSelectWeb.Router.map(function(){
-    this.resource('index', {path: '/'});
-    this.resource('info', {path: '/info'});
-    this.resource('admin', {path: '/admin'});
-});
-
 (function(Ember){
     'use strict';
     var acceptable = [
@@ -58683,6 +58673,16 @@ TableSelectWeb.AttendeeSerializer = ApplicationSerializer.extend({
 TableSelectWeb.Store = DS.Store.extend({
     adapter: TableSelectWeb.Adapter,
     revision: 12
+});
+
+TableSelectWeb.Router.reopen({
+    location: 'history'
+});
+
+TableSelectWeb.Router.map(function(){
+    this.resource('index', {path: '/'});
+    this.resource('info', {path: '/info'});
+    this.resource('admin', {path: '/admin'});
 });
 
 TableSelectWeb.AdminRoute = Ember.Route.extend({
