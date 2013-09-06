@@ -2,7 +2,7 @@
     <span tabindex="-1">
         {{attendee.attendee_name}}
         <button type="button" class="spec_close"
-            {{action RequestRemoveAttendee attendee on="click" }}
+            {{action requestRemoveAttendee attendee}}
             >&times;</button>
 
         {{#if attendee.removal_request_exists }}
