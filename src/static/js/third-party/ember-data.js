@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-101-g4f41395
-// Last commit: 4f41395 (2013-09-04 21:05:23 -0700)
+// Version: v1.0.0-beta.1-124-g55eefca
+// Last commit: 55eefca (2013-09-06 00:01:33 -0700)
 
 
 (function() {
@@ -60,6 +60,10 @@ if ('undefined' === typeof DS) {
 
   if ('undefined' !== typeof window) {
     window.DS = DS;
+  }
+
+  if (Ember.libraries) {
+    Ember.libraries.registerCoreLibrary('Ember Data', DS.VERSION);
   }
 }
 })();
@@ -785,11 +789,11 @@ var map = Ember.EnumerableUtils.map;
   defined:
 
       App.Post = DS.Model.extend({
-        comments: DS.hasMany('App.Comment')
+        comments: DS.hasMany('comment')
       });
 
       App.Comment = DS.Model.extend({
-        post: DS.belongsTo('App.Post')
+        post: DS.belongsTo('post')
       });
 
   If you created a new instance of `App.Post` and added
@@ -1987,6 +1991,9 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   */
   didSaveRecord: function(record, data) {
     if (data) {
+      // normalize relationship IDs into records
+      data = normalizeRelationships(this, record.constructor, data);
+
       this.updateId(record, data);
     }
 
@@ -2243,9 +2250,12 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     Ember.assert('The id ' + id + ' has already been used with another record of type ' + type.toString() + '.', !id || !idToRecord[id]);
 
+    // lookupFactory should really return an object that creates
+    // instances with the injections applied
     var record = type._create({
       id: id,
       store: this,
+      container: this.container
     });
 
     if (data) {
@@ -3317,7 +3327,8 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
     @returns {Object} A JSON representation of the object.
   */
   toJSON: function(options) {
-    var serializer = DS.JSONSerializer.create();
+    // container is for lazy transform lookups
+    var serializer = DS.JSONSerializer.create({ container: this.container });
     return serializer.serialize(this, options);
   },
 
@@ -5365,8 +5376,8 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     The `find()` method is invoked when the store is asked for a record that
     has not previously been loaded. In response to `find()` being called, you
     should query your persistence layer for a record with the given ID. Once
-    found, you can asynchronously call the store's `load()` method to load
-    the record.
+    found, you can asynchronously call the store's `push()` method to push
+    the record into the store.
 
     Here is an example `find` implementation:
 
@@ -5377,8 +5388,8 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
           jQuery.getJSON(url, function(data) {
               // data is a hash of key/value pairs. If your server returns a
               // root, simply do something like:
-              // store.load(type, id, data.person)
-              store.load(type, id, data);
+              // store.push(type, id, data.person)
+              store.push(type, id, data);
           });
         }
 
@@ -6431,6 +6442,10 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   */
   serialize: function(record, options) {
     return this._super.apply(this, arguments);
+  },
+
+  serializeIntoHash: function(hash, type, record, options) {
+    hash[type.typeKey] = this.serialize(record, options);
   }
 });
 
@@ -6706,7 +6721,9 @@ DS.RESTAdapter = DS.Adapter.extend({
   */
   createRecord: function(store, type, record) {
     var data = {};
-    data[type.typeKey] = store.serializerFor(type.typeKey).serialize(record, { includeId: true });
+    var serializer = store.serializerFor(type.typeKey);
+
+    serializer.serializeIntoHash(data, type, record, { includeId: true });
 
     return this.ajax(this.buildURL(type.typeKey), "POST", { data: data });
   },
@@ -6730,7 +6747,9 @@ DS.RESTAdapter = DS.Adapter.extend({
   */
   updateRecord: function(store, type, record) {
     var data = {};
-    data[type.typeKey] = store.serializerFor(type.typeKey).serialize(record);
+    var serializer = store.serializerFor(type.typeKey);
+
+    serializer.serializeIntoHash(data, type, record);
 
     var id = get(record, 'id');
 
@@ -6760,7 +6779,10 @@ DS.RESTAdapter = DS.Adapter.extend({
   /**
     Builds a URL for a given type and optional ID.
 
-    If an ID is specified, it adds the ID to the root generated
+    By default, it pluralizes the type's name (for example,
+    'post' becomes 'posts' and 'person' becomes 'people').
+
+    If an ID is specified, it adds the ID to the path generated
     for the type, separated by a `/`.
 
     @method buildURL
@@ -6776,7 +6798,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     if (host) { url.push(host); }
     if (namespace) { url.push(namespace); }
 
-    url.push(this.rootForType(type));
+    url.push(this.pathForType(type));
     if (id) { url.push(id); }
 
     url = url.join('/');
@@ -6786,30 +6808,30 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   /**
-    Determines the pathname root for a given type.
+    Determines the pathname for a given type.
 
     By default, it pluralizes the type's name (for example,
     'post' becomes 'posts' and 'person' becomes 'people').
 
-    ### Pathname root customization
+    ### Pathname customization
 
     For example if you have an object LineItem with an
     endpoint of "/line_items/".
 
     ```js
     DS.RESTAdapter.reopen({
-      rootForType: function(type) {
+      pathForType: function(type) {
         var decamelized = Ember.String.decamelize(type);
         return Ember.String.pluralize(decamelized);
       };
     });
     ```
 
-    @method rootForType
+    @method pathForType
     @param {String} type
     @returns String
   **/
-  rootForType: function(type) {
+  pathForType: function(type) {
     return Ember.String.pluralize(type);
   },
 
