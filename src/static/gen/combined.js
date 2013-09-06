@@ -11120,8 +11120,8 @@ Handlebars.template = Handlebars.VM.template;
 })(Handlebars);
 ;
 
-// Version: v1.0.0-rc.8-94-gee971eb
-// Last commit: ee971eb (2013-08-31 20:18:54 -0500)
+// Version: v1.0.0-50-gd65d9e2
+// Last commit: d65d9e2 (2013-09-05 21:54:58 -0700)
 
 
 (function() {
@@ -11292,8 +11292,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-37-gee5d12a
-// Last commit: ee5d12a (2013-09-04 21:17:11 -0700)
+// Version: v1.0.0-50-gd65d9e2
+// Last commit: d65d9e2 (2013-09-05 21:54:58 -0700)
 
 
 (function() {
@@ -11413,6 +11413,27 @@ if ('undefined' === typeof ENV.DISABLE_RANGE_API) {
 Ember.ENV = Ember.ENV || ENV;
 
 Ember.config = Ember.config || {};
+
+/**
+  Hash of enabled Canary features. Add to before creating your application.
+
+  @property FEATURES
+  @type Hash
+*/
+
+Ember.FEATURES = {};
+
+/**
+  Test that a feature is enabled. Parsed by Ember's build tools to leave
+  experimental features out of beta/stable builds.
+
+  @method isEnabled
+  @param {string} feature
+*/
+
+Ember.FEATURES.isEnabled = function(feature) {
+  return Ember.FEATURES[feature];
+};
 
 // ..........................................................
 // BOOTSTRAP
@@ -18141,15 +18162,14 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     descs[key]  = value;
     values[key] = undefined;
   } else {
-    // impl super if needed...
-    if (isMethod(value)) {
-      value = giveMethodSuper(base, key, value, values, descs);
-    } else if ((concats && a_indexOf.call(concats, key) >= 0) ||
+    if ((concats && a_indexOf.call(concats, key) >= 0) ||
                 key === 'concatenatedProperties' ||
                 key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
     } else if ((mergings && a_indexOf.call(mergings, key) >= 0)) {
       value = applyMergedProperties(base, key, value, values);
+    } else if (isMethod(value)) {
+      value = giveMethodSuper(base, key, value, values, descs);
     }
 
     descs[key] = undefined;
@@ -18726,6 +18746,52 @@ Ember.beforeObserver = function(func) {
   func.__ember_observesBefore__ = paths;
   return func;
 };
+
+})();
+
+
+
+(function() {
+// Provides a way to register library versions with ember.
+
+Ember.libraries = function() {
+  var libraries    = [];
+  var coreLibIndex = 0;
+
+  var getLibrary = function(name) {
+    for (var i = 0; i < libraries.length; i++) {
+      if (libraries[i].name === name) {
+        return libraries[i];
+      }
+    }
+  };
+
+  libraries.register = function(name, version) {
+    if (!getLibrary(name)) {
+      libraries.push({name: name, version: version});
+    }
+  };
+
+  libraries.registerCoreLibrary = function(name, version) {
+    if (!getLibrary(name)) {
+      libraries.splice(coreLibIndex++, 0, {name: name, version: version});
+    }
+  };
+
+  libraries.deRegister = function(name) {
+    var lib = getLibrary(name);
+    if (lib) libraries.splice(libraries.indexOf(lib), 1);
+  };
+
+  libraries.each = function (callback) {
+    libraries.forEach(function(lib) {
+      callback(lib.name, lib.version);
+    });
+  };
+  return libraries;
+}();
+
+Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 })();
 
@@ -26592,7 +26658,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     are also concatenated, in addition to `classNames`.
 
     This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently.
+    although typical app developers are likely to use it infrequently. Since
+    it changes expectations about behavior of properties, you should properly
+    document its usage in each individual concatenated property (to not 
+    mislead your users to think they can override the property in a subclass).
 
     @property concatenatedProperties
     @type Array
@@ -34030,8 +34099,10 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
 
   ```javascript
   App.AppProfileComponent = Ember.Component.extend({
-    hello: function(name) {
-      console.log("Hello", name);
+    actions: {
+      hello: function(name) {
+        console.log("Hello", name);
+      }
     }
   });
   ```
@@ -34144,8 +34215,10 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     });
 
     App.CategoriesController = Ember.Controller.extend({
-      didClickCategory: function(category) {
-        //Do something with the node/category that was clicked
+      actions: {
+        didClickCategory: function(category) {
+          //Do something with the node/category that was clicked
+        }
       }
     });
     ```
@@ -45746,12 +45819,18 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     this.scheduleInitialize();
 
-    if (Ember.LOG_VERSION) {
+    Ember.libraries.registerCoreLibrary('Handlebars', Ember.Handlebars.VERSION);
+    Ember.libraries.registerCoreLibrary('jQuery', Ember.$().jquery);
+
+    if ( Ember.LOG_VERSION ) {
       Ember.LOG_VERSION = false; // we only need to see this once per Application#init
+      var maxNameLength = Math.max.apply(this, Ember.A(Ember.libraries).mapBy("name.length"));
+
       Ember.debug('-------------------------------');
-      Ember.debug('Ember.VERSION : ' + Ember.VERSION);
-      Ember.debug('Handlebars.VERSION : ' + Ember.Handlebars.VERSION);
-      Ember.debug('jQuery.VERSION : ' + Ember.$().jquery);
+      Ember.libraries.each(function(name, version) {
+        var spaces = new Array(maxNameLength - name.length + 1).join(" ");
+        Ember.debug([name, '.VERSION', spaces, ' : ', version].join(""));
+      });
       Ember.debug('-------------------------------');
     }
   },
@@ -47658,8 +47737,8 @@ Ember.State = generateRemovedClass("Ember.State");
 
 })();
 
-// Version: v1.0.0-beta.1-101-g4f41395
-// Last commit: 4f41395 (2013-09-04 21:05:23 -0700)
+// Version: v1.0.0-beta.1-124-g55eefca
+// Last commit: 55eefca (2013-09-06 00:01:33 -0700)
 
 
 (function() {
@@ -47720,6 +47799,10 @@ if ('undefined' === typeof DS) {
 
   if ('undefined' !== typeof window) {
     window.DS = DS;
+  }
+
+  if (Ember.libraries) {
+    Ember.libraries.registerCoreLibrary('Ember Data', DS.VERSION);
   }
 }
 })();
@@ -48445,11 +48528,11 @@ var map = Ember.EnumerableUtils.map;
   defined:
 
       App.Post = DS.Model.extend({
-        comments: DS.hasMany('App.Comment')
+        comments: DS.hasMany('comment')
       });
 
       App.Comment = DS.Model.extend({
-        post: DS.belongsTo('App.Post')
+        post: DS.belongsTo('post')
       });
 
   If you created a new instance of `App.Post` and added
@@ -49647,6 +49730,9 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   */
   didSaveRecord: function(record, data) {
     if (data) {
+      // normalize relationship IDs into records
+      data = normalizeRelationships(this, record.constructor, data);
+
       this.updateId(record, data);
     }
 
@@ -49903,9 +49989,12 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     Ember.assert('The id ' + id + ' has already been used with another record of type ' + type.toString() + '.', !id || !idToRecord[id]);
 
+    // lookupFactory should really return an object that creates
+    // instances with the injections applied
     var record = type._create({
       id: id,
       store: this,
+      container: this.container
     });
 
     if (data) {
@@ -50977,7 +51066,8 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
     @returns {Object} A JSON representation of the object.
   */
   toJSON: function(options) {
-    var serializer = DS.JSONSerializer.create();
+    // container is for lazy transform lookups
+    var serializer = DS.JSONSerializer.create({ container: this.container });
     return serializer.serialize(this, options);
   },
 
@@ -53025,8 +53115,8 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     The `find()` method is invoked when the store is asked for a record that
     has not previously been loaded. In response to `find()` being called, you
     should query your persistence layer for a record with the given ID. Once
-    found, you can asynchronously call the store's `load()` method to load
-    the record.
+    found, you can asynchronously call the store's `push()` method to push
+    the record into the store.
 
     Here is an example `find` implementation:
 
@@ -53037,8 +53127,8 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
           jQuery.getJSON(url, function(data) {
               // data is a hash of key/value pairs. If your server returns a
               // root, simply do something like:
-              // store.load(type, id, data.person)
-              store.load(type, id, data);
+              // store.push(type, id, data.person)
+              store.push(type, id, data);
           });
         }
 
@@ -54091,6 +54181,10 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   */
   serialize: function(record, options) {
     return this._super.apply(this, arguments);
+  },
+
+  serializeIntoHash: function(hash, type, record, options) {
+    hash[type.typeKey] = this.serialize(record, options);
   }
 });
 
@@ -54366,7 +54460,9 @@ DS.RESTAdapter = DS.Adapter.extend({
   */
   createRecord: function(store, type, record) {
     var data = {};
-    data[type.typeKey] = store.serializerFor(type.typeKey).serialize(record, { includeId: true });
+    var serializer = store.serializerFor(type.typeKey);
+
+    serializer.serializeIntoHash(data, type, record, { includeId: true });
 
     return this.ajax(this.buildURL(type.typeKey), "POST", { data: data });
   },
@@ -54390,7 +54486,9 @@ DS.RESTAdapter = DS.Adapter.extend({
   */
   updateRecord: function(store, type, record) {
     var data = {};
-    data[type.typeKey] = store.serializerFor(type.typeKey).serialize(record);
+    var serializer = store.serializerFor(type.typeKey);
+
+    serializer.serializeIntoHash(data, type, record);
 
     var id = get(record, 'id');
 
@@ -54420,7 +54518,10 @@ DS.RESTAdapter = DS.Adapter.extend({
   /**
     Builds a URL for a given type and optional ID.
 
-    If an ID is specified, it adds the ID to the root generated
+    By default, it pluralizes the type's name (for example,
+    'post' becomes 'posts' and 'person' becomes 'people').
+
+    If an ID is specified, it adds the ID to the path generated
     for the type, separated by a `/`.
 
     @method buildURL
@@ -54436,7 +54537,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     if (host) { url.push(host); }
     if (namespace) { url.push(namespace); }
 
-    url.push(this.rootForType(type));
+    url.push(this.pathForType(type));
     if (id) { url.push(id); }
 
     url = url.join('/');
@@ -54446,30 +54547,30 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   /**
-    Determines the pathname root for a given type.
+    Determines the pathname for a given type.
 
     By default, it pluralizes the type's name (for example,
     'post' becomes 'posts' and 'person' becomes 'people').
 
-    ### Pathname root customization
+    ### Pathname customization
 
     For example if you have an object LineItem with an
     endpoint of "/line_items/".
 
     ```js
     DS.RESTAdapter.reopen({
-      rootForType: function(type) {
+      pathForType: function(type) {
         var decamelized = Ember.String.decamelize(type);
         return Ember.String.pluralize(decamelized);
       };
     });
     ```
 
-    @method rootForType
+    @method pathForType
     @param {String} type
     @returns String
   **/
-  rootForType: function(type) {
+  pathForType: function(type) {
     return Ember.String.pluralize(type);
   },
 
@@ -58240,32 +58341,32 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
 });
 
 
-TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
-    needs: ['index'],
-    actions: {
+TableSelectWeb.AdminController = Ember.ArrayController.extend({});
 
-        addAttendeeEvent: function(){
+TableSelectWeb.BallTableController = Ember.Controller.extend({});
+
+TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
+    templateName: 'addAttendee',
+    attendee_name: '',
+
+    actions: {
+        addAttendeeFormEvent: function(attendee_name){
             'use strict';
             var self = this,
-                ball_table,
-                attendee_name,
+                store = this.get('parentView.targetObject.store'),
+                ball_table = self.get('ball_table'),
                 record_data,
-                attendee,
-                prom;
+                success_handler,
+                failure_handler;
 
-            // control content is set by the control helper, second arg to helper
-            ball_table = self.get('content');
-
-            Ember.assert('Not a ball_table instance',
-                this.store.modelFor('ball_table').detectInstance(ball_table));
-            Ember.assert('Bad ball_table id', !!ball_table.id);
-
-            attendee_name = self.get('attendee_name');
             this.set('attendee_name', '');
 
             attendee_name = attendee_name.trim();
-
             if (!attendee_name) { return; }
+
+            Ember.assert('Not a ball_table instance',
+                store.modelFor('ball_table').detectInstance(ball_table));
+            Ember.assert('Bad ball_table id', !!ball_table.id);
 
             record_data = {
                 'attendee_name': attendee_name,
@@ -58273,37 +58374,28 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
                 'ball_table_id': ball_table
             };
 
-            attendee = this.store.createRecord('attendee', record_data);
-
-            console.log(attendee.ball_table);
-
             console.log('Saving');
-            // debugger;
-            prom = attendee.save();
+            store.createRecord('attendee', record_data).save().then(
+                success_handler, failure_handler
+            );
 
-
-            var success_handler = function(event) {
+            success_handler = function(event) {
+                debugger;
                 console.log('success:', event);
                 sendNotification('Attendee add was successful');
-            },
+            };
+
             failure_handler = function(event) {
-                // debugger;
-                var record;
-
-                if (!event.hasOwnProperty('detail')) {
-                    record = event;
-                } else {
-                    record = event.detail;
-                }
-
+                debugger;
+                var record = event.hasOwnProperty('detail') ? event.detail : event;
                 console.log('failed, handling errors', record.errors);
+
                 self.handle_errors(
                     record.errors,
                     self.error_handlers,
                     record_data);
             };
 
-            prom.then(success_handler, failure_handler);
         },
     },
 
@@ -58333,68 +58425,38 @@ TableSelectWeb.AddAttendeeController = Ember.Controller.extend({
     }
 });
 
-TableSelectWeb.AddAttendeeController.reopen(TableSelectWeb.ErrorHandlerMixin);
 
-TableSelectWeb.AdminController = Ember.ArrayController.extend({});
+TableSelectWeb.AddAttendeeComponent.reopen(TableSelectWeb.ErrorHandlerMixin);
 
-TableSelectWeb.AttendeeListController = Ember.Controller.extend({
-    render: function(){
-        console.log('Attendee list Model:', this.get('model'));
-        return this._super(arguments);
-    },
-
-    RequestRemoveAttendee: function(attendee) {
-        'use strict';
-
-        var ball_table = attendee.get('ball_table');
-
-        console.assert(
-            this.store.modelFor('ball_table').detectInstance(ball_table));
-
-        var record_data = {
-            attendee: attendee,
-            ball_table: ball_table,
-            remover_ident: 'unknown',
-            state: 'unresolved'
-        };
-
-        var removal_request = this.store.createRecord(
-            'removal_request', record_data);
-        var prom = removal_request.save();
-
-        prom.then(function(event){
-            console.assert(attendee.id);
-            debugger;
-            console.log('p1 done');
-            attendee.set('removal_request_exists', true);
-            var prom = attendee.save();
-            prom.then(function(event){
-                console.log('p2 done');
-            });
-        });
-    }
-});
-
-
-TableSelectWeb.BallTableController = Ember.Controller.extend({});
-
-TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
-    templateName: 'addAttendee',
-    attendee_name: '',
-
+TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
     actions: {
-        addAttendeeFormEvent: function(attendee_name){
-            var controller = this.get('controller');
+        requestRemoveAttendee: function(attendee) {
+            'use strict';
+            var ball_table = attendee.get('ball_table_id'),
+                store = this.get('parentView.targetObject.store'),
+                record;
 
-            // tell the controller the attendee_name
-            controller.set('attendee_name', attendee_name);
+            // ensure we are getting valid objects from Ember
+            Ember.assert('Not a ball_table object',
+                store.modelFor('ball_table').detectInstance(ball_table));
+            Ember.assert('Not an attendee object',
+                store.modelFor('attendee').detectInstance(attendee));
 
-            // clear the input field
-            this.set('attendee_name', '');
+            // create the record...
+            record = store.createRecord('removal_request', {
+                attendee_id: attendee,
+                ball_table_id: ball_table,
+                remover_ident: 'unknown',
+                state: 'unresolved'
+            });
 
-            debugger;
-            // tell the controller to get its act together
-            controller.send('addAttendeeEvent');
+            // save it...
+            record.save().then(function(event){
+                // and when it is saved, mark the attendee
+                attendee.set('removal_request_exists', true);
+                attendee.save();
+                sendNotification('Removal request successfully submitted');
+            });
         }
     }
 });
@@ -58415,7 +58477,11 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
     action: function(state, sh){
         'use strict';
-        var records = this.get_values();
+        var records = this.get_values(),
+            self = this,
+            promises,
+            success,
+            failure;
 
         records.forEach(function(record){
             record.set('state', state);
@@ -58426,30 +58492,21 @@ TableSelectWeb.AdminView = Ember.View.extend({
             }
         });
 
-        var promises = [];
+        promises = records.invoke('save');
+        Ember.RSVP.all(promises).then(
+            success, failure
+        );
 
-        records.forEach(function(record){
-            var prom = record.save();
-            promises.push(prom);
-        });
-
-        var prom = Ember.RSVP.all(promises);
-
-        var self = this;
-        var success = function(requested){
+        success = function(requested){
             debugger;
             self.clear_checkboxes();
-            sendNotification(
-                'Success');
-        };
-        var failure = function(){
-            debugger;
-            sendNotification(
-                'Failure');
+            sendNotification('Success');
         };
 
-        prom.then(success, failure);
-        // prom.then(success);
+        failure = function(){
+            debugger;
+            sendNotification('Failure');
+        };
     },
 
     get_checked: function() {
@@ -58473,8 +58530,7 @@ TableSelectWeb.AdminView = Ember.View.extend({
     },
 
     get_checkboxes: function(){
-        var children = this.get('childViews');
-        return children;
+        return this.get('childViews');
     },
 
     get_values: function(){
@@ -58487,10 +58543,6 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
         return removal_requests;
     }
-});
-
-TableSelectWeb.AttendeeListView = Ember.View.extend({
-    templateName: 'attendee_list'
 });
 
 TableSelectWeb.BallTableView = Ember.View.extend({});
@@ -58528,6 +58580,16 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
     ball_table: DS.belongsTo('ball_table'),
     remover_ident: DS.attr('string'),
     state: DS.attr('string')
+});
+
+TableSelectWeb.Router.reopen({
+    location: 'history'
+});
+
+TableSelectWeb.Router.map(function(){
+    this.resource('index', {path: '/'});
+    this.resource('info', {path: '/info'});
+    this.resource('admin', {path: '/admin'});
 });
 
 (function(Ember){
@@ -58623,16 +58685,6 @@ TableSelectWeb.Store = DS.Store.extend({
     revision: 12
 });
 
-TableSelectWeb.Router.reopen({
-    location: 'history'
-});
-
-TableSelectWeb.Router.map(function(){
-    this.resource('index', {path: '/'});
-    this.resource('info', {path: '/info'});
-    this.resource('admin', {path: '/admin'});
-});
-
 TableSelectWeb.AdminRoute = Ember.Route.extend({
     model: function () {
         return this.store.find('removal_request');
@@ -58664,6 +58716,22 @@ TableSelectWeb.InfoRoute = Ember.Route.extend({
         });
     }
 });
+
+function sendNotification(text, callback) {
+    var options, closed_callback, modalPane;
+
+    closed_callback = typeof callback === 'undefined' ? Ember.K : callback;
+
+    options = {
+        defaultTemplate: Ember.TEMPLATES.modal,
+        heading: text,
+        callback: closed_callback
+    };
+
+    modalPane = Bootstrap.ModalPane.popup(options);
+
+    return modalPane;
+}
 
 Ember.TEMPLATES["admin"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
@@ -58891,11 +58959,9 @@ function program1(depth0,data) {
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "attendee.attendee_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\r\n        <button type=\"button\" class=\"spec_close\"\r\n            ");
-  hashContexts = {'on': depth0};
-  hashTypes = {'on': "STRING"};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "RequestRemoveAttendee", "attendee", {hash:{
-    'on': ("click")
-  },contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "requestRemoveAttendee", "attendee", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\r\n            >&times;</button>\r\n\r\n        ");
   hashTypes = {};
   hashContexts = {};
