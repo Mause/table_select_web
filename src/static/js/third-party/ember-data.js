@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-124-g55eefca
-// Last commit: 55eefca (2013-09-06 00:01:33 -0700)
+// Version: v1.0.0-beta.1-132-gf90a406
+// Last commit: f90a406 (2013-09-06 21:45:15 -0700)
 
 
 (function() {
@@ -232,6 +232,11 @@ var get = Ember.get, capitalize = Ember.String.capitalize, underscore = Ember.St
 
 /**
   Extend `Ember.DataAdapter` with ED specific code.
+
+  @class DebugAdapter
+  @namespace DS
+  @extends Ember.DataAdapter
+  @private
 */
 DS.DebugAdapter = Ember.DataAdapter.extend({
   getFilters: function() {
@@ -1600,6 +1605,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   /**
     Returns true if a record for a given type and ID is already loaded.
 
+    @method hasRecordForId
     @param {String} type
     @param {String|Integer} id
     @returns Boolean
@@ -1614,6 +1620,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     Returns id record for a given type and ID. If one isn't already loaded,
     it builds a new record and leaves it in the `empty` state.
 
+    @method recordForId
     @param {String} type
     @param {String|Integer} id
     @returns DS.Model
@@ -1681,6 +1688,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     The usual use-case is for the server to register a URL as a link, and
     then use that URL in the future to make a request for the relationship.
 
+    @method findHasMany
     @private
     @param {DS.Model} owner
     @param {any} link
@@ -2104,6 +2112,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     methods that take a type key (like `find`, `createRecord`,
     etc.)
 
+    @method modelFor
     @param {String} key
     @returns {subclass of DS.Model}
   */
@@ -2505,6 +2514,10 @@ function _find(adapter, store, type, id, resolver) {
     payload = serializer.extract(store, type, payload, id, 'find');
 
     return store.push(type, payload);
+  }, function(error) {
+    var record = store.getById(type, id);
+    record.notFound();
+    throw error;
   }).then(resolver.resolve, resolver.reject);
 }
 
@@ -2514,6 +2527,8 @@ function _findMany(adapter, store, type, ids, owner, resolver) {
 
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findMany');
+
+    Ember.assert("The response from a findMany must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
 
     store.pushMany(type, payload);
   }).then(resolver.resolve, resolver.reject);
@@ -2525,6 +2540,8 @@ function _findHasMany(adapter, store, record, link, relationship, resolver) {
 
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, relationship.type, payload, null, 'findHasMany');
+
+    Ember.assert("The response from a findHasMany must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
 
     var records = store.pushMany(relationship.type, payload);
     record.updateHasMany(relationship.key, records);
@@ -2538,6 +2555,8 @@ function _findAll(adapter, store, type, sinceToken, resolver) {
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findAll');
 
+    Ember.assert("The response from a findAll must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
+
     store.pushMany(type, payload);
     store.didUpdateAll(type);
     return store.all(type);
@@ -2550,6 +2569,8 @@ function _findQuery(adapter, store, type, query, recordArray, resolver) {
 
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findAll');
+
+    Ember.assert("The response from a findQuery must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
 
     recordArray.load(payload);
     return recordArray;
@@ -3052,6 +3073,10 @@ var RootState = {
 
     becameError: function(record) {
       record.triggerLater('becameError', record);
+    },
+
+    notFound: function(record) {
+      record.transitionTo('empty');
     }
   },
 
@@ -3471,6 +3496,10 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
 
   loadedData: function() {
     this.send('loadedData');
+  },
+
+  notFound: function() {
+    this.send('notFound');
   },
 
   pushedData: function() {
@@ -5464,9 +5493,9 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     method on success or `didError` method on failure.
 
     @method createRecord
-    @property {DS.Store} store
-    @property {subclass of DS.Model} type   the DS.Model class of the record
-    @property {DS.Model} record
+    @param {DS.Store} store
+    @param {subclass of DS.Model} type   the DS.Model class of the record
+    @param {DS.Model} record
   */
   createRecord: Ember.required(Function),
 
@@ -5477,9 +5506,9 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     Serializes the record update and send it to the server.
 
     @method updateRecord
-    @property {DS.Store} store
-    @property {subclass of DS.Model} type   the DS.Model class of the record
-    @property {DS.Model} record
+    @param {DS.Store} store
+    @param {subclass of DS.Model} type   the DS.Model class of the record
+    @param {DS.Model} record
   */
   updateRecord: Ember.required(Function),
 
@@ -5490,9 +5519,9 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     Sends a delete request for the record to the server.
 
     @method deleteRecord
-    @property {DS.Store} store
-    @property {subclass of DS.Model} type   the DS.Model class of the record
-    @property {DS.Model} record
+    @param {DS.Store} store
+    @param {subclass of DS.Model} type   the DS.Model class of the record
+    @param {DS.Model} record
   */
   deleteRecord: Ember.required(Function),
 
@@ -5504,9 +5533,9 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
     server requests.
 
     @method findMany
-    @property {DS.Store} store
-    @property {subclass of DS.Model} type   the DS.Model class of the records
-    @property {Array}    ids
+    @param {DS.Store} store
+    @param {subclass of DS.Model} type   the DS.Model class of the records
+    @param {Array}    ids
   */
   findMany: function(store, type, ids) {
     var promises = map.call(ids, function(id) {
@@ -5619,7 +5648,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
     @param  record
   */
   generateIdForRecord: function(store) {
-    return counter++;
+    return "fixture-" + counter++;
   },
 
   /**
@@ -5875,6 +5904,10 @@ function coerceId(id) {
   You can also implement `keyForRelationship`, which takes the name
   of the relationship as the first parameter, and the kind of
   relationship (`hasMany` or `belongsTo`) as the second parameter.
+
+  @class RESTSerializer
+  @namespace DS
+  @extends DS.JSONSerializer
 */
 DS.RESTSerializer = DS.JSONSerializer.extend({
   /**
@@ -6114,6 +6147,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     for the first time or updated (`createRecord` or `updateRecord`). In
     particular, it will update the properties of the record that was saved.
 
+    @method extractSingle
     @param {DS.Store} store
     @param {subclass of DS.Model} type
     @param {Object} payload
@@ -6128,21 +6162,23 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryRecord;
 
     for (var prop in payload) {
-      // legacy support for singular names
-      if (prop === primaryTypeName) {
+      var typeName  = this.modelTypeFromRoot(prop),
+          isPrimary = typeName === primaryTypeName;
+
+      // legacy support for singular resources
+      if (isPrimary && Ember.typeOf(payload[prop]) !== "array" ) {
         primaryRecord = this.normalize(primaryType, payload[prop], prop);
         continue;
       }
 
-      var typeName = this.singularize(prop),
-          type = store.modelFor(typeName);
+      var type = store.modelFor(typeName);
 
       /*jshint loopfunc:true*/
       forEach.call(payload[prop], function(hash) {
         hash = this.normalize(type, hash, prop);
 
-        var isFirstCreatedRecord = typeName === primaryTypeName && !recordId && !primaryRecord,
-            isUpdatedRecord = typeName === primaryTypeName && coerceId(hash.id) === recordId;
+        var isFirstCreatedRecord = isPrimary && !recordId && !primaryRecord,
+            isUpdatedRecord = isPrimary && coerceId(hash.id) === recordId;
 
         // find the primary record.
         //
@@ -6249,6 +6285,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     or `findHasMany`. In particular, the primary array will become the
     list of records in the record array that kicked off the request.
 
+    @method extractArray
     @param {DS.Store} store
     @param {subclass of DS.Model} type
     @param {Object} payload
@@ -6263,7 +6300,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryArray;
 
     for (var prop in payload) {
-      var typeName = this.singularize(prop),
+      var typeName = this.modelTypeFromRoot(prop),
           type = store.modelFor(typeName),
           isPrimary = typeName === primaryTypeName;
 
@@ -6283,21 +6320,27 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   },
 
   /**
-    @private
-    @method pluralize
-    @param {String} key
-  */
-  pluralize: function(key) {
-    return Ember.String.pluralize(key);
-  },
+    You can use this method to normalize the JSON root keys returned
+    into the model type expected by your store.
 
-  /**
-    @private
-    @method singularize
-    @param {String} key
+    For example, your server may return underscored root keys rather than
+    the expected camelcased versions.
+
+    ```js
+    App.ApplicationSerializer = DS.RESTSerializer.extend({
+      modelTypeFromRoot: function(root) {
+        var camelized = Ember.String.camelize(root);
+        return Ember.String.singularize(camelized);
+      }
+    });
+    ```
+
+    @method modelTypeFromRoot
+    @param {String} root
+    @returns String the model's typeKey
   */
-  singularize: function(key) {
-    return Ember.String.singularize(key);
+  modelTypeFromRoot: function(root) {
+    return Ember.String.singularize(root);
   },
 
   // SERIALIZE
@@ -6439,6 +6482,10 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
       }
     });
     ```
+
+    @method serialize
+    @param record
+    @param options
   */
   serialize: function(record, options) {
     return this._super.apply(this, arguments);
@@ -6917,16 +6964,20 @@ DS.RESTAdapter = DS.Adapter.extend({
 DS.Model.reopen({
 
   /**
-   Provides info about the model for debugging purposes
-   by grouping the properties into more semantic groups.
+    Provides info about the model for debugging purposes
+    by grouping the properties into more semantic groups.
 
-   Meant to be used by debugging tools such as the Chrome Ember Extension.
+    Meant to be used by debugging tools such as the Chrome Ember Extension.
 
-   - Groups all attributes in "Attributes" group.
-   - Groups all belongsTo relationships in "Belongs To" group.
-   - Groups all hasMany relationships in "Has Many" group.
-   - Groups all flags in "Flags" group.
-   - Flags relationship CPs as expensive properties.
+    - Groups all attributes in "Attributes" group.
+    - Groups all belongsTo relationships in "Belongs To" group.
+    - Groups all hasMany relationships in "Has Many" group.
+    - Groups all flags in "Flags" group.
+    - Flags relationship CPs as expensive properties.
+
+    @method _debugInfo
+    @for DS.Model
+    @private
   */
   _debugInfo: function() {
     var attributes = ['id'],
