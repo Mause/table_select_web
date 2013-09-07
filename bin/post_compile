@@ -1,2 +1,5 @@
 #!/usr/bin/env bash
-python3 src/assets.py
+ls
+python -c "open('filename.txt','w').write('world')"
+python3 -c "open('filename3.txt','w').write('world')"
+python3 $BIN_DIR/../src/assets.py
