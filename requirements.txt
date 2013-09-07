@@ -1,10 +1,8 @@
 tornado==3.1
-requests==1.2.3
-sqlalchemy
-pg8000-py3
-psycopg2
-simplejson
-PyYaml
-webassets==dev
-jsmin
-newrelic
+sqlalchemy==0.8.2
+psycopg2==2.5.1
+simplejson==3.3.0
+PyYaml==3.10
+webassets==0.9.dev
+jsmin==2.0.3
+newrelic==2.0.0.1
