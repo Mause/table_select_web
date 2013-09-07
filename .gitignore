@@ -44,4 +44,5 @@ __pycache__
 *.swp
 
 # generated stuff
+src/static/gen/compiled_templates.js
 *.webassets-cache*
