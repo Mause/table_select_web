@@ -17,7 +17,8 @@ TableSelectWeb.AdminView = Ember.View.extend({
         var records = this.get_values(),
             self = this,
             promises,
-            success,
+            success_note,
+            success_submit,
             failure;
 
         records.forEach(function(record){
@@ -29,13 +30,28 @@ TableSelectWeb.AdminView = Ember.View.extend({
             }
         });
 
+        debugger;
         promises = records.invoke('save');
         Ember.RSVP.all(promises).then(
-            success, failure
+            success_submit, failure
         );
 
-        success = function(requested){
+        success_submit = function(requested){
             debugger;
+            var attendees = [],
+                proms;
+            requested.forEach(function(removal_request){
+                debugger;
+                var attendee = removal_request.get('attendee_id');
+                attendee.set('removal_request_exists', true);
+            });
+            proms = attendees.invoke('save');
+            Ember.RSVP.all(proms).then(
+                success_note, failure
+            );
+        };
+
+        success_note = function(attendees){
             self.clear_checkboxes();
             sendNotification('Success');
         };
