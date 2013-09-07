@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 ls
 echo "inside hook"
 python -c "open('filename.txt','w').write('world')"
