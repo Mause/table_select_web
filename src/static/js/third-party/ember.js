@@ -170,8 +170,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-50-gd65d9e2
-// Last commit: d65d9e2 (2013-09-05 21:54:58 -0700)
+// Version: v1.0.0-60-g1149e8e
+// Last commit: 1149e8e (2013-09-06 17:01:32 -0700)
 
 
 (function() {
@@ -8350,11 +8350,7 @@ define("container",
   [],
   function() {
 
-   /**
-     A safe and simple inheriting object.
-
-     // @class InheritingDict
-   */
+    // A safe and simple inheriting object.
     function InheritingDict(parent) {
       this.parent = parent;
       this.dict = {};
@@ -8461,14 +8457,10 @@ define("container",
       }
     };
 
-   /**
-     A lightweight container that helps to assemble and decouple components.
 
-     @private
-     Public api for the container is still in flux.
-     The public api, specified on the application namespace should be considered the stable api.
-     // @class Container
-   */
+    // A lightweight container that helps to assemble and decouple components.
+    // Public api for the container is still in flux.
+    // The public api, specified on the application namespace should be considered the stable api.
     function Container(parent) {
       this.parent = parent;
       this.children = [];
@@ -27154,7 +27146,7 @@ var get = Ember.get, set = Ember.set;
   The internal class used to create text inputs when the `{{input}}`
   helper is used with `type` of `text`.
 
-  See Handlebars.helpers.input for usage details.
+  See [handlebars.helpers.input](api/classes/Ember.Handlebars.helpers.html#method_input)  for usage details.
 
   ## Layout and LayoutName properties
 
@@ -27164,7 +27156,7 @@ var get = Ember.get, set = Ember.set;
 
   @class TextField
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
   @uses Ember.TextSupport
 */
 Ember.TextField = Ember.Component.extend(Ember.TextSupport,
@@ -27356,7 +27348,7 @@ var get = Ember.get, set = Ember.set;
   The internal class used to create textarea element when the `{{textarea}}`
   helper is used.
 
-  See handlebars.helpers.textarea for usage details.
+  See [handlebars.helpers.textarea](/api/classes/Ember.Handlebars.helpers.html#method_textarea)  for usage details.
 
   ## Layout and LayoutName properties
 
@@ -27366,7 +27358,7 @@ var get = Ember.get, set = Ember.set;
 
   @class TextArea
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
   @uses Ember.TextSupport
 */
 Ember.TextArea = Ember.Component.extend(Ember.TextSupport, {
@@ -28154,6 +28146,13 @@ function normalizeHash(hash, hashTypes) {
   });
   ```
 
+  Keep in mind when writing `Ember.TextField` subclasses that `Ember.TextField`
+  itself extends `Ember.Component`, meaning that it does NOT inherit
+  the `controller` of the parent view.
+
+  See more about [Ember components](api/classes/Ember.Component.html)
+
+
   ## Use as checkbox
 
   An `{{input}}` with a `type` of `checkbox` will render an HTML checkbox input.
@@ -28209,6 +28208,7 @@ function normalizeHash(hash, hashTypes) {
     classNames: ['my-app-checkbox']
   });
   ```
+
 
   @method input
   @for Ember.Handlebars.helpers
@@ -28372,6 +28372,12 @@ Ember.Handlebars.registerHelper('input', function(options) {
     attributeBindings: ['required']
   });
   ```
+
+  Keep in mind when writing `Ember.TextArea` subclasses that `Ember.TextArea`
+  itself extends `Ember.Component`, meaning that it does NOT inherit
+  the `controller` of the parent view.
+
+  See more about [Ember components](api/classes/Ember.Component.html)
 
   @method textarea
   @for Ember.Handlebars.helpers
@@ -34707,7 +34713,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       Ember.debug('-------------------------------');
       Ember.libraries.each(function(name, version) {
         var spaces = new Array(maxNameLength - name.length + 1).join(" ");
-        Ember.debug([name, '.VERSION', spaces, ' : ', version].join(""));
+        Ember.debug([name, spaces, ' : ', version].join(""));
       });
       Ember.debug('-------------------------------');
     }
@@ -34852,9 +34858,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     ```
 
     @method register
-    @param  type {String}
-    @param  name {String}
-    @param  factory {String}
+    @param  fullName {String} type:name (e.g., 'model:user')
+    @param  factory {Function} (e.g., App.Person)
     @param  options {String} (optional)
   **/
   register: function() {
