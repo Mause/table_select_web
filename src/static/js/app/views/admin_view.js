@@ -22,10 +22,10 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
         records.forEach(function(record){
             record.set('state', state);
-            if (sh == 'show' && record.get('attendee.show') !== true) {
-                record.set('attendee.show', true);
-            } else if (sh == 'hide' && record.get('attendee.show') !== false) {
-                record.set('attendee.show', false);
+            if (sh == 'show' && record.get('attendee_id.show') !== true) {
+                record.set('attendee_id.show', true);
+            } else if (sh == 'hide' && record.get('attendee_id.show') !== false) {
+                record.set('attendee_id.show', false);
             }
         });
 
