@@ -47742,8 +47742,8 @@ Ember.State = generateRemovedClass("Ember.State");
 
 })();
 
-// Version: v1.0.0-beta.1-128-g6259d14
-// Last commit: 6259d14 (2013-09-06 17:12:25 -0700)
+// Version: v1.0.0-beta.1-132-gf90a406
+// Last commit: f90a406 (2013-09-06 21:45:15 -0700)
 
 
 (function() {
@@ -50272,6 +50272,8 @@ function _findMany(adapter, store, type, ids, owner, resolver) {
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findMany');
 
+    Ember.assert("The response from a findMany must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
+
     store.pushMany(type, payload);
   }).then(resolver.resolve, resolver.reject);
 }
@@ -50282,6 +50284,8 @@ function _findHasMany(adapter, store, record, link, relationship, resolver) {
 
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, relationship.type, payload, null, 'findHasMany');
+
+    Ember.assert("The response from a findHasMany must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
 
     var records = store.pushMany(relationship.type, payload);
     record.updateHasMany(relationship.key, records);
@@ -50295,6 +50299,8 @@ function _findAll(adapter, store, type, sinceToken, resolver) {
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findAll');
 
+    Ember.assert("The response from a findAll must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
+
     store.pushMany(type, payload);
     store.didUpdateAll(type);
     return store.all(type);
@@ -50307,6 +50313,8 @@ function _findQuery(adapter, store, type, query, recordArray, resolver) {
 
   return resolve(promise).then(function(payload) {
     payload = serializer.extract(store, type, payload, null, 'findAll');
+
+    Ember.assert("The response from a findQuery must be an Array, not " + Ember.inspect(payload), Ember.typeOf(payload) === 'array');
 
     recordArray.load(payload);
     return recordArray;
@@ -53384,7 +53392,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
     @param  record
   */
   generateIdForRecord: function(store) {
-    return counter++;
+    return "fixture-" + counter++;
   },
 
   /**
@@ -53898,21 +53906,23 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryRecord;
 
     for (var prop in payload) {
-      // legacy support for singular names
-      if (prop === primaryTypeName) {
+      var typeName  = this.modelTypeFromRoot(prop),
+          isPrimary = typeName === primaryTypeName;
+
+      // legacy support for singular resources
+      if (isPrimary && Ember.typeOf(payload[prop]) !== "array" ) {
         primaryRecord = this.normalize(primaryType, payload[prop], prop);
         continue;
       }
 
-      var typeName = this.singularize(prop),
-          type = store.modelFor(typeName);
+      var type = store.modelFor(typeName);
 
       /*jshint loopfunc:true*/
       forEach.call(payload[prop], function(hash) {
         hash = this.normalize(type, hash, prop);
 
-        var isFirstCreatedRecord = typeName === primaryTypeName && !recordId && !primaryRecord,
-            isUpdatedRecord = typeName === primaryTypeName && coerceId(hash.id) === recordId;
+        var isFirstCreatedRecord = isPrimary && !recordId && !primaryRecord,
+            isUpdatedRecord = isPrimary && coerceId(hash.id) === recordId;
 
         // find the primary record.
         //
@@ -54034,7 +54044,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryArray;
 
     for (var prop in payload) {
-      var typeName = this.singularize(prop),
+      var typeName = this.modelTypeFromRoot(prop),
           type = store.modelFor(typeName),
           isPrimary = typeName === primaryTypeName;
 
@@ -54054,21 +54064,27 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   },
 
   /**
-    @private
-    @method pluralize
-    @param {String} key
-  */
-  pluralize: function(key) {
-    return Ember.String.pluralize(key);
-  },
+    You can use this method to normalize the JSON root keys returned
+    into the model type expected by your store.
 
-  /**
-    @private
-    @method singularize
-    @param {String} key
+    For example, your server may return underscored root keys rather than
+    the expected camelcased versions.
+
+    ```js
+    App.ApplicationSerializer = DS.RESTSerializer.extend({
+      modelTypeFromRoot: function(root) {
+        var camelized = Ember.String.camelize(root);
+        return Ember.String.singularize(camelized);
+      }
+    });
+    ```
+
+    @method modelTypeFromRoot
+    @param {String} root
+    @returns String the model's typeKey
   */
-  singularize: function(key) {
-    return Ember.String.singularize(key);
+  modelTypeFromRoot: function(root) {
+    return Ember.String.singularize(root);
   },
 
   // SERIALIZE
@@ -58526,7 +58542,8 @@ TableSelectWeb.AdminView = Ember.View.extend({
         var records = this.get_values(),
             self = this,
             promises,
-            success,
+            success_note,
+            success_submit,
             failure;
 
         records.forEach(function(record){
@@ -58538,13 +58555,28 @@ TableSelectWeb.AdminView = Ember.View.extend({
             }
         });
 
+        debugger;
         promises = records.invoke('save');
         Ember.RSVP.all(promises).then(
-            success, failure
+            success_submit, failure
         );
 
-        success = function(requested){
+        success_submit = function(requested){
             debugger;
+            var attendees = [],
+                proms;
+            requested.forEach(function(removal_request){
+                debugger;
+                var attendee = removal_request.get('attendee_id');
+                attendee.set('removal_request_exists', true);
+            });
+            proms = attendees.invoke('save');
+            Ember.RSVP.all(proms).then(
+                success_note, failure
+            );
+        };
+
+        success_note = function(attendees){
             self.clear_checkboxes();
             sendNotification('Success');
         };
@@ -58733,7 +58765,9 @@ TableSelectWeb.Router.map(function(){
 
 TableSelectWeb.AdminRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('removal_request');
+        return this.get('store').findQuery('removal_request', {
+            'state': 'unresolved'
+        });
     },
 
     renderTemplate: function(controller, model){
@@ -58805,7 +58839,7 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.ball_table_id.ball_table_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\"\"\r\n                        </span>\r\n                    </label>\r\n                </li>\r\n            ");
+  data.buffer.push("\"\r\n                        </span>\r\n                    </label>\r\n                </li>\r\n            ");
   return buffer;
   }
 
