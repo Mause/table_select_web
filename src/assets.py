@@ -165,8 +165,9 @@ def gen_assets():
 def main():
     my_env.debug = False
 
-    from pprint import pprint
-    pprint(_gen_assets())
+    print('-----> Generated assets;')
+    for asset in _gen_assets():
+        print('----->    ', asset)
 
 
 if __name__ == '__main__':
