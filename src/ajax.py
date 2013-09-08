@@ -47,24 +47,6 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
         'PUT': True
     }
 
-    # def post(self):
-    #     attendee_id = self.get_argument('attendee_id')
-    #     table_id = self.get_argument('table_id')
-
-    #     logging.info(
-    #         'recording removal request for attendee with id {}'.format(
-    #             attendee_id))
-
-    #     record = {
-    #         'attendee_id': int(attendee_id),
-    #         'table_id': int(table_id),
-    #         'state': 'unresolved'
-    #     }
-
-    #     with closing(db.Session()) as session:
-    #         record = db.removal_request_table.insert(record)
-    #         session.execute(record)
-
 
 class AttendeeHandler(EmberDataRESTEndpoint):
     table = db.Attendee
