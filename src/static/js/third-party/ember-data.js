@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-132-gf90a406
-// Last commit: f90a406 (2013-09-06 21:45:15 -0700)
+// Version: v1.0.0-beta.1-140-ga51f29c
+// Last commit: a51f29c (2013-09-07 16:34:55 -0700)
 
 
 (function() {
@@ -1843,14 +1843,6 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     filter function will be invoked again to determine whether it should
     still be in the array.
 
-    Note that the existence of a filter on a type will trigger immediate
-    materialization of all loaded data for a given type, so you might
-    not want to use filters for a type if you are loading many records
-    into the store, many of which are not active at any given time.
-
-    In this scenario, you might want to consider filtering the raw
-    data before loading it into the store.
-
     @method filter
     @param {Class} type
     @param {Function} filter
@@ -2197,6 +2189,8 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     // If passed, it means that the data should be
     // merged into the existing data, not replace it.
 
+    Ember.assert("You must include an `id` in a hash passed to `push`", data.id != null);
+
     var serializer = this.serializerFor(type);
     type = this.modelFor(type);
 
@@ -2209,6 +2203,8 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   },
 
   update: function(type, data) {
+    Ember.assert("You must include an `id` in a hash passed to `update`", data.id != null);
+
     return this.push(type, data, true);
   },
 
@@ -6317,6 +6313,52 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     }
 
     return primaryArray;
+  },
+
+  /**
+    This method allows you to push a payload containing top-level
+    collections of records organized per type.
+
+    ```js
+    {
+      "posts": [{
+        "id": "1",
+        "title": "Rails is omakase",
+        "author", "1",
+        "comments": [ "1" ]
+      }],
+      "comments": [{
+        "id": "1",
+        "body": "FIRST
+      }],
+      "users": [{
+        "id": "1",
+        "name": "@d2h"
+      }]
+    }
+    ```
+
+    It will first normalize the payload, so you can use this to push
+    in data streaming in from your server structured the same way
+    that fetches and saves are structured.
+
+    @param {DS.Store} store
+    @param {Object} payload
+  */
+  pushPayload: function(store, payload) {
+    payload = this.normalizePayload(null, payload);
+
+    for (var prop in payload) {
+      var typeName = this.modelTypeFromRoot(prop),
+          type = store.modelFor(typeName);
+
+      /*jshint loopfunc:true*/
+      var normalizedArray = payload[prop].map(function(hash) {
+        return this.normalize(type, hash, prop);
+      }, this);
+
+      store.pushMany(typeName, normalizedArray);
+    }
   },
 
   /**
