@@ -1,12 +1,6 @@
 # stdlib
-# import os
-# import json
 from settings import settings
-# import logging
-# import datetime
-# import urllib.parse
 from sqlalchemy.orm.collections import InstrumentedList
-# from sqlalchemy.util import KeyedTuple
 
 # third-party
 import tornado.web
@@ -102,25 +96,3 @@ class BaseHandler(tornado.web.RequestHandler):
         args = defaults
         args.update(kwargs)
         return super(BaseHandler, self).render(template_name, **kwargs)
-
-
-class SmartStaticFileHandler(tornado.web.StaticFileHandler):
-    pass
-    # def get_age(self, path):
-    #     import stat
-    #     abspath = os.path.abspath(path)
-    #     stat_result = os.stat(abspath)
-    #     modified = datetime.datetime.fromtimestamp(
-    #         stat_result[stat.ST_MTIME])
-    #     return modified
-
-    # def get(self, path, include_body=True):
-    #     orig_path = path
-
-    #     filename = urllib.parse.urlparse(orig_path).path
-    #     if filename.endswith('.hbs.js'):
-    #         path = self.parse_url_path(path)
-    #         abspath = os.path.abspath(os.path.join(self.root, path))
-
-    #     else:
-    #         super(SmartStaticFileHandler, self).get(orig_path, include_body)

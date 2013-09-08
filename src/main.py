@@ -35,7 +35,7 @@ import db
 import ajax
 import admin
 from assets import gen_assets
-from utils import BaseHandler, SmartStaticFileHandler
+from utils import BaseHandler
 
 sys.argv.append('--logging=DEBUG')
 tornado.options.parse_command_line()
@@ -100,7 +100,7 @@ tornado_settings = {
 
 application = tornado.web.Application(
     [
-        (r'/static/(.*)', SmartStaticFileHandler,
+        (r'/static/(.*)', tornado.web.StaticFileHandler,
             {'path': tornado_settings['static_path']}),
 
         (r"/api/v1/ball_tables(?:/(?P<record_id>\d+))?", ajax.BallTablesHandler),
