@@ -163,7 +163,9 @@ def gen_assets():
 
 
 def main():
-    my_env.debug = False
+    import sys
+
+    my_env.debug = 'debug' in sys.argv
 
     print('-----> Generated assets;')
     for asset in _gen_assets():
