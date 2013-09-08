@@ -1,3 +1,2 @@
 #!/bin/bash
-python src/assets.py
 python3 src/assets.py
