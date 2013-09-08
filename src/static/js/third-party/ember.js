@@ -170,8 +170,8 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-60-g1149e8e
-// Last commit: 1149e8e (2013-09-06 17:01:32 -0700)
+// Version: v1.0.0-70-gc1da580
+// Last commit: c1da580 (2013-09-07 16:43:25 -0700)
 
 
 (function() {
@@ -8755,7 +8755,7 @@ define("container",
 
         var value = instantiate(this, fullName);
 
-        if (!value) { return; }
+        if (value === undefined) { return; }
 
         if (isSingleton(this, fullName) && options.singleton !== false) {
           this.cache.set(fullName, value);
@@ -9081,7 +9081,7 @@ define("container",
         injection = injections[i];
         lookup = container.lookup(injection.fullName);
 
-        if (lookup) {
+        if (lookup !== undefined) {
           hash[injection.property] = lookup;
         } else {
           throw new Error('Attempting to inject an unknown injection: `' + injection.fullName + '`');
@@ -9113,13 +9113,13 @@ define("container",
       var cache = container.factoryCache;
       var type = fullName.split(":")[0];
 
-      if (!factory) { return; }
+      if (factory === undefined) { return; }
 
       if (cache.has(fullName)) {
         return cache.get(fullName);
       }
 
-      if (typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+      if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
         // TODO: think about a 'safe' merge style extension
         // for now just fallback to create time injection
         return factory;
@@ -14342,9 +14342,13 @@ Ember.TargetActionSupport = Ember.Mixin.create({
   */
   triggerAction: function(opts) {
     opts = opts || {};
-    var action = opts['action'] || get(this, 'action'),
-        target = opts['target'] || get(this, 'targetObject'),
-        actionContext = opts['actionContext'] || get(this, 'actionContextObject') || this;
+    var action = opts.action || get(this, 'action'),
+        target = opts.target || get(this, 'targetObject'),
+        actionContext = opts.actionContext;
+
+    if (typeof actionContext === 'undefined') {
+      actionContext = get(this, 'actionContextObject') || this;
+    }
 
     if (target && action) {
       var ret;
@@ -26740,7 +26744,6 @@ Ember.Handlebars.registerHelper('partial', function(name, options) {
 var get = Ember.get, set = Ember.set;
 
 /**
-
   `{{yield}}` denotes an area of a template that will be rendered inside
   of another template. It has two main uses:
 
@@ -32478,6 +32481,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     {{#link-to  aPhoto tagName='li' title='Following this link will change your life' classNames=['pic', 'sweet']}}
       Uh-mazing!
     {{/link-to}}
+    ```
 
     See {{#crossLink "Ember.LinkView"}}{{/crossLink}} for a
     complete list of overrideable properties. Be sure to also
@@ -32509,7 +32513,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @for Ember.Handlebars.helpers
     @param {String} routeName
     @param {Object} [context]*
-    @param [options] {Object} Handlebars key/value pairs of options, you can over-ride any property of {{#crossLink "Ember.LinkView"}}{{/crossLink}}
+    @param [options] {Object} Handlebars key/value pairs of options, you can override any property of Ember.LinkView
     @return {String} HTML string
     @see {Ember.LinkView}
   */
@@ -33284,7 +33288,7 @@ Ember.ControllerMixin.reopen({
   },
 
   /**
-    Alernative to `transitionToRoute`.  Transition the application into another route. The route may
+    Alternative to `transitionToRoute`.  Transition the application into another route. The route may
     be either a single route or route path:
 
     ```javascript
