@@ -2,8 +2,9 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
     actions: {
         requestRemoveAttendee: function(attendee) {
             'use strict';
-            var ball_table = attendee.get('ball_table_id'),
+            var ball_table = attendee.get('ball_table'),
                 store = this.get('parentView.targetObject.store'),
+                record_data,
                 record;
 
             // ensure we are getting valid objects from Ember
@@ -12,13 +13,18 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
             Ember.assert('Not an attendee object',
                 store.modelFor('attendee').detectInstance(attendee));
 
-            // create the record...
-            record = store.createRecord('removal_request', {
+
+            record_data = {
                 attendee_id: attendee,
-                ball_table_id: ball_table,
+                ball_table: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
-            });
+            };
+
+            console.log(record_data);
+
+            // create the record...
+            record = store.createRecord('removal_request', record_data);
 
             // save it...
             record.save().then(function(event){

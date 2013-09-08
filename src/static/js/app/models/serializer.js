@@ -36,8 +36,38 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         }
 
         return errors;
+    },
+
+    normalize: function(type, hash, property) {
+        var normalized = {}, normalizedProp;
+        console.assert(this.primaryKey);
+
+        for (var prop in hash) {
+            if (prop === this.primaryKey) {
+                // primary key for model
+                normalizedProp = prop;
+
+            } else if (prop.substr(-3) === '_id') {
+                // belongsTo relationships
+                normalizedProp = prop.slice(0, -3);
+            } else if (prop.substr(-4) === '_ids') {
+                // hasMany relationship
+                normalizedProp = Ember.String.pluralize(prop.slice(0, -4));
+            } else {
+                // regualarAttribute
+                normalizedProp = prop;
+            }
+
+            normalized[normalizedProp] = hash[prop];
+        }
+
+        return this._super(type, normalized, property);
     }
 });
+
+
+
+
 
 TableSelectWeb.RemovalRequestSerializer = ApplicationSerializer.extend({
     primaryKey: 'request_id',
