@@ -5,7 +5,25 @@ import os
 import sys
 import logging
 
+# third party
+import tornado
+import tornado.web
+import tornado.wsgi
+import tornado.ioloop
+import tornado.options
+import tornado.httpserver
+
+# application specific
+import db
+import ajax
+import admin
+from assets import gen_assets
 from settings import settings
+from utils import BaseHandler
+
+# set the debug level for tornado
+sys.argv.append('--logging=DEBUG')
+tornado.options.parse_command_line()
 
 # setup newrelic
 if settings['release'].upper() == "PRODUCTION":
@@ -20,25 +38,6 @@ if settings['release'].upper() == "PRODUCTION":
 
     logging.debug("Initializing New Relic client...")
     newrelic.agent.initialize(path, environment=environment)
-
-
-# third party
-import tornado
-import tornado.web
-import tornado.wsgi
-import tornado.ioloop
-import tornado.options
-import tornado.httpserver
-
-# application specific
-import db
-import ajax
-import admin
-from assets import gen_assets
-from utils import BaseHandler
-
-sys.argv.append('--logging=DEBUG')
-tornado.options.parse_command_line()
 
 
 # only regen assets on each load when not in production mode... :P
