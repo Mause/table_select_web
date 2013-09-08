@@ -58460,7 +58460,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             record_data = {
                 'attendee_name': attendee_name,
                 'show': true,
-                'ball_table_id': ball_table
+                'ball_table': ball_table
             };
 
             console.log('Saving');
@@ -58521,7 +58521,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
     actions: {
         requestRemoveAttendee: function(attendee) {
             'use strict';
-            var ball_table = attendee.get('ball_table_id'),
+            var ball_table = attendee.get('ball_table'),
                 store = this.get('parentView.targetObject.store'),
                 record_data,
                 record;
@@ -58535,7 +58535,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
 
             record_data = {
                 attendee_id: attendee,
-                ball_table_id: ball_table,
+                ball_table: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
             };
@@ -58581,10 +58581,10 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
         records.forEach(function(record){
             record.set('state', state);
-            if (sh == 'show' && record.get('attendee_id.show') !== true) {
-                record.set('attendee_id.show', true);
-            } else if (sh == 'hide' && record.get('attendee_id.show') !== false) {
-                record.set('attendee_id.show', false);
+            if (sh == 'show' && record.get('attendee.show') !== true) {
+                record.set('attendee.show', true);
+            } else if (sh == 'hide' && record.get('attendee.show') !== false) {
+                record.set('attendee.show', false);
             }
         });
 
@@ -58600,7 +58600,7 @@ TableSelectWeb.AdminView = Ember.View.extend({
                 proms;
             requested.forEach(function(removal_request){
                 debugger;
-                var attendee = removal_request.get('attendee_id');
+                var attendee = removal_request.get('attendee');
                 attendee.set('removal_request_exists', true);
             });
             proms = attendees.invoke('save');
@@ -58667,7 +58667,7 @@ TableSelectWeb.RemovalRequestCheckboxView = Ember.Checkbox.extend({
 TableSelectWeb.Attendee = DS.Model.extend({
     attendee_name: DS.attr('string'),
     show: DS.attr('boolean'),
-    ball_table_id: DS.belongsTo('ball_table'),
+    ball_table: DS.belongsTo('ball_table'),
     removal_request_exists: DS.attr('boolean')
 });
 
@@ -58675,7 +58675,7 @@ TableSelectWeb.BallTable = DS.Model.extend({
     ball_table_name: DS.attr('string'),
     full: DS.attr('boolean'),
     ball_table_num: DS.attr('number'),
-    attendee_ids: DS.hasMany('attendee', {embedded: 'load', async: true}),
+    attendees: DS.hasMany('attendee', {embedded: 'load', async: true}),
 
     row_end: function() {
         // this is for display purposes only
@@ -58687,8 +58687,8 @@ TableSelectWeb.BallTable = DS.Model.extend({
 });
 
 TableSelectWeb.RemovalRequest = DS.Model.extend({
-    attendee_id: DS.belongsTo('attendee'),
-    ball_table_id: DS.belongsTo('ball_table'),
+    attendee: DS.belongsTo('attendee'),
+    ball_table: DS.belongsTo('ball_table'),
     remover_ident: DS.attr('string'),
     state: DS.attr('string')
 });
@@ -58764,8 +58764,38 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         }
 
         return errors;
+    },
+
+    normalize: function(type, hash, property) {
+        var normalized = {}, normalizedProp;
+        console.assert(this.primaryKey);
+
+        for (var prop in hash) {
+            if (prop === this.primaryKey) {
+                // primary key for model
+                normalizedProp = prop;
+
+            } else if (prop.substr(-3) === '_id') {
+                // belongsTo relationships
+                normalizedProp = prop.slice(0, -3);
+            } else if (prop.substr(-4) === '_ids') {
+                // hasMany relationship
+                normalizedProp = Ember.String.pluralize(prop.slice(0, -4));
+            } else {
+                // regualarAttribute
+                normalizedProp = prop;
+            }
+
+            normalized[normalizedProp] = hash[prop];
+        }
+
+        return this._super(type, normalized, property);
     }
 });
+
+
+
+
 
 TableSelectWeb.RemovalRequestSerializer = ApplicationSerializer.extend({
     primaryKey: 'request_id',
@@ -58867,11 +58897,11 @@ function program1(depth0,data) {
   data.buffer.push("\r\n                        <span style=\"margin-top:-1px;\">\r\n                            requesting that \"");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.attendee_id.attendee_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.attendee.attendee_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\" be removed from \"");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.ball_table_id.ball_table_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.ball_table.ball_table_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\"\r\n                        </span>\r\n                    </label>\r\n                </li>\r\n            ");
   return buffer;
   }
@@ -59183,7 +59213,7 @@ function program1(depth0,data) {
   hashContexts = {'attendees': depth0};
   hashTypes = {'attendees': "ID"};
   options = {hash:{
-    'attendees': ("ball_table.attendee_ids")
+    'attendees': ("ball_table.attendees")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers['attendee-list'] || depth0['attendee-list']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "attendee-list", options))));
   data.buffer.push("\r\n</div>\r\n");

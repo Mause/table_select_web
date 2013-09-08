@@ -24,7 +24,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             record_data = {
                 'attendee_name': attendee_name,
                 'show': true,
-                'ball_table_id': ball_table
+                'ball_table': ball_table
             };
 
             console.log('Saving');
