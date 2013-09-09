@@ -1,4 +1,3 @@
-// taken from the TRANSITION.md file for Ember.js
 var ApplicationSerializer = DS.RESTSerializer.extend({
     extractExtendedValidationErrors: function(type, json) {
         var errors = {};
@@ -38,6 +37,7 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         return errors;
     },
 
+    // taken from the TRANSITION.md file for Ember.js
     normalize: function(type, hash, property) {
         var normalized = {}, normalizedProp;
         console.assert(this.primaryKey);
@@ -62,23 +62,56 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         }
 
         return this._super(type, normalized, property);
+    },
+
+    serializeBelongsTo: function(record, json, relationship) {
+        var key = relationship.key,
+            get = Ember.get,
+            isNone = Ember.isNone;
+
+        var belongsTo = get(record, key);
+
+        if (Ember.isNone(belongsTo)) { return; }
+
+        var keyMap = get(this.relationshipKeyMap, key);
+        key = keyMap || key;
+
+        json[key] = get(belongsTo, 'id');
+
+        if (relationship.options.polymorphic) {
+            json[key + "_type"] = belongsTo.constructor.typeKey;
+        }
+    },
+
+    serializeHasMany: function(){
+        debugger;
+        return this._super.apply(this, arguments);
     }
 });
 
 
-
-
-
 TableSelectWeb.RemovalRequestSerializer = ApplicationSerializer.extend({
     primaryKey: 'request_id',
-    alias: 'removal_request'
+    alias: 'removal_request',
+
+    relationshipKeyMap: {
+        'ball_table': 'ball_table_id',
+        'attendee': 'attendee_id'
+    }
 });
 
 TableSelectWeb.BallTableSerializer = ApplicationSerializer.extend({
     primaryKey: 'ball_table_id',
-    attendees: { embedded: 'load' }
+    attendees: { embedded: 'load' },
+
+    relationshipKeyMap: {
+        'attendees': 'attendee_ids'
+    }
 });
 
 TableSelectWeb.AttendeeSerializer = ApplicationSerializer.extend({
-    primaryKey: 'attendee_id'
+    primaryKey: 'attendee_id',
+    relationshipKeyMap: {
+        'ball_table': 'ball_table_id'
+    }
 });
