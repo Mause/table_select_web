@@ -15,7 +15,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
 
 
             record_data = {
-                attendee_id: attendee,
+                attendee: attendee,
                 ball_table: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
