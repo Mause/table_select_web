@@ -1,4 +1,4 @@
-TableSelectWeb.AdminController = Ember.ArrayController.extend({
+TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     actions: {
         action: function(records, state, sh){
             'use strict';
@@ -44,7 +44,8 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend({
             };
 
             success_note = function(attendees){
-                self.clear_checkboxes();
+                debugger;
+                this.trigger('clear_checkboxes');
                 sendNotification('Success');
             };
 
