@@ -73,7 +73,7 @@ class BaseRESTEndpoint(object):
             records_key = self.ember_model_name
 
             if conditions and not record_id:
-                logging.debug('{} filter conditions: {}'.format(
+                logging.debug('{} conditions && ids: {}'.format(
                     self.table.__tablename__,
                     conditions))
 
