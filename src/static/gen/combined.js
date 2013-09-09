@@ -58430,7 +58430,7 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
 });
 
 
-TableSelectWeb.AdminController = Ember.ArrayController.extend({
+TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     actions: {
         action: function(records, state, sh){
             'use strict';
@@ -58476,7 +58476,8 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend({
             };
 
             success_note = function(attendees){
-                self.clear_checkboxes();
+                debugger;
+                this.trigger('clear_checkboxes');
                 sendNotification('Success');
             };
 
@@ -58615,6 +58616,12 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
 TableSelectWeb.AdminView = Ember.View.extend({
     templateName: 'admin',
 
+    didInsertElement: function() {
+        this.get('controller').on(
+            'clear_checkboxes',
+            $.proxy(this.actions.clear_checkboxes, this));
+    },
+
     actions: {
         deny: function(){
             // deny the removal request
@@ -58666,8 +58673,7 @@ TableSelectWeb.AdminView = Ember.View.extend({
 
     get_checkboxes: function(){
         return this.get('childViews');
-    },
-
+    }
 });
 
 TableSelectWeb.BallTableView = Ember.View.extend({});
@@ -58714,21 +58720,23 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
         400
     ];
 
-    // DS.RESTAdapter.reopen({
-    //     didError: function(store, type, record, xhr) {
-    //         if (acceptable.contains(xhr.status)) {
-    //             console.log('Acceptable!', xhr.status);
-    //             var json = JSON.parse(xhr.responseText),
-    //                 serializer = Ember.get(this, 'serializer'),
-    //                 errors = serializer.extractExtendedValidationErrors(type, json);
+    // TODO: investiage DS.InvalidError; didError no longer works
 
-    //             store.recordWasInvalid(record, errors);
-    //         } else {
-    //             console.log('oh?', xhr.status);
-    //             this._super.apply(this, arguments);
-    //         }
-    //     }
-    // });
+    DS.RESTAdapter.reopen({
+        didError: function(store, type, record, xhr) {
+            if (acceptable.contains(xhr.status)) {
+                console.log('Acceptable!', xhr.status);
+                var json = JSON.parse(xhr.responseText),
+                    serializer = Ember.get(this, 'serializer'),
+                    errors = serializer.extractExtendedValidationErrors(type, json);
+
+                store.recordWasInvalid(record, errors);
+            } else {
+                console.log('oh?', xhr.status);
+                this._super.apply(this, arguments);
+            }
+        }
+    });
 
     TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
         namespace: 'api/v1',
@@ -58736,20 +58744,7 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
         mappings: {
             ball_tables: TableSelectWeb.BallTable,
             removal_request: TableSelectWeb.RemovalRequest
-        },
-        // didError: function(store, type, record, xhr) {
-        //     if (acceptable.contains(xhr.status)) {
-        //         console.log('Acceptable!', xhr.status);
-        //         var json = JSON.parse(xhr.responseText),
-        //             serializer = Ember.get(this, 'serializer'),
-        //             errors = serializer.extractExtendedValidationErrors(type, json);
-
-        //         store.recordWasInvalid(record, errors);
-        //     } else {
-        //         console.log('oh?', xhr.status);
-        //         this._super.apply(this, arguments);
-        //     }
-        // }
+        }
     });
 })(Ember);
 
