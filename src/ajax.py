@@ -1,7 +1,5 @@
 # stdlib
-import json
 import logging
-from contextlib import closing
 
 # third party
 import tornado
@@ -47,6 +45,19 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
         'PUT': True
     }
 
+    def check_ids(self, session, removal_request):
+        logging.debug(removal_request)
+        if removal_request['ball_table_id'] is None:
+            logging.debug('Bad ball_table_id in posted removal_request')
+            self.set_bad_error(400)
+        elif removal_request['attendee_id'] is None:
+            logging.debug('Bad attendee_id in posted removal_request')
+            self.set_bad_error(400)
+
+    checks = [
+        check_ids
+    ]
+
 
 class AttendeeHandler(EmberDataRESTEndpoint):
     table = db.Attendee
@@ -87,10 +98,10 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         query = session.query(db.Attendee)
         query = query.filter_by(ball_table_id=ball_table_id, show=True)
 
-        attendees = dict_from_query(query.all())
+        num_attendees = query.count()
 
         # check if the table is full
-        return len(attendees) >= settings.get('max_pax_per_table', 10)
+        return num_attendees >= settings.get('max_pax_per_table', 10)
 
     def check_if_attendee_exists(self, session, attendee):
         if settings.get('smart_attendee_name_check'):
@@ -122,59 +133,3 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         check_if_table_full,
         check_if_attendee_exists
     ]
-
-
-# class ActionHandler(BaseHandler):
-#     def post(self, action):
-
-#         if action not in ['deny', 'allow']:
-#             return
-
-#         request_ids = self.request.body.decode('utf-8')
-#         request_ids = json.loads(request_ids)
-
-#         logging.info('{}ing {} request(s)'.format(action, len(request_ids)))
-
-#         if not request_ids:
-#             return
-
-#         with closing(db.Session()) as session:
-#             removal_request_condition = (
-#                 db.removal_request_table.columns.request_id.in_(request_ids))
-
-#             # grab the current data
-#             removal_request_update = (
-#                 session.query(db.removal_request_table)
-#                        .filter(removal_request_condition))
-
-#             # update the db with the new state
-#             removal_request_update.update(
-#                 {db.removal_request_table.columns.state: action},
-#                 synchronize_session=False
-#             )
-
-#             if action == "allow":
-#                 # if we're allowing the removal request
-
-#                 condition = (
-#                     db.attendee_table.columns.attendee_id ==
-#                     db.removal_request_table.columns.attendee_id)
-
-#                 # grab the attendee record in question
-#                 query = session.query(db.attendee_table)
-#                 query = query.filter(condition)
-#                 query = query.filter(removal_request_condition)
-
-#                 to_update = dict_from_query(query.all())
-#                 to_update = [attendee['attendee_id'] for attendee in to_update]
-
-#                 query = session.query(db.attendee_table)
-#                 query = query.filter(
-#                     db.attendee_table.columns.attendee_id.in_(to_update))
-
-#                 query.update(
-#                     {db.attendee_table.columns.show: False},
-#                     synchronize_session=False
-#                 )
-
-#             session.commit()
