@@ -2,9 +2,8 @@ TableSelectWeb.AdminView = Ember.View.extend({
     templateName: 'admin',
 
     didInsertElement: function() {
-        this.get('controller').on(
-            'clear_checkboxes',
-            $.proxy(this.actions.clear_checkboxes, this));
+        this.get('controller').on('clear_checkboxes',
+            $.proxy(this.clear_checkboxes, this));
     },
 
     actions: {
@@ -22,14 +21,14 @@ TableSelectWeb.AdminView = Ember.View.extend({
                 records = this.get_values();
 
             controller.send('action', records, 'resolved', 'hide');
-        },
+        }
+    },
 
-        clear_checkboxes: function(){
-            var checkboxes = this.get_checkboxes();
-            checkboxes.forEach(function(view){
-                view.set('checked', false);
-            });
-        },
+    clear_checkboxes: function(){
+        var checkboxes = this.get_checkboxes();
+        checkboxes.forEach(function(view){
+            view.set('checked', false);
+        });
     },
 
     get_values: function(){
