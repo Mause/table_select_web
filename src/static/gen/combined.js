@@ -58430,7 +58430,63 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
 });
 
 
-TableSelectWeb.AdminController = Ember.ArrayController.extend({});
+TableSelectWeb.AdminController = Ember.ArrayController.extend({
+    actions: {
+        action: function(records, state, sh){
+            'use strict';
+            var view = this.get('view'),
+                promises,
+                success_note,
+                success_submit,
+                failure;
+
+            records.forEach(function(record){
+                record.set('state', state);
+                if (sh == 'show' && record.get('attendee.show') !== true) {
+                    record.set('attendee.show', true);
+                } else if (sh == 'hide' && record.get('attendee.show') !== false) {
+                    record.set('attendee.show', false);
+                }
+            });
+
+            debugger;
+            if (records.length == 1){
+                records[0].save().then(
+                    success_submit, failure);
+            } else {
+                promises = records.invoke('save');
+                Ember.RSVP.all(promises).then(
+                    success_submit, failure
+                );
+            }
+
+            success_submit = function(requested){
+                debugger;
+                var attendees = [],
+                    proms;
+                requested.forEach(function(removal_request){
+                    debugger;
+                    var attendee = removal_request.get('attendee');
+                    attendee.set('removal_request_exists', true);
+                });
+                proms = attendees.invoke('save');
+                Ember.RSVP.all(proms).then(
+                    success_note, failure
+                );
+            };
+
+            success_note = function(attendees){
+                self.clear_checkboxes();
+                sendNotification('Success');
+            };
+
+            failure = function(){
+                debugger;
+                sendNotification('Failure');
+            };
+        }
+    }
+});
 
 TableSelectWeb.BallTableController = Ember.Controller.extend({});
 
@@ -58534,7 +58590,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
 
 
             record_data = {
-                attendee_id: attendee,
+                attendee: attendee,
                 ball_table: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
@@ -58562,62 +58618,37 @@ TableSelectWeb.AdminView = Ember.View.extend({
     actions: {
         deny: function(){
             // deny the removal request
-            this.action('resolved', 'show');
+            var controller = this.get('controller'),
+                records = this.get_values();
+
+            controller.send('action', records, 'resolved', 'show');
         },
         allow: function(){
+            debugger;
             // allow the removal request
-            this.action('resolved', 'hide');
+            var controller = this.get('controller'),
+                records = this.get_values();
+
+            controller.send('action', records, 'resolved', 'hide');
+        },
+
+        clear_checkboxes: function(){
+            var checkboxes = this.get_checkboxes();
+            checkboxes.forEach(function(view){
+                view.set('checked', false);
+            });
         },
     },
 
-    action: function(state, sh){
-        'use strict';
-        var records = this.get_values(),
-            self = this,
-            promises,
-            success_note,
-            success_submit,
-            failure;
+    get_values: function(){
+        var checkboxes = this.get_checked(),
+            removal_requests = [];
 
-        records.forEach(function(record){
-            record.set('state', state);
-            if (sh == 'show' && record.get('attendee.show') !== true) {
-                record.set('attendee.show', true);
-            } else if (sh == 'hide' && record.get('attendee.show') !== false) {
-                record.set('attendee.show', false);
-            }
+        checkboxes.forEach(function(view){
+            removal_requests.push(view.value);
         });
 
-        debugger;
-        promises = records.invoke('save');
-        Ember.RSVP.all(promises).then(
-            success_submit, failure
-        );
-
-        success_submit = function(requested){
-            debugger;
-            var attendees = [],
-                proms;
-            requested.forEach(function(removal_request){
-                debugger;
-                var attendee = removal_request.get('attendee');
-                attendee.set('removal_request_exists', true);
-            });
-            proms = attendees.invoke('save');
-            Ember.RSVP.all(proms).then(
-                success_note, failure
-            );
-        };
-
-        success_note = function(attendees){
-            self.clear_checkboxes();
-            sendNotification('Success');
-        };
-
-        failure = function(){
-            debugger;
-            sendNotification('Failure');
-        };
+        return removal_requests;
     },
 
     get_checked: function() {
@@ -58633,27 +58664,10 @@ TableSelectWeb.AdminView = Ember.View.extend({
         return checked;
     },
 
-    clear_checkboxes: function(){
-        var checkboxes = this.get_checkboxes();
-        checkboxes.forEach(function(view){
-            view.set('checked', false);
-        });
-    },
-
     get_checkboxes: function(){
         return this.get('childViews');
     },
 
-    get_values: function(){
-        var checkboxes = this.get_checked(),
-            removal_requests = [];
-
-        checkboxes.forEach(function(view){
-            removal_requests.push(view.value);
-        });
-
-        return removal_requests;
-    }
 });
 
 TableSelectWeb.BallTableView = Ember.View.extend({});
@@ -58700,33 +58714,45 @@ TableSelectWeb.RemovalRequest = DS.Model.extend({
         400
     ];
 
-    DS.RESTAdapter.reopen({
-        didError: function(store, type, record, xhr) {
-            if (acceptable.contains(xhr.status)) {
-                console.log('Acceptable!', xhr.status);
-                var json = JSON.parse(xhr.responseText),
-                    serializer = Ember.get(this, 'serializer'),
-                    errors = serializer.extractExtendedValidationErrors(type, json);
+    // DS.RESTAdapter.reopen({
+    //     didError: function(store, type, record, xhr) {
+    //         if (acceptable.contains(xhr.status)) {
+    //             console.log('Acceptable!', xhr.status);
+    //             var json = JSON.parse(xhr.responseText),
+    //                 serializer = Ember.get(this, 'serializer'),
+    //                 errors = serializer.extractExtendedValidationErrors(type, json);
 
-                store.recordWasInvalid(record, errors);
-            } else {
-                console.log('oh?', xhr.status);
-                this._super.apply(this, arguments);
-            }
-        }
-    });
+    //             store.recordWasInvalid(record, errors);
+    //         } else {
+    //             console.log('oh?', xhr.status);
+    //             this._super.apply(this, arguments);
+    //         }
+    //     }
+    // });
 
-    TableSelectWeb.Adapter = DS.RESTAdapter.extend({
+    TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
         namespace: 'api/v1',
 
         mappings: {
             ball_tables: TableSelectWeb.BallTable,
             removal_request: TableSelectWeb.RemovalRequest
-        }
+        },
+        // didError: function(store, type, record, xhr) {
+        //     if (acceptable.contains(xhr.status)) {
+        //         console.log('Acceptable!', xhr.status);
+        //         var json = JSON.parse(xhr.responseText),
+        //             serializer = Ember.get(this, 'serializer'),
+        //             errors = serializer.extractExtendedValidationErrors(type, json);
+
+        //         store.recordWasInvalid(record, errors);
+        //     } else {
+        //         console.log('oh?', xhr.status);
+        //         this._super.apply(this, arguments);
+        //     }
+        // }
     });
 })(Ember);
 
-// taken from the TRANSITION.md file for Ember.js
 var ApplicationSerializer = DS.RESTSerializer.extend({
     extractExtendedValidationErrors: function(type, json) {
         var errors = {};
@@ -58766,6 +58792,7 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         return errors;
     },
 
+    // taken from the TRANSITION.md file for Ember.js
     normalize: function(type, hash, property) {
         var normalized = {}, normalizedProp;
         console.assert(this.primaryKey);
@@ -58790,25 +58817,58 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
         }
 
         return this._super(type, normalized, property);
+    },
+
+    serializeBelongsTo: function(record, json, relationship) {
+        var key = relationship.key,
+            get = Ember.get,
+            isNone = Ember.isNone;
+
+        var belongsTo = get(record, key);
+
+        if (Ember.isNone(belongsTo)) { return; }
+
+        var keyMap = get(this.relationshipKeyMap, key);
+        key = keyMap || key;
+
+        json[key] = get(belongsTo, 'id');
+
+        if (relationship.options.polymorphic) {
+            json[key + "_type"] = belongsTo.constructor.typeKey;
+        }
+    },
+
+    serializeHasMany: function(){
+        debugger;
+        return this._super.apply(this, arguments);
     }
 });
 
 
-
-
-
 TableSelectWeb.RemovalRequestSerializer = ApplicationSerializer.extend({
     primaryKey: 'request_id',
-    alias: 'removal_request'
+    alias: 'removal_request',
+
+    relationshipKeyMap: {
+        'ball_table': 'ball_table_id',
+        'attendee': 'attendee_id'
+    }
 });
 
 TableSelectWeb.BallTableSerializer = ApplicationSerializer.extend({
     primaryKey: 'ball_table_id',
-    attendees: { embedded: 'load' }
+    attendees: { embedded: 'load' },
+
+    relationshipKeyMap: {
+        'attendees': 'attendee_ids'
+    }
 });
 
 TableSelectWeb.AttendeeSerializer = ApplicationSerializer.extend({
-    primaryKey: 'attendee_id'
+    primaryKey: 'attendee_id',
+    relationshipKeyMap: {
+        'ball_table': 'ball_table_id'
+    }
 });
 
 TableSelectWeb.Store = DS.Store.extend({
@@ -58883,18 +58943,29 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 
 function program1(depth0,data) {
   
-  var buffer = '', hashTypes, hashContexts;
+  var buffer = '', stack1, hashTypes, hashContexts;
   data.buffer.push("\r\n                ");
   hashTypes = {};
   hashContexts = {};
+  stack1 = helpers.each.call(depth0, "request", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\r\n            ");
+  return buffer;
+  }
+function program2(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\r\n                    ");
+  hashTypes = {};
+  hashContexts = {};
   data.buffer.push(escapeExpression(helpers.log.call(depth0, "request", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\r\n                <li>\r\n                    <label>\r\n                        ");
+  data.buffer.push("\r\n                    <li>\r\n                        <label>\r\n                            ");
   hashContexts = {'valueBinding': depth0};
   hashTypes = {'valueBinding': "STRING"};
   data.buffer.push(escapeExpression(helpers.view.call(depth0, "TableSelectWeb.RemovalRequestCheckboxView", {hash:{
     'valueBinding': ("request")
   },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\r\n                        <span style=\"margin-top:-1px;\">\r\n                            requesting that \"");
+  data.buffer.push("\r\n                            <span style=\"margin-top:-1px;\">\r\n                                requesting that \"");
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.attendee.attendee_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
@@ -58902,28 +58973,46 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "request.ball_table.ball_table_name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\"\r\n                        </span>\r\n                    </label>\r\n                </li>\r\n            ");
+  data.buffer.push("\"\r\n                            </span>\r\n                        </label>\r\n                    </li>\r\n                ");
+  return buffer;
+  }
+
+function program4(depth0,data) {
+  
+  
+  data.buffer.push("\r\n                <h4>No nonresolved removal requests in existence</h4>\r\n            ");
+  }
+
+function program6(depth0,data) {
+  
+  var buffer = '', hashContexts, hashTypes;
+  data.buffer.push("\r\n                <div class=\"request_actions\">\r\n                    <button class=\"btn btn-success\" ");
+  hashContexts = {'target': depth0};
+  hashTypes = {'target': "STRING"};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "allow", {hash:{
+    'target': ("view")
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Allow</button>\r\n                    <button class=\"btn btn-danger\" ");
+  hashContexts = {'target': depth0};
+  hashTypes = {'target': "STRING"};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "deny", {hash:{
+    'target': ("view")
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Deny</button>\r\n                </div>\r\n            ");
   return buffer;
   }
 
   data.buffer.push("<div class=\"row\">\r\n    <div class=\"enclosure\">\r\n        <h3>Admin</h3>\r\n\r\n        <p class=\"well no-decoration\">\r\n            \"Allow\" will remove that attendee from that table.\r\n            \"Deny\" will leave them on that table.\r\n            <br/>\r\n            Both remove the request from this page\r\n        </p>\r\n\r\n        <form>\r\n            <ul class=\"well no-decoration\">\r\n            ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "request", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers['if'].call(depth0, "controller", {hash:{},inverse:self.program(4, program4, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\r\n            </ul>\r\n\r\n            <div class=\"request_actions\">\r\n                <button class=\"btn btn-success\" ");
-  hashContexts = {'target': depth0};
-  hashTypes = {'target': "STRING"};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "allow", {hash:{
-    'target': ("view")
-  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Allow</button>\r\n                <button class=\"btn btn-danger\" ");
-  hashContexts = {'target': depth0};
-  hashTypes = {'target': "STRING"};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "deny", {hash:{
-    'target': ("view")
-  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Deny</button>\r\n            </div>\r\n        </form>\r\n    </div>\r\n</div>\r\n\r\n\r\n");
+  data.buffer.push("\r\n            </ul>\r\n\r\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "controller", {hash:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\r\n        </form>\r\n    </div>\r\n</div>\r\n");
   return buffer;
   
 });
