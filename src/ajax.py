@@ -8,7 +8,7 @@ import tornado
 import db
 from settings import settings
 from ember_data import BaseRESTEndpoint
-from utils import BaseHandler, dict_from_query
+from utils import BaseHandler
 
 
 class TornadoWebInterface(BaseHandler):
