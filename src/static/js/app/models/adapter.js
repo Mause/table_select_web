@@ -5,6 +5,8 @@
         400
     ];
 
+    // TODO: investiage DS.InvalidError; didError no longer works
+
     DS.RESTAdapter.reopen({
         didError: function(store, type, record, xhr) {
             if (acceptable.contains(xhr.status)) {
@@ -21,7 +23,7 @@
         }
     });
 
-    TableSelectWeb.Adapter = DS.RESTAdapter.extend({
+    TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
         namespace: 'api/v1',
 
         mappings: {
