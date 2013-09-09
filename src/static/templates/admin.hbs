@@ -11,25 +11,29 @@
 
         <form>
             <ul class="well no-decoration">
-            {{#each request in controller}}
-                {{log request}}
-                <li>
-                    <label>
-                        {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
-                        <span style="margin-top:-1px;">
-                            requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
-                        </span>
-                    </label>
-                </li>
-            {{/each}}
+            {{#if controller}}
+                {{#each request in controller}}
+                    {{log request}}
+                    <li>
+                        <label>
+                            {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
+                            <span style="margin-top:-1px;">
+                                requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
+                            </span>
+                        </label>
+                    </li>
+                {{/each}}
+            {{else}}
+                <h4>No nonresolved removal requests in existence</h4>
+            {{/if}}
             </ul>
 
-            <div class="request_actions">
-                <button class="btn btn-success" {{action allow target="view"}}>Allow</button>
-                <button class="btn btn-danger" {{action deny target="view"}}>Deny</button>
-            </div>
+            {{#if controller}}
+                <div class="request_actions">
+                    <button class="btn btn-success" {{action allow target="view"}}>Allow</button>
+                    <button class="btn btn-danger" {{action deny target="view"}}>Deny</button>
+                </div>
+            {{/if}}
         </form>
     </div>
 </div>
-
-
