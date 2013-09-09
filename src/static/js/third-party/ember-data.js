@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-140-ga51f29c
-// Last commit: a51f29c (2013-09-07 16:34:55 -0700)
+// Version: v1.0.0-beta.1-151-g7fe76f2
+// Last commit: 7fe76f2 (2013-09-09 09:25:24 -0700)
 
 
 (function() {
@@ -139,7 +139,7 @@ DS.JSONSerializer = Ember.Object.extend({
 
     // if provided, use the mapping provided by `attrs` in
     // the serializer
-    key = attrs && attrs[key] || key;
+    key = attrs && attrs[key] || (this.keyForAttribute ? this.keyForAttribute(key) : key);
 
     json[key] = value;
   },
@@ -151,6 +151,7 @@ DS.JSONSerializer = Ember.Object.extend({
 
     if (isNone(belongsTo)) { return; }
 
+    key = this.keyForRelationship ? this.keyForRelationship(key, "belongsTo") : key;
     json[key] = get(belongsTo, 'id');
 
     if (relationship.options.polymorphic) {
@@ -1354,7 +1355,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @returns String if the adapter can generate one, an ID
   */
   _generateId: function(type) {
-    var adapter = this.adapterForType(type);
+    var adapter = this.adapterFor(type);
 
     if (adapter && adapter.generateIdForRecord) {
       return adapter.generateIdForRecord(this);
@@ -1502,7 +1503,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     record.loadingData();
 
-    var adapter = this.adapterForType(type);
+    var adapter = this.adapterFor(type);
 
     Ember.assert("You tried to find a record but you have no adapter (for " + type + ")", adapter);
     Ember.assert("You tried to find a record but your adapter (for " + type + ") does not implement 'find'", adapter.find);
@@ -1551,7 +1552,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   */
   reloadRecord: function(record, resolver) {
     var type = record.constructor,
-        adapter = this.adapterForType(type),
+        adapter = this.adapterFor(type),
         store = this,
         id = get(record, 'id');
 
@@ -1593,7 +1594,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     forEach(recordsByTypeMap, function(type, records) {
       var ids = records.mapProperty('id'),
-          adapter = this.adapterForType(type);
+          adapter = this.adapterFor(type);
 
       Ember.assert("You tried to load many records but you have no adapter (for " + type + ")", adapter);
       Ember.assert("You tried to load many records but your adapter does not implement `findMany`", adapter.findMany);
@@ -1697,7 +1698,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @return DS.ManyArray
   */
   findHasMany: function(owner, link, relationship, resolver) {
-    var adapter = this.adapterForType(owner.constructor);
+    var adapter = this.adapterFor(owner.constructor);
 
     Ember.assert("You tried to load a hasMany relationship but you have no adapter (for " + owner.constructor + ")", adapter);
     Ember.assert("You tried to load a hasMany relationship from a specified `link` in the original payload but your adapter does not implement `findHasMany`", adapter.findHasMany);
@@ -1734,7 +1735,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
       store: this
     });
 
-    var adapter = this.adapterForType(type),
+    var adapter = this.adapterFor(type),
         resolver = Ember.RSVP.defer();
 
     Ember.assert("You tried to load a query but you have no adapter (for " + type + ")", adapter);
@@ -1769,7 +1770,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @returns Promise
   */
   fetchAll: function(type, array) {
-    var adapter = this.adapterForType(type),
+    var adapter = this.adapterFor(type),
         sinceToken = this.typeMapFor(type).metadata.since,
         resolver = Ember.RSVP.defer();
 
@@ -1961,7 +1962,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     forEach(pending, function(tuple) {
       var record = tuple[0], resolver = tuple[1],
-          adapter = this.adapterForType(record.constructor),
+          adapter = this.adapterFor(record.constructor),
           operation;
 
       if (get(record, 'isNew')) {
@@ -2363,12 +2364,12 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   /**
     Returns the adapter for a given type.
 
-    @method adapterForType
+    @method adapterFor
     @private
     @param {subclass of DS.Model} type
     @returns DS.Adapter
   */
-  adapterForType: function(type) {
+  adapterFor: function(type) {
     var container = this.container, adapter;
 
     if (container) {
@@ -2400,7 +2401,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   */
   serializerFor: function(type) {
     type = this.modelFor(type);
-    var adapter = this.adapterForType(type);
+    var adapter = this.adapterFor(type);
 
     return serializerFor(this.container, type.typeKey, adapter && adapter.defaultSerializer);
   }
@@ -6158,7 +6159,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryRecord;
 
     for (var prop in payload) {
-      var typeName  = this.modelTypeFromRoot(prop),
+      var typeName  = this.typeForRoot(prop),
           isPrimary = typeName === primaryTypeName;
 
       // legacy support for singular resources
@@ -6296,7 +6297,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
         primaryArray;
 
     for (var prop in payload) {
-      var typeName = this.modelTypeFromRoot(prop),
+      var typeName = this.typeForRoot(prop),
           type = store.modelFor(typeName),
           isPrimary = typeName === primaryTypeName;
 
@@ -6349,7 +6350,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     payload = this.normalizePayload(null, payload);
 
     for (var prop in payload) {
-      var typeName = this.modelTypeFromRoot(prop),
+      var typeName = this.typeForRoot(prop),
           type = store.modelFor(typeName);
 
       /*jshint loopfunc:true*/
@@ -6370,18 +6371,18 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
 
     ```js
     App.ApplicationSerializer = DS.RESTSerializer.extend({
-      modelTypeFromRoot: function(root) {
+      typeForRoot: function(root) {
         var camelized = Ember.String.camelize(root);
         return Ember.String.singularize(camelized);
       }
     });
     ```
 
-    @method modelTypeFromRoot
+    @method typeForRoot
     @param {String} root
     @returns String the model's typeKey
   */
-  modelTypeFromRoot: function(root) {
+  typeForRoot: function(root) {
     return Ember.String.singularize(root);
   },
 
