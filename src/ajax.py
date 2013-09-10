@@ -21,7 +21,6 @@ class TornadoWebInterface(BaseHandler):
 
 class EmberDataRESTEndpoint(BaseRESTEndpoint, TornadoWebInterface):
     Session = db.Session
-    pass
 
 
 class BallTablesHandler(EmberDataRESTEndpoint):
@@ -40,7 +39,7 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
 
     allowed_methods = ['GET', 'POST', 'PUT']
     needs_admin = {
-        'GET': False,
+        'GET': True,
         'POST': False,
         'PUT': True
     }
