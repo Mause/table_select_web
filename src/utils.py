@@ -1,9 +1,18 @@
 # stdlib
-from settings import settings
-from sqlalchemy.orm.collections import InstrumentedList
+import re
 
 # third-party
 import tornado.web
+from sqlalchemy.orm.collections import InstrumentedList
+
+# application specific
+from settings import settings
+
+STRING_DASHERIZE_REGEXP = re.compile(r'[ _]')
+STRING_DECAMELIZE_REGEXP = re.compile(r'([a-z])([A-Z])')
+STRING_CAMELIZE_REGEXP = re.compile(r'(\-|_|\.|\s)+(.)?')
+STRING_UNDERSCORE_REGEXP_1 = re.compile(r'([a-z\d])([A-Z]+)')
+STRING_UNDERSCORE_REGEXP_2 = re.compile(r'\-|\s+')
 
 
 def pluralize(name):
@@ -33,11 +42,30 @@ def singularize(name):
         return name
 
 
+def camelize(string):
+    """
+    >>> camelize('words_just_words')
+    'wordsJustWords'
+    """
+    return STRING_CAMELIZE_REGEXP.sub(
+        lambda match: match.groups()[1].upper(),
+        string)
+
+
+def camelize_dict(dictionary):
+    return {camelize(k): v for k, v in dictionary.items()}
+
+
+def camelize_dicts(dicts):
+    return list(map(camelize_dict, dicts))
+
+
 # these functions assume that there is only one primary key
 def get_primary_key_name_from_table(table):
     if hasattr(table, '__table__'):
         table = table.__table__
-    assert len(table.primary_key.columns.keys()) < 2
+    assert len(table.primary_key.columns.keys()) < 2, (
+        'More than one primary key on table.')
     return table.primary_key.columns.keys()[0]
 
 
@@ -96,3 +124,11 @@ class BaseHandler(tornado.web.RequestHandler):
         args = defaults
         args.update(kwargs)
         return super(BaseHandler, self).render(template_name, **kwargs)
+
+
+def main():
+    import doctest
+    doctest.testmod()
+
+if __name__ == '__main__':
+    main()
