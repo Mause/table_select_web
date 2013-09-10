@@ -1,10 +1,8 @@
 import json
 import logging
-from contextlib import closing
 
-import db
 from settings import settings
-from utils import BaseHandler, dict_from_query
+from utils import BaseHandler
 
 
 class AuthHandler(BaseHandler):
@@ -35,35 +33,6 @@ class AuthHandler(BaseHandler):
 
         else:
             self.redirect('/')
-
-
-class AdminHandler(BaseHandler):
-    def get(self):
-        "this page will allow the authorization of removals"
-        if self.is_admin():
-
-            with closing(db.Session()) as session:
-                # keep removals persistant, for future reference
-                # give every user a UUID, stored as a cookie,
-                # that can be used to group requests
-                query = session.query(db.removal_request_table)
-                query = query.filter_by(state='unresolved')
-                requests = dict_from_query(query.all())
-
-                for request in requests:
-                    query = session.query(db.attendee_table)
-                    query = query.filter_by(attendee_id=request['attendee_id'])
-                    query = query.one()
-
-                    request['attendee_name'] = (
-                        dict_from_query(query)['attendee_name'])
-
-                # logging.info(query)
-
-            self.render('admin.html', path='/admin', requests=requests)
-        else:
-            self.redirect('/')
-            return
 
 
 class LogoutHandler(BaseHandler):
