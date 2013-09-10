@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="enclosure span4 offset4">
+        <form method="POST" style="margin:0;">
+            <label for="username">
+                Username: {{view Ember.TextField valueBinding="username"}}
+            </label>
+            <label for="password">
+                Password: {{view Ember.TextField valueBinding="password"}}<input type="password" name="password"/>
+            </label>
+            <button
+                {{action submitAuthFormEvent}}
+                class="btn btn-large" type="submit">Submit</button>
+    </div>
+</div>
