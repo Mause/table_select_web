@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-151-g7fe76f2
-// Last commit: 7fe76f2 (2013-09-09 09:25:24 -0700)
+// Version: v1.0.0-beta.1-161-g95724b8
+// Last commit: 95724b8 (2013-09-09 21:13:39 -0700)
 
 
 (function() {
@@ -856,10 +856,11 @@ DS.ManyArray = DS.RecordArray.extend({
   fetch: function() {
     var records = get(this, 'content'),
         store = get(this, 'store'),
-        owner = get(this, 'owner');
+        owner = get(this, 'owner'),
+        resolver = Ember.RSVP.defer();
 
     var unloadedRecords = records.filterProperty('isEmpty', true);
-    store.fetchMany(unloadedRecords, owner);
+    store.fetchMany(unloadedRecords, owner, resolver);
   },
 
   // Overrides Ember.Array's replace method to implement
@@ -4558,11 +4559,12 @@ DS.Model.reopen({
   */
   belongsToWillChange: Ember.beforeObserver(function(record, key) {
     if (get(record, 'isLoaded')) {
-      var oldParent = get(record, key),
-          store = get(record, 'store');
+      var oldParent = get(record, key);
 
-      if (oldParent){
-        var change = DS.RelationshipChange.createChange(record, oldParent, store, { key: key, kind: "belongsTo", changeType: "remove" });
+      if (oldParent) {
+        var store = get(record, 'store'),
+            change = DS.RelationshipChange.createChange(record, oldParent, store, { key: key, kind: "belongsTo", changeType: "remove" });
+
         change.sync();
         this._changesToSync[key] = change;
       }
@@ -4579,7 +4581,8 @@ DS.Model.reopen({
   belongsToDidChange: Ember.immediateObserver(function(record, key) {
     if (get(record, 'isLoaded')) {
       var newParent = get(record, key);
-      if(newParent){
+
+      if (newParent) {
         var store = get(record, 'store'),
             change = DS.RelationshipChange.createChange(record, newParent, store, { key: key, kind: "belongsTo", changeType: "add" });
 
@@ -6581,7 +6584,7 @@ var forEach = Ember.ArrayPolyfills.forEach;
 
   ### Conventional Names
 
-  Attribute names in your JSON payload should be the underscored versions of
+  Attribute names in your JSON payload should be the camelcased versions of
   the attributes in your Ember.js models.
 
   For example, if you have a `Person` model:
@@ -6599,8 +6602,8 @@ var forEach = Ember.ArrayPolyfills.forEach;
   ```js
   {
     "person": {
-      "first_name": "Barack",
-      "last_name": "Obama",
+      "firstName": "Barack",
+      "lastName": "Obama",
       "occupation": "President"
     }
   }
