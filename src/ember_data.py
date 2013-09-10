@@ -81,7 +81,8 @@ class BaseRESTEndpoint(object):
                 query = self.apply_conditions(query, conditions)
                 records = dict_from_query(query.all())
 
-                response[pluralize(records_key)] = records
+                records_key = pluralize(records_key)
+                response[records_key] = records
 
             elif record_id:
                 # we are returning a single record
@@ -90,7 +91,8 @@ class BaseRESTEndpoint(object):
                 query = query.filter(key == record_id)
 
                 record = dict_from_query(query.one())
-                response[singularize(records_key)] = record
+                records_key = singularize(records_key)
+                response[records_key] = record
 
             self.write_json(response)
 
