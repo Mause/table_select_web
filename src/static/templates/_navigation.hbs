@@ -1,9 +1,9 @@
 <nav>
     {{#link-to 'index' class="btn"}}Home{{/link-to}}
 
-    {{#if is_admin}}
+    {{#if is_authorized}}
         {{#link-to 'admin' class="btn"}}Admin{{/link-to}}
-        {{#link-to 'logout' class="btn"}}Logout{{/link-to}}
+        <button {{action 'logout'}} class="btn">Logout</button>
     {{else}}
         {{#link-to 'auth' class="btn"}}Auth{{/link-to}}
     {{/if}}
