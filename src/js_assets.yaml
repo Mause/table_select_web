@@ -37,6 +37,7 @@ main:
             files:
              - admin
              - ball_table
+             - auth
 
         views:
             prefix: views/
@@ -45,6 +46,7 @@ main:
              - admin
              - ball_table
              - removal_request_checkbox
+             - auth
 
         components:
             prefix: components/
@@ -81,6 +83,7 @@ main:
              - admin
              - index
              - info
+             - auth
 
         utils:
             prefix: utils/
