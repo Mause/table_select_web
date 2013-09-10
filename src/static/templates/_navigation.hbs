@@ -1,10 +1,12 @@
 <nav>
-    {{#linkTo 'index' class="btn"}}Home{{/linkTo}}
-    {{#linkTo 'auth' class="btn"}}Auth{{/linkTo}}
-    {{#linkTo 'admin' class="btn"}}Admin{{/linkTo}}
-    {{#linkTo 'info' class="btn"}}Info{{/linkTo}}
+    {{#link-to 'index' class="btn"}}Home{{/link-to}}
 
     {{#if is_admin}}
-        <a class="btn" href="/logout">Logout</a>
+        {{#link-to 'admin' class="btn"}}Admin{{/link-to}}
+        {{#link-to 'logout' class="btn"}}Logout{{/link-to}}
+    {{else}}
+        {{#link-to 'auth' class="btn"}}Auth{{/link-to}}
     {{/if}}
+
+    {{#link-to 'info' class="btn"}}Info{{/link-to}}
 </nav>
