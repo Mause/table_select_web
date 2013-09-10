@@ -79,6 +79,7 @@ main:
             prefix: routes/
             postfix: _route
             files:
+             - application
              - admin
              - index
              - info
