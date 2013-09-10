@@ -6,6 +6,11 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
         submitAuthFormEvent: function(){
             var username = this.get('username'),
                 password = this.get('password');
+
+            this.send('login', {
+                username: username,
+                password: password
+            });
         }
     }
 });
