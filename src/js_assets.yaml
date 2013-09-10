@@ -46,7 +46,6 @@ main:
              - admin
              - ball_table
              - removal_request_checkbox
-             - auth
 
         components:
             prefix: components/
