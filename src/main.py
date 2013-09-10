@@ -108,7 +108,6 @@ application = tornado.web.Application(
 
         (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
-        (r"/auth", admin.AuthHandler),
         (r"/logout", admin.LogoutHandler),
         (r"/.*", MainHandler),
     ],
