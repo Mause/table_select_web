@@ -25,6 +25,7 @@ main:
          - support_objects
          - routes
          - utils
+         - locale
 
         mixins:
             prefix: mixins/
@@ -92,6 +93,11 @@ main:
             files:
              - send_notification
              - auth_manager
+
+        locale:
+            prefix: locale/
+            files:
+             - en
 
         files:
          - main
