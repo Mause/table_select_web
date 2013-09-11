@@ -1,5 +1,5 @@
-// Version: v1.0.0-beta.1-164-gbbaef35
-// Last commit: bbaef35 (2013-09-10 04:16:00 -0700)
+// Version: v1.0.0-beta.1-167-g54915f4
+// Last commit: 54915f4 (2013-09-10 09:14:14 -0700)
 
 
 (function() {
@@ -1827,6 +1827,24 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     typeMap.findAllCache = array;
     return array;
+  },
+
+
+  /**
+    This method unloads all of the known records for a given type.
+
+    @method unloadAll
+    @param {Class} type
+  */
+  unloadAll: function(type) {
+    type = this.modelFor(type);
+
+    var typeMap = this.typeMapFor(type),
+        records = typeMap.records, record;
+
+    while(record = records.pop()) {
+      record.unloadRecord();
+    }
   },
 
   /**
