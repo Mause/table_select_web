@@ -19,6 +19,10 @@ class TornadoWebInterface(BaseHandler):
     def set_status(self, *args, **kwargs):
         super(TornadoWebInterface, self).set_status(*args, **kwargs)
 
+    @property
+    def headers(self):
+        return self.request.headers
+
 
 class EmberDataRESTEndpoint(BaseRESTEndpoint, TornadoWebInterface):
     Session = db.Session
@@ -79,12 +83,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         if self.is_table_full(session, attendee['ball_table_id']):
             logging.info('table_full')
             errors = {
-                'ball_table_id': [
-                    {
-                        'machine': 'table_full',
-                        'human': 'That table is full'
-                    }
-                ]
+                'ball_table_id': ['table_full']
             }
             self.set_status(400)
             return errors
@@ -116,12 +115,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
             logging.info('attendee_exists: "{}"'.format(
                          attendee_name))
             errors = {
-                'attendee_name': [
-                    {
-                        'machine': 'attendee_exists',
-                        'human': 'Attendee "%@" already exists'
-                    }
-                ]
+                'attendee_name': ['attendee_exists']
             }
             self.set_status(400)
             return errors
@@ -135,10 +129,10 @@ class AttendeeHandler(EmberDataRESTEndpoint):
     ]
 
 
-class AuthHandler(EmberDataRESTEndpoint, BaseHandler):
+class AuthHandler(EmberDataRESTEndpoint):
     def get(self):
         self.write_json({
-            'state': 'logged_in' if self.is_admin() else 'logged_out'
+            'state': 'logged_in' if self.is_authorized() else 'logged_out'
         })
 
     def post(self):
