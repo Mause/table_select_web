@@ -9,7 +9,15 @@ from utils import (
 )
 
 
-class BaseRESTEndpoint(object):
+class AuthorizedEndpoint(object):
+    def is_authorized(self):
+        if 'Authorization' not in self.headers:
+            return False
+        else:
+            auth_data = self.headers['Authorization']
+
+
+class BaseRESTEndpoint(AuthorizedEndpoint):
     """
     A base generic handler for the Ember DATA RESTAdapter
 
@@ -27,7 +35,8 @@ class BaseRESTEndpoint(object):
     allowed_methods = None
     needs_admin = {
         'GET': False,
-        'POST': False
+        'POST': False,
+        'PUT': False
     }
     checks = []
     Session = None
@@ -41,16 +50,9 @@ class BaseRESTEndpoint(object):
             self.set_bad_error(405)
 
         # check if you need to be an admin to access this method
-        if self.needs_admin[method] and not self.is_admin():
+        if self.needs_admin[method] and not self.is_authorized():
             self.set_status(401)
-            return {
-                'errors': [
-                    {
-                        'machine': 'authentication_invalid',
-                        'human': 'You are not authorized'
-                    }
-                ]
-            }
+            return {'errors': ['authentication_invalid']}
 
         # check we've been setup correctly
         assert self.table is not None, 'Bad table name'
