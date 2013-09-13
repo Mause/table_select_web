@@ -38,7 +38,6 @@ main:
             postfix: _controller
             files:
              - admin
-             - ball_table
              - auth
 
         views:
@@ -46,7 +45,6 @@ main:
             postfix: _view
             files:
              - admin
-             - ball_table
              - removal_request_checkbox
 
         components:
