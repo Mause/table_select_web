@@ -27,6 +27,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
                     this.set('password', '');
                     sendNotification('Invalid login credentials');
                 } else {
+                    sendNotification('Unknown login error');
                     TableSelectWeb.AuthManager.reset();
                     console.log(arguments);
                 }
