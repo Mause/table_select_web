@@ -41,9 +41,10 @@ if settings['release'].upper() == "PRODUCTION":
 
 
 # only regen assets on each load when not in production mode... :P
-ASSETS = None
 if settings['release'].upper() == 'PRODUCTION':
     ASSETS = gen_assets()
+else:
+    ASSETS = None
 
 
 # simple & dumb renderer; nothing fancy here
