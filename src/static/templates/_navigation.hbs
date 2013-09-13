@@ -1,5 +1,8 @@
 <nav>
     {{#link-to 'index' class="btn"}}Home{{/link-to}}
+    {{#link-to 'info' class="btn"}}Info{{/link-to}}
+
+    <span class="barrier">|</span>
 
     {{#if target.isAuthenticated}}
         {{#link-to 'admin' class="btn"}}Admin{{/link-to}}
@@ -7,6 +10,4 @@
     {{else}}
         {{#link-to 'auth' class="btn"}}Auth{{/link-to}}
     {{/if}}
-
-    {{#link-to 'info' class="btn"}}Info{{/link-to}}
 </nav>
