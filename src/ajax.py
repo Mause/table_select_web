@@ -10,7 +10,7 @@ from settings import settings
 from ember_data import BaseRESTEndpoint
 
 
-class TornadoWebInterface(object):
+class TornadoWebInterface(tornado.web.RequestHandler):
     def set_bad_error(self, status_code):
         raise tornado.web.HTTPError(status_code)
 

@@ -18,7 +18,6 @@ import db
 import ajax
 from assets import gen_assets
 from settings import settings
-from utils import BaseHandler
 
 # set the debug level for tornado
 sys.argv.append('--logging=DEBUG')
@@ -47,7 +46,7 @@ else:
 
 
 # simple & dumb renderer; nothing fancy here
-class MainHandler(BaseHandler):
+class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             'base.html',
