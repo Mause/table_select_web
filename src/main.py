@@ -16,7 +16,6 @@ import tornado.httpserver
 # application specific
 import db
 import ajax
-import admin
 from assets import gen_assets
 from settings import settings
 from utils import BaseHandler
@@ -111,7 +110,6 @@ application = tornado.web.Application(
 
         (r"/api/v1/me", ajax.AuthHandler),
 
-        (r"/logout", admin.LogoutHandler),
         (r"/.*", MainHandler),
     ],
     **tornado_settings
