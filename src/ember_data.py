@@ -20,7 +20,7 @@ API_KEY_SEED = settings['api_key_seed'].encode('utf-8') or b'bytes'
 
 
 class AuthorizedEndpoint(object):
-    def is_authorized(self):
+    def is_authenticated(self):
         if 'Authorization' not in self.headers:
             logging.info('Attempted to access restricted endpoint without authentication')
             return False
@@ -110,7 +110,7 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
             self.set_bad_error(405)
 
         # check if you need to be an admin to access this method
-        if self.needs_admin[method] and not self.is_authorized():
+        if self.needs_admin[method] and not self.is_authenticated():
             self.set_status(401)
             return {'errors': ['authentication_invalid']}
 
