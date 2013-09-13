@@ -20,16 +20,16 @@ var AuthManager = Ember.Object.extend({
         Ember.$.ajaxSetup({
             headers: { 'Authorization': 'Bearer ' + accessToken }
         });
-        var user = User.find(userId);
+        // var user = User.find(userId);
         this.set('apiKey', TableSelectWeb.ApiKey.create({
             accessToken: accessToken,
-            user: user
+            user: {Id: userId}
         }));
     },
 
     // Log out the user
     reset: function() {
-        TableSelectWeb.__container__.lookup("route:application").transitionTo('sessions.new');
+        // TableSelectWeb.__container__.lookup("route:application").transitionTo('sessions.new');
         Ember.run.sync();
         Ember.run.next(this, function(){
             this.set('apiKey', null);
@@ -47,7 +47,7 @@ var AuthManager = Ember.Object.extend({
             Ember.$.removeCookie('auth_user');
         } else {
             Ember.$.cookie('access_token', this.get('apiKey.accessToken'));
-            Ember.$.cookie('auth_user', this.get('apiKey.user.id'));
+            Ember.$.cookie('auth_user', this.get('apiKey.user.Id'));
         }
     }.observes('apiKey')
 });
@@ -59,3 +59,8 @@ DS.rejectionHandler = function(reason) {
     }
     throw reason;
 };
+
+TableSelectWeb.ApiKey = Ember.Object.extend({
+  access_token: '',
+  user: null
+});
