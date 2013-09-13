@@ -19,7 +19,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
                 TableSelectWeb.AuthManager.authenticate(
                     data.api_key.access_token,
                     data.api_key.user_id);
-                self.transitionToRoute('/');
+                self.transitionToRoute('admin');
 
             }, function(xhr){
                 debugger;
