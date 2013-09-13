@@ -1,7 +1,1 @@
-TableSelectWeb.InfoRoute = Ember.Route.extend({
-    renderTemplate: function(controller, model){
-        this.render({
-            outlet: 'application'
-        });
-    }
-});
+TableSelectWeb.InfoRoute = Ember.Route.extend(TableSelectWeb.ApplicationRouteMixin);
