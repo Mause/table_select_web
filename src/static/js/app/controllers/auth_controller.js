@@ -4,11 +4,20 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     actions: {
         submitAuthFormEvent: function(){
-            var username = this.get('username'),
-                password = this.get('password'),
-                adapter = this.store.adapterFor({typeKey: 'me'}),
+            var adapter = this.store.adapterFor({typeKey: 'me'}),
                 url = adapter.buildURL('me'),
-                self = this;
+                self = this,
+                username = this.get('username'),
+                password = this.get('password');
+
+            this.set('username', '');
+            this.set('password', '');
+
+            username = username.trim();
+            if (!username) { return; }
+
+            password = password.trim();
+            if (!password) { return; }
 
             var data = {
                 username: username,
@@ -22,11 +31,10 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
                 self.transitionToRoute('admin');
 
             }, function(xhr){
-                debugger;
                 if (xhr.status === 401) {
-                    this.set('password', '');
                     sendNotification('Invalid login credentials');
                 } else {
+                    debugger;
                     sendNotification('Unknown login error');
                     TableSelectWeb.AuthManager.reset();
                     console.log(arguments);
