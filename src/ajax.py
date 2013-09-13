@@ -130,11 +130,6 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
 
 class AuthHandler(EmberDataRESTEndpoint):
-    def get(self):
-        self.write_json({
-            'state': 'logged_in' if self.is_authorized() else 'logged_out'
-        })
-
     def post(self):
         body = self.decode_and_load(self.request.body)
 
@@ -147,19 +142,15 @@ class AuthHandler(EmberDataRESTEndpoint):
             logging.info('supposed password was supplied; "{}"'.format(
                 password))
 
-            if username in auth_combos.keys():
-                if password == auth_combos[username]:
-                    self.set_secure_cookie('is_admin', json.dumps(True))
-
-                    self.write_json({'state': 'logged_in'})
-                else:
-                    self.set_status(401)
+            if username in auth_combos and password == auth_combos[username]:
+                self.write_json({
+                    'api_key': {
+                        'access_token': self.create_key(username.encode('utf-8')),
+                        'user_id': username
+                    }
+                })
             else:
                 self.set_status(401)
 
         else:
-            to_state = body['to_state']
-            if to_state == 'logged_out':
-                self.set_secure_cookie('is_admin', json.dumps(False))
-            else:
-                self.set_bad_error(400)
+            self.set_bad_error(400)
