@@ -54,10 +54,10 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
 
     error_handlers: {
         attendee_name: function (error, context) {
-            if (error.machine === "attendee_exists") {
+            if (error === "attendee_exists") {
                 console.error('attendee_exists: %@'.fmt(context.attendee_name));
                 return {
-                    notification: (error.human.fmt(context.attendee_name))
+                    notification: Ember.String.loc(error, context.attendee_name)
                 };
             } else {
                 throw new Error('"attendee_name": %@'.fmt(error));
@@ -65,9 +65,9 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
         },
 
         ball_table_id: function(error, context) {
-            if (error.machine === "table_full") {
+            if (error === "table_full") {
                 return {
-                    notification: error.human
+                    notification: Ember.String.loc(error)
                 };
             } else {
                 throw new Error('"ball_table_id": %@'.fmt(error));
