@@ -27,7 +27,6 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
                 'ball_table': ball_table
             };
 
-            console.log('Saving');
             store.createRecord('attendee', record_data).save().then(
                 success_handler, failure_handler
             );
