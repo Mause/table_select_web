@@ -1,7 +1,7 @@
 <nav>
     {{#link-to 'index' class="btn"}}Home{{/link-to}}
 
-    {{#if is_authorized}}
+    {{#if target.isAuthenticated}}
         {{#link-to 'admin' class="btn"}}Admin{{/link-to}}
         <button {{action 'logout'}} class="btn">Logout</button>
     {{else}}
