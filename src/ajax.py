@@ -1,5 +1,4 @@
 # stdlib
-import json
 import logging
 
 # third party
@@ -9,10 +8,9 @@ import tornado
 import db
 from settings import settings
 from ember_data import BaseRESTEndpoint
-from utils import BaseHandler
 
 
-class TornadoWebInterface(BaseHandler):
+class TornadoWebInterface(object):
     def set_bad_error(self, status_code):
         raise tornado.web.HTTPError(status_code)
 
