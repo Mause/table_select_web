@@ -1,7 +1,17 @@
 function sendNotification(text, callback) {
-    var options, closed_callback, modalPane;
+    var options,
+        closed_callback,
+        modalPane,
+        default_callback;
 
-    closed_callback = typeof callback === 'undefined' ? Ember.K : callback;
+    default_callback = function(){
+        // default callback does nothing; derp :P
+    };
+
+    closed_callback = (
+        typeof callback === 'undefined' ?
+        default_callback : callback
+    );
 
     options = {
         defaultTemplate: Ember.TEMPLATES.modal,
