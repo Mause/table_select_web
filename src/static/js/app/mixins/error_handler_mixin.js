@@ -42,21 +42,20 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
         }
 
         var result,
-            _this = this,
-            error = errors.pop(),
-            sendNotification = require('utils/send_notification');
+            self = this,
+            error = errors.pop();
 
         console.log(error);
         result = error.handler(error.error, context);
 
+        var closed_callback = function(){
+            self.handle_errors_recurse(errors, context, resolve);
+        };
+
         if (result.notification) {
-            var closed_callback = function(){
-                _this.handle_errors_recurse(errors, context, resolve);
-            };
             sendNotification(result.notification, closed_callback);
         } else {
             handle_errors_recurse(errors, context);
         }
     }
 });
-

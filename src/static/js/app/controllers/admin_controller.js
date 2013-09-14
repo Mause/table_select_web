@@ -10,11 +10,7 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
             records.forEach(function(record){
                 record.set('state', state);
-                if (sh == 'show' && record.get('attendee.show') !== true) {
-                    record.set('attendee.show', true);
-                } else if (sh == 'hide' && record.get('attendee.show') !== false) {
-                    record.set('attendee.show', false);
-                }
+                record.set('attendee.show', sh == 'show');
             });
 
             debugger;
@@ -32,11 +28,14 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
                 debugger;
                 var attendees = [],
                     proms;
+
                 requested.forEach(function(removal_request){
                     debugger;
                     var attendee = removal_request.get('attendee');
                     attendee.set('removal_request_exists', true);
+
                 });
+
                 proms = attendees.invoke('save');
                 Ember.RSVP.all(proms).then(
                     success_note, failure
