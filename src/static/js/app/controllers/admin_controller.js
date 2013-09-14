@@ -7,7 +7,7 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
         requested.forEach(function(removal_request){
             var attendee = removal_request.get('attendee');
             attendees.push(
-                attendee.set('removal_request_exists', true)
+                attendee.set('removal_request_exists', false)
             );
         });
 
