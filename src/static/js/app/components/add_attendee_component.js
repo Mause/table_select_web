@@ -34,7 +34,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             success_handler = function(event) {
                 debugger;
                 console.log('success:', event);
-                sendNotification('Attendee add was successful');
+                sendNotification(Ember.String.loc('auth_success'));
             };
 
             failure_handler = function(event) {
