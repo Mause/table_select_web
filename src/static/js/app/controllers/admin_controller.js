@@ -13,13 +13,12 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
         proms = attendees.invoke('save');
         Ember.RSVP.all(proms).then(
-            this.success_note, this.failure
+            this.success_notif, this.failure
         );
     },
 
-    success_note: function(attendees){
+    success_notif: function(attendees){
         debugger;
-        this.trigger('clear_checkboxes');
         sendNotification('Success');
     },
 
@@ -33,20 +32,19 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
             'use strict';
             debugger;
 
-            var promises;
+            var promises,
+                self=this;
 
             records.forEach(function(record){
                 record.set('state', state);
                 record.set('attendee.show', sh == 'show');
             });
 
-            console.assert(this.success_submit);
-            console.assert(this.failure);
-            console.assert(this.success_note);
-
             promises = records.invoke('save');
             Ember.RSVP.all(promises).then(
-                this.success_submit, this.failure
+                function(){
+                    return self.success_submit.apply(self, arguments);
+                }, self.failure
             );
         }
     }
