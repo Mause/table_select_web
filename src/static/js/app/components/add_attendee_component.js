@@ -5,17 +5,15 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
     actions: {
         addAttendeeFormEvent: function(attendee_name){
             'use strict';
-            var self = this,
-                store = this.get('parentView.targetObject.store'),
-                ball_table = self.get('ball_table'),
+            var store = this.get('parentView.targetObject.store'),
+                ball_table = this.get('ball_table'),
                 record_data,
-                success_handler,
-                failure_handler;
+                record,
+                self = this;
 
             this.set('attendee_name', '');
 
-            attendee_name = attendee_name.trim();
-            if (!attendee_name) { return; }
+            if (!(attendee_name = attendee_name.trim())) { return; }
 
             Ember.assert('Not a ball_table instance',
                 store.modelFor('ball_table').detectInstance(ball_table));
@@ -27,27 +25,22 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
                 'ball_table': ball_table
             };
 
-            store.createRecord('attendee', record_data).save().then(
-                success_handler, failure_handler
+            record = store.createRecord('attendee', record_data);
+            record.save().then(
+                function(event) {
+                    sendNotification(Ember.String.loc('auth_success'));
+                },
+
+                function(event) {
+                    var json = event.responseJSON;
+                    console.log('failed, handling errors', json.errors);
+
+                    self.handle_errors(
+                        json.errors,
+                        self.error_handlers,
+                        record_data);
+                }
             );
-
-            success_handler = function(event) {
-                debugger;
-                console.log('success:', event);
-                sendNotification(Ember.String.loc('auth_success'));
-            };
-
-            failure_handler = function(event) {
-                debugger;
-                var record = event.hasOwnProperty('detail') ? event.detail : event;
-                console.log('failed, handling errors', record.errors);
-
-                self.handle_errors(
-                    record.errors,
-                    self.error_handlers,
-                    record_data);
-            };
-
         },
     },
 
@@ -56,7 +49,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             if (error === "attendee_exists") {
                 console.error('attendee_exists: %@'.fmt(context.attendee_name));
                 return {
-                    notification: Ember.String.loc(error, context.attendee_name)
+                    notification: Ember.String.loc(error, [context.attendee_name])
                 };
             } else {
                 throw new Error('"attendee_name": %@'.fmt(error));
