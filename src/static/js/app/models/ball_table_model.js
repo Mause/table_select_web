@@ -10,5 +10,9 @@ TableSelectWeb.BallTable = DS.Model.extend({
             row_end = ball_table_num % 2 === 0;
 
         return row_end;
-    }.property('ball_table_num').cacheable()
+    }.property('ball_table_num').cacheable(),
+
+    displayable_attendees: function(){
+        return this.get('attendees').filterBy('show', true);
+    }.property('attendees').cacheable()
 });
