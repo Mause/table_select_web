@@ -75,16 +75,18 @@ class AttendeeHandler(EmberDataRESTEndpoint):
     def check_record(self, session, attendee):
         if attendee['ball_table_id'] is None:
             self.set_bad_error(400)
+        else:
+            return {}
 
     def check_if_table_full(self, session, attendee):
 
         if self.is_table_full(session, attendee['ball_table_id']):
             logging.info('table_full')
-            errors = {
+
+            self.set_status(400)
+            return {
                 'ball_table_id': ['table_full']
             }
-            self.set_status(400)
-            return errors
 
         else:
             return {}
