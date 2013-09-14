@@ -1,3 +1,7 @@
+Ember.RSVP.configure('onerror', function(event){
+    console.error(event);
+});
+
 // these tend to spam :/
 // Ember.LOG_BINDINGS = true;
 // Ember.STRUCTURED_PROFILE = true;
