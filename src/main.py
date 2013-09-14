@@ -57,8 +57,7 @@ class MainHandler(tornado.web.RequestHandler):
 def setup_db():
     from sqlalchemy import create_engine
 
-    default_url = settings.get('DATABASE_URL')
-    db_url = os.environ.get("DATABASE_URL", default_url)
+    db_url = settings.get('DATABASE_URL')
 
     logging.debug('Database url is: {}'.format(db_url))
 
