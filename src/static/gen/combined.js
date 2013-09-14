@@ -11205,8 +11205,18 @@ Handlebars.template = Handlebars.VM.template;
 })(Handlebars);
 ;
 
-// Version: v1.0.0-50-gd65d9e2
-// Last commit: d65d9e2 (2013-09-05 21:54:58 -0700)
+// ==========================================================================
+// Project:   Ember - JavaScript Application Framework
+// Copyright: ©2011-2013 Tilde Inc. and contributors
+//            Portions ©2006-2011 Strobe Inc.
+//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// License:   Licensed under MIT license
+//            See https://raw.github.com/emberjs/ember.js/master/LICENSE
+// ==========================================================================
+
+
+// Version: v1.0.0-106-g12ed2c1
+// Last commit: 12ed2c1 (2013-09-13 12:34:11 -0700)
 
 
 (function() {
@@ -11377,8 +11387,18 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-97-g8bddb8a
-// Last commit: 8bddb8a (2013-09-11 06:24:09 -0700)
+// ==========================================================================
+// Project:   Ember - JavaScript Application Framework
+// Copyright: ©2011-2013 Tilde Inc. and contributors
+//            Portions ©2006-2011 Strobe Inc.
+//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// License:   Licensed under MIT license
+//            See https://raw.github.com/emberjs/ember.js/master/LICENSE
+// ==========================================================================
+
+
+// Version: v1.0.0-106-g12ed2c1
+// Last commit: 12ed2c1 (2013-09-13 12:34:11 -0700)
 
 
 (function() {
@@ -30432,6 +30452,7 @@ var get = Ember.get, set = Ember.set;
 var guidFor = Ember.guidFor;
 var a_forEach = Ember.EnumerableUtils.forEach;
 var a_addObject = Ember.EnumerableUtils.addObject;
+var meta = Ember.meta;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
@@ -32180,12 +32201,6 @@ Ember.View = Ember.CoreView.extend(
     return viewCollection;
   },
 
-  _elementWillChange: Ember.beforeObserver(function() {
-    this.forEachChildView(function(view) {
-      Ember.propertyWillChange(view, 'element');
-    });
-  }, 'element'),
-
   /**
     @private
 
@@ -32197,7 +32212,7 @@ Ember.View = Ember.CoreView.extend(
   */
   _elementDidChange: Ember.observer(function() {
     this.forEachChildView(function(view) {
-      Ember.propertyDidChange(view, 'element');
+      delete meta(view).cache.element;
     });
   }, 'element'),
 
@@ -32645,6 +32660,7 @@ Ember.View = Ember.CoreView.extend(
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
+    if (state === 'inDOM') { delete Ember.meta(this).cache.element; }
 
     if (children !== false) {
       this.forEachChildView(function(view) {
@@ -32992,10 +33008,18 @@ Ember.merge(preRender, {
     var viewCollection = view.viewHierarchyCollection();
 
     viewCollection.trigger('willInsertElement');
-    // after createElement, the view will be in the hasElement state.
+
     fn.call(view);
-    viewCollection.transitionTo('inDOM', false);
-    viewCollection.trigger('didInsertElement');
+
+    // We transition to `inDOM` if the element exists in the DOM
+    var element = view.get('element');
+    while (element = element.parentNode) {
+      if (element === document) {
+        viewCollection.transitionTo('inDOM', false);
+        viewCollection.trigger('didInsertElement');
+      }
+    }
+
   },
 
   renderToBufferIfNeeded: function(view, buffer) {
@@ -39394,6 +39418,7 @@ function normalizeHash(hash, hashTypes) {
 * `tabindex`
 * `indeterminate`
 * `name`
+
 
   When set to a quoted string, these values will be directly applied to the HTML
   element. When left unquoted, these values will be bound to a property on the
@@ -46549,13 +46574,15 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     ```javascript
     App = Ember.Application.create();
 
-    App.Person = Ember.Object.extend({});
-    App.Orange = Ember.Object.extend({});
-    App.Email  = Ember.Object.extend({});
+    App.Person  = Ember.Object.extend({});
+    App.Orange  = Ember.Object.extend({});
+    App.Email   = Ember.Object.extend({});
+    App.Session = Ember.Object.create({});
 
     App.register('model:user', App.Person, {singleton: false });
     App.register('fruit:favorite', App.Orange);
     App.register('communication:main', App.Email, {singleton: false});
+    App.register('session', App.Session, {instantiate: false});
     ```
 
     @method register
@@ -48330,8 +48357,8 @@ Ember.State = generateRemovedClass("Ember.State");
 
 
 
-// Version: v1.0.0-beta.1-199-g8a75004
-// Last commit: 8a75004 (2013-09-12 22:06:57 -0700)
+// Version: v1.0.0-beta.1-201-g2511cb1
+// Last commit: 2511cb1 (2013-09-13 15:33:11 -0700)
 
 
 (function() {
@@ -49036,6 +49063,14 @@ DS.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
 
   removeRecord: function(record) {
     get(this, 'content').removeObject(record);
+  },
+
+  save: function() {
+    var promise = Ember.RSVP.all(this.invoke("save")).then(function(array) {
+      return Ember.A(array);
+    });
+
+    return DS.PromiseArray.create({ promise: promise });
   }
 });
 
@@ -59428,24 +59463,23 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
         }
 
         var result,
-            _this = this,
-            error = errors.pop(),
-            sendNotification = require('utils/send_notification');
+            self = this,
+            error = errors.pop();
 
         console.log(error);
         result = error.handler(error.error, context);
 
+        var closed_callback = function(){
+            self.handle_errors_recurse(errors, context, resolve);
+        };
+
         if (result.notification) {
-            var closed_callback = function(){
-                _this.handle_errors_recurse(errors, context, resolve);
-            };
             sendNotification(result.notification, closed_callback);
         } else {
             handle_errors_recurse(errors, context);
         }
     }
 });
-
 
 TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     actions: {
@@ -59459,11 +59493,7 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
             records.forEach(function(record){
                 record.set('state', state);
-                if (sh == 'show' && record.get('attendee.show') !== true) {
-                    record.set('attendee.show', true);
-                } else if (sh == 'hide' && record.get('attendee.show') !== false) {
-                    record.set('attendee.show', false);
-                }
+                record.set('attendee.show', sh == 'show');
             });
 
             debugger;
@@ -59481,11 +59511,14 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
                 debugger;
                 var attendees = [],
                     proms;
+
                 requested.forEach(function(removal_request){
                     debugger;
                     var attendee = removal_request.get('attendee');
                     attendee.set('removal_request_exists', true);
+
                 });
+
                 proms = attendees.invoke('save');
                 Ember.RSVP.all(proms).then(
                     success_note, failure
@@ -59512,29 +59545,44 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     actions: {
         submitAuthFormEvent: function(){
-            var username = this.get('username'),
-                password = this.get('password'),
-                adapter = this.store.adapterFor({typeKey: 'me'}),
+            var adapter = this.store.adapterFor({typeKey: 'me'}),
                 url = adapter.buildURL('me'),
-                self = this;
+                self = this,
+                username = this.get('username'),
+                password = this.get('password');
 
+            // clear the form
+            this.set('username', '');
+            this.set('password', '');
+
+            // cleanup the values
+            username = username.trim();
+            if (!username) { return; }
+
+            // cleanup the values
+            password = password.trim();
+            if (!password) { return; }
+
+            // record ftw
             var data = {
                 username: username,
                 password: password
             };
 
             adapter.ajax(url, 'POST', {data: data}).then(function(data){
+                // on success, setup the appropriate internal variables
                 TableSelectWeb.AuthManager.authenticate(
                     data.api_key.access_token,
                     data.api_key.user_id);
-                self.transitionToRoute('/');
+
+                // and transtion to the admin page
+                self.transitionToRoute('admin');
 
             }, function(xhr){
-                debugger;
                 if (xhr.status === 401) {
-                    this.set('password', '');
                     sendNotification('Invalid login credentials');
                 } else {
+                    debugger;
                     sendNotification('Unknown login error');
                     TableSelectWeb.AuthManager.reset();
                     console.log(arguments);
@@ -59573,7 +59621,6 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
                 'ball_table': ball_table
             };
 
-            console.log('Saving');
             store.createRecord('attendee', record_data).save().then(
                 success_handler, failure_handler
             );
@@ -59581,7 +59628,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             success_handler = function(event) {
                 debugger;
                 console.log('success:', event);
-                sendNotification('Attendee add was successful');
+                sendNotification(Ember.String.loc('auth_success'));
             };
 
             failure_handler = function(event) {
@@ -60080,7 +60127,8 @@ TableSelectWeb.ApiKey = Ember.Object.extend({
 Ember.STRINGS = {
     authentication_invalid: 'You are not authorized',
     table_full: 'That table is full',
-    attendee_exists: 'Attendee "%@" already exists'
+    attendee_exists: 'Attendee "%@" already exists',
+    auth_success: 'Attendee add was successful'
 };
 
 
@@ -60301,13 +60349,19 @@ function program1(depth0,data) {
 
 function program3(depth0,data) {
   
+  
+  data.buffer.push("Info");
+  }
+
+function program5(depth0,data) {
+  
   var buffer = '', stack1, stack2, hashContexts, hashTypes, options;
   data.buffer.push("\r\n        ");
   hashContexts = {'class': depth0};
   hashTypes = {'class': "STRING"};
   options = {hash:{
     'class': ("btn")
-  },inverse:self.noop,fn:self.program(4, program4, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "admin", options) : helperMissing.call(depth0, "link-to", "admin", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\r\n        <button ");
@@ -60317,13 +60371,13 @@ function program3(depth0,data) {
   data.buffer.push(" class=\"btn\">Logout</button>\r\n    ");
   return buffer;
   }
-function program4(depth0,data) {
+function program6(depth0,data) {
   
   
   data.buffer.push("Admin");
   }
 
-function program6(depth0,data) {
+function program8(depth0,data) {
   
   var buffer = '', stack1, stack2, hashContexts, hashTypes, options;
   data.buffer.push("\r\n        ");
@@ -60331,22 +60385,16 @@ function program6(depth0,data) {
   hashTypes = {'class': "STRING"};
   options = {hash:{
     'class': ("btn")
-  },inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "auth", options) : helperMissing.call(depth0, "link-to", "auth", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\r\n    ");
   return buffer;
   }
-function program7(depth0,data) {
-  
-  
-  data.buffer.push("Auth");
-  }
-
 function program9(depth0,data) {
   
   
-  data.buffer.push("Info");
+  data.buffer.push("Auth");
   }
 
   data.buffer.push("<nav>\r\n    ");
@@ -60357,18 +60405,18 @@ function program9(depth0,data) {
   },inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\r\n\r\n    ");
-  hashTypes = {};
-  hashContexts = {};
-  stack2 = helpers['if'].call(depth0, "target.isAuthenticated", {hash:{},inverse:self.program(6, program6, data),fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\r\n\r\n    ");
+  data.buffer.push("\r\n    ");
   hashContexts = {'class': depth0};
   hashTypes = {'class': "STRING"};
   options = {hash:{
     'class': ("btn")
-  },inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "info", options) : helperMissing.call(depth0, "link-to", "info", options));
+  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
+  data.buffer.push("\r\n\r\n    <span class=\"barrier\">|</span>\r\n\r\n    ");
+  hashTypes = {};
+  hashContexts = {};
+  stack2 = helpers['if'].call(depth0, "target.isAuthenticated", {hash:{},inverse:self.program(8, program8, data),fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\r\n</nav>\r\n");
   return buffer;
