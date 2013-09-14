@@ -15,12 +15,10 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
             this.set('password', '');
 
             // cleanup the values
-            username = username.trim();
-            if (!username) { return; }
+            if (!(username = username.trim())) { return; }
 
             // cleanup the values
-            password = password.trim();
-            if (!password) { return; }
+            if (!(password = password.trim())) { return; }
 
             // record ftw
             var data = {
@@ -39,7 +37,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
             }, function(xhr){
                 if (xhr.status === 401) {
-                    sendNotification('Invalid login credentials');
+                    sendNotification(Ember.String.loc('invalid_login'));
                 } else {
                     debugger;
                     sendNotification('Unknown login error');

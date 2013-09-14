@@ -28,7 +28,9 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             record = store.createRecord('attendee', record_data);
             record.save().then(
                 function(event) {
-                    sendNotification(Ember.String.loc('auth_success'));
+                    debugger;
+                    sendNotification(Ember.String.loc('attendee_add_success'));
+                    Ember.propertyDidChange(ball_table, 'attendees');
                 },
 
                 function(event) {
