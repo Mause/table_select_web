@@ -13,15 +13,12 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
             Ember.assert('Not an attendee object',
                 store.modelFor('attendee').detectInstance(attendee));
 
-
             record_data = {
                 attendee: attendee,
                 ball_table: ball_table,
                 remover_ident: 'unknown',
                 state: 'unresolved'
             };
-
-            console.log(record_data);
 
             // create the record...
             record = store.createRecord('removal_request', record_data);
@@ -30,8 +27,9 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend({
             record.save().then(function(event){
                 // and when it is saved, mark the attendee
                 attendee.set('removal_request_exists', true);
-                attendee.save();
-                sendNotification('Removal request successfully submitted');
+                attendee.save().then(function(){
+                    sendNotification('Removal request successfully submitted');
+                });
             });
         }
     }
