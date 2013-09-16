@@ -1,5 +1,15 @@
-// Version: v1.0.0-50-gd65d9e2
-// Last commit: d65d9e2 (2013-09-05 21:54:58 -0700)
+// ==========================================================================
+// Project:   Ember - JavaScript Application Framework
+// Copyright: ©2011-2013 Tilde Inc. and contributors
+//            Portions ©2006-2011 Strobe Inc.
+//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// License:   Licensed under MIT license
+//            See https://raw.github.com/emberjs/ember.js/master/LICENSE
+// ==========================================================================
+
+
+// Version: v1.0.0-106-g12ed2c1
+// Last commit: 12ed2c1 (2013-09-13 12:34:11 -0700)
 
 
 (function() {
@@ -170,8 +180,18 @@ if (!Ember.testing) {
 
 })();
 
-// Version: v1.0.0-78-g00bf455
-// Last commit: 00bf455 (2013-09-09 20:49:39 -0700)
+// ==========================================================================
+// Project:   Ember - JavaScript Application Framework
+// Copyright: ©2011-2013 Tilde Inc. and contributors
+//            Portions ©2006-2011 Strobe Inc.
+//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// License:   Licensed under MIT license
+//            See https://raw.github.com/emberjs/ember.js/master/LICENSE
+// ==========================================================================
+
+
+// Version: v1.0.0-106-g12ed2c1
+// Last commit: 12ed2c1 (2013-09-13 12:34:11 -0700)
 
 
 (function() {
@@ -2028,7 +2048,6 @@ Ember.getWithDefault = function(root, key, defaultValue) {
 
 
 Ember.get = get;
-Ember.getPath = Ember.deprecateFunc('getPath is deprecated since get now supports paths', Ember.get);
 
 })();
 
@@ -2865,7 +2884,6 @@ function setPath(root, path, value, tolerant) {
 }
 
 Ember.set = set;
-Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now supports paths', Ember.set);
 
 /**
   Error-tolerant form of `Ember.set`. Will not blow up if any part of the
@@ -2883,7 +2901,6 @@ Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now support
 Ember.trySet = function(root, path, value) {
   return set(root, path, value, true);
 };
-Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', Ember.trySet);
 
 })();
 
@@ -4812,7 +4829,7 @@ registerComputed('match', function(dependentKey, regexp) {
   var hampster = Hampster.create();
   hampster.get('napTime'); // false
   hampster.set('state', 'sleepy');
-  hampster.get('napTime'); // false
+  hampster.get('napTime'); // true
   hampster.set('state', 'hungry');
   hampster.get('napTime'); // false
   ```
@@ -10940,7 +10957,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
 
 (function() {
-var get = Ember.get,
+var e_get = Ember.get,
     set = Ember.set,
     guidFor = Ember.guidFor,
     metaFor = Ember.meta,
@@ -10956,6 +10973,16 @@ var get = Ember.get,
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
     doubleEachPropertyPattern = /(.*\.@each){2,}/;
+
+function get(obj, key) {
+  if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
+    if (key === '@self') {
+      return obj;
+    }
+  }
+
+  return e_get(obj, key);
+}
 
 /*
   Tracks changes to dependent arrays, as well as to properties of items in
@@ -10998,6 +11025,8 @@ function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
   this.trackedArray = trackedArray;
   this.beforeObserver = null;
   this.observer = null;
+
+  this.destroyed = false;
 }
 
 DependentArraysObserver.prototype = {
@@ -11067,6 +11096,7 @@ DependentArraysObserver.prototype = {
       if (operation === Ember.TrackedArray.DELETE) { return; }
 
       forEach(observerContexts, function (observerContext) {
+        observerContext.destroyed = true;
         beforeObserver = observerContext.beforeObserver;
         observer = observerContext.observer;
         item = observerContext.item;
@@ -11091,11 +11121,10 @@ DependentArraysObserver.prototype = {
     var dependentArrayObserver = this;
 
     observerContext.beforeObserver = function (obj, keyName) {
-      dependentArrayObserver.updateIndexes(observerContext.trackedArray, observerContext.dependentArray);
-      return dependentArrayObserver.itemPropertyWillChange(obj, keyName, observerContext.dependentArray, observerContext.index);
+      return dependentArrayObserver.itemPropertyWillChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
     observerContext.observer = function (obj, keyName) {
-      return dependentArrayObserver.itemPropertyDidChange(obj, keyName, observerContext.dependentArray, observerContext.index);
+      return dependentArrayObserver.itemPropertyDidChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
   },
 
@@ -11153,8 +11182,8 @@ DependentArraysObserver.prototype = {
 
     observerContexts = this.removeTransformation(dependentKey, index, removedCount);
 
-
     function removeObservers(propertyKey) {
+      observerContexts[sliceIndex].destroyed = true;
       removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
       removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
     }
@@ -11199,30 +11228,35 @@ DependentArraysObserver.prototype = {
     this.addTransformation(dependentKey, index, observerContexts);
   },
 
-  itemPropertyWillChange: function (obj, keyName, array, index) {
+  itemPropertyWillChange: function (obj, keyName, array, observerContext) {
     var guid = guidFor(obj);
 
     if (!this.changedItems[guid]) {
       this.changedItems[guid] = {
-        array:          array,
-        index:          index,
-        obj:            obj,
-        previousValues: {}
+        array:            array,
+        observerContext:  observerContext,
+        obj:              obj,
+        previousValues:   {}
       };
     }
 
     this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
-  itemPropertyDidChange: function(obj, keyName, array, index) {
+  itemPropertyDidChange: function(obj, keyName, array, observerContext) {
     Ember.run.once(this, 'flushChanges');
   },
 
   flushChanges: function() {
     var changedItems = this.changedItems, key, c, changeMeta;
+
     for (key in changedItems) {
       c = changedItems[key];
-      changeMeta = createChangeMeta(c.array, c.obj, c.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
+      if (c.observerContext.destroyed) { continue; }
+
+      this.updateIndexes(c.observerContext.trackedArray, c.observerContext.dependentArray);
+
+      changeMeta = createChangeMeta(c.array, c.obj, c.observerContext.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
       this.setValue(
         this.callbacks.removedItem.call(this.instanceMeta.context, this.getValue(), c.obj, changeMeta, this.instanceMeta.sugarMeta));
       this.setValue(
@@ -11580,6 +11614,37 @@ ReduceComputedProperty.prototype.property = function () {
       }
     });
   };
+  ```
+
+  Dependent keys may refer to `@self` to observe changes to the object itself,
+  which must be array-like, rather than a property of the object.  This is
+  mostly useful for array proxies, to ensure objects are retrieved via
+  `objectAtContent`.  This is how you could sort items by properties defined on an item controller.
+
+  Example
+
+  ```javascript
+  App.PeopleController = Ember.ArrayController.extend({
+    itemController: 'person',
+
+    sortedPeople: Ember.computed.sort('@self.@each.reversedName', function(personA, personB) {
+      // `reversedName` isn't defined on Person, but we have access to it via
+      // the item controller App.PersonController.  If we'd used
+      // `content.@each.reversedName` above, we would be getting the objects
+      // directly and not have access to `reversedName`.
+      //
+      var reversedNameA = get(personA, 'reversedName'),
+          reversedNameB = get(personB, 'reversedName');
+
+      return Ember.compare(reversedNameA, reversedNameB);
+    })
+  });
+
+  App.PersonController = Ember.ObjectController.extend({
+    reversedName: function () {
+      return reverse(get(this, 'name'));
+    }.property('name')
+  })
   ```
 
   @method reduceComputed
@@ -14114,29 +14179,6 @@ Ember.Observable = Ember.Mixin.create({
   */
   hasObserverFor: function(key) {
     return Ember.hasListeners(this, key+':change');
-  },
-
-  /**
-    @deprecated
-    @method getPath
-    @param {String} path The property path to retrieve
-    @return {Object} The property value or undefined.
-  */
-  getPath: function(path) {
-    Ember.deprecate("getPath is deprecated since get now supports paths");
-    return this.get(path);
-  },
-
-  /**
-    @deprecated
-    @method setPath
-    @param {String} path The path to the property that will be set
-    @param {Object} value The value to set or `null`.
-    @return {Ember.Observable}
-  */
-  setPath: function(path, value) {
-    Ember.deprecate("setPath is deprecated since set now supports paths");
-    return this.set(path, value);
   },
 
   /**
@@ -19203,6 +19245,7 @@ var get = Ember.get, set = Ember.set;
 var guidFor = Ember.guidFor;
 var a_forEach = Ember.EnumerableUtils.forEach;
 var a_addObject = Ember.EnumerableUtils.addObject;
+var meta = Ember.meta;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
@@ -20951,12 +20994,6 @@ Ember.View = Ember.CoreView.extend(
     return viewCollection;
   },
 
-  _elementWillChange: Ember.beforeObserver(function() {
-    this.forEachChildView(function(view) {
-      Ember.propertyWillChange(view, 'element');
-    });
-  }, 'element'),
-
   /**
     @private
 
@@ -20968,7 +21005,7 @@ Ember.View = Ember.CoreView.extend(
   */
   _elementDidChange: Ember.observer(function() {
     this.forEachChildView(function(view) {
-      Ember.propertyDidChange(view, 'element');
+      delete meta(view).cache.element;
     });
   }, 'element'),
 
@@ -21416,6 +21453,7 @@ Ember.View = Ember.CoreView.extend(
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
+    if (state === 'inDOM') { delete Ember.meta(this).cache.element; }
 
     if (children !== false) {
       this.forEachChildView(function(view) {
@@ -21763,10 +21801,18 @@ Ember.merge(preRender, {
     var viewCollection = view.viewHierarchyCollection();
 
     viewCollection.trigger('willInsertElement');
-    // after createElement, the view will be in the hasElement state.
+
     fn.call(view);
-    viewCollection.transitionTo('inDOM', false);
-    viewCollection.trigger('didInsertElement');
+
+    // We transition to `inDOM` if the element exists in the DOM
+    var element = view.get('element');
+    while (element = element.parentNode) {
+      if (element === document) {
+        viewCollection.transitionTo('inDOM', false);
+        viewCollection.trigger('didInsertElement');
+      }
+    }
+
   },
 
   renderToBufferIfNeeded: function(view, buffer) {
@@ -24031,7 +24077,6 @@ var handlebarsGet = Ember.Handlebars.get = function(root, path, options) {
   }
   return value;
 };
-Ember.Handlebars.getPath = Ember.deprecateFunc('`Ember.Handlebars.getPath` has been changed to `Ember.Handlebars.get` for consistency.', Ember.Handlebars.get);
 
 Ember.Handlebars.resolveParams = function(context, params, options) {
   var resolvedParams = [], types = options.types, param, type;
@@ -28167,6 +28212,7 @@ function normalizeHash(hash, hashTypes) {
 * `indeterminate`
 * `name`
 
+
   When set to a quoted string, these values will be directly applied to the HTML
   element. When left unquoted, these values will be bound to a property on the
   template's current rendering context (most typically a controller instance).
@@ -30330,8 +30376,15 @@ define("router",
 
         log(router, seq, handlerName + ": calling beforeModel hook");
 
-        var args = [transition, handlerInfo.queryParams],
-          p = handler.beforeModel && handler.beforeModel.apply(handler, args);
+        var args;
+
+        if (handlerInfo.queryParams) {
+          args = [handlerInfo.queryParams, transition];
+        } else {
+          args = [transition];
+        }
+
+        var p = handler.beforeModel && handler.beforeModel.apply(handler, args);
         return (p instanceof Transition) ? null : p;
       }
 
@@ -30351,8 +30404,15 @@ define("router",
 
         transition.resolvedModels[handlerInfo.name] = context;
 
-        var args= [context, transition, handlerInfo.queryParams],
-          p = handler.afterModel && handler.afterModel.apply(handler, args);
+        var args;
+
+        if (handlerInfo.queryParams) {
+          args = [context, handlerInfo.queryParams, transition];
+        } else {
+          args = [context, transition];
+        }
+
+        var p = handler.afterModel && handler.afterModel.apply(handler, args);
         return (p instanceof Transition) ? null : p;
       }
 
@@ -30395,7 +30455,11 @@ define("router",
         return typeof providedModel === 'function' ? providedModel() : providedModel;
       }
 
-      args = [handlerParams || {}, transition, handlerInfo.queryParams];
+      if (handlerInfo.queryParams) {
+        args = [handlerParams || {}, handlerInfo.queryParams, transition];
+      } else {
+        args = [handlerParams || {}, transition, handlerInfo.queryParams];
+      }
 
       return handler.model && handler.model.apply(handler, args);
     }
@@ -32760,7 +32824,44 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     To override this option for your entire application, see
     "Overriding Application-wide Defaults".
-
+    
+    ### Disabling the `link-to` heper
+    By default `{{link-to}}` is enabled. 
+    any passed value to `disabled` helper property will disable the `link-to` helper.
+     
+    static use: the `disabled` option:
+ 
+    ```handlebars
+    {{#link-to 'photoGallery' disabled=true}}
+      Great Hamster Photos
+    {{/link-to}}
+    ```
+     
+    dynamic use: the `disabledWhen` option:
+    
+    ```handlebars
+    {{#link-to 'photoGallery' disabledWhen=controller.someProperty}}
+      Great Hamster Photos
+    {{/link-to}}
+    ```
+    
+    any passed value to `disabled` will disable it except `undefined`.
+    to ensure that only `true` disable the `link-to` helper you can
+    override the global behaviour of `Ember.LinkView`.
+         
+    ```javascript  
+    Ember.LinkView.reopen({
+      disabled: Ember.computed(function(key, value) {
+        if (value !== undefined) { 
+          this.set('_isDisabled', value === true); 
+        }
+        return value === true ? get(this, 'disabledClass') : false;
+      })
+    });
+    ```
+     
+    see "Overriding Application-wide Defaults" for more.
+    
     ### Handling `href`
     `{{link-to}}` will use your application's Router to
     fill the element's `href` property with a url that
@@ -32862,7 +32963,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ### Supplying an explicit dynamic segment value
     If you don't have a model object available to pass to `{{link-to}}`,
     an optional string or integer argument can be passed for routes whose
-    paths contain dynamic segments.  This argument will become the the value
+    paths contain dynamic segments. This argument will become the value
     of the dynamic segment:
 
     ```javascript
@@ -32897,7 +32998,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     {{/link-to}}
     ```
 
-    See {{#crossLink "Ember.LinkView"}}{{/crossLink}} for a
+    See [Ember.LinkView](/api/classes/Ember.LinkView.html) for a
     complete list of overrideable properties. Be sure to also
     check out inherited properties of `LinkView`.
 
@@ -32948,7 +33049,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   });
 
   /**
-    See `link-to`
+    See [link-to](/api/classes/Ember.Handlebars.helpers.html#method_link-to)
 
     @method linkTo
     @for Ember.Handlebars.helpers
@@ -35266,13 +35367,15 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     ```javascript
     App = Ember.Application.create();
 
-    App.Person = Ember.Object.extend({});
-    App.Orange = Ember.Object.extend({});
-    App.Email  = Ember.Object.extend({});
+    App.Person  = Ember.Object.extend({});
+    App.Orange  = Ember.Object.extend({});
+    App.Email   = Ember.Object.extend({});
+    App.Session = Ember.Object.create({});
 
     App.register('model:user', App.Person, {singleton: false });
     App.register('fruit:favorite', App.Orange);
     App.register('communication:main', App.Email, {singleton: false});
+    App.register('session', App.Session, {instantiate: false});
     ```
 
     @method register
@@ -36550,7 +36653,7 @@ function testCheckboxClick(handler) {
     .css({ position: 'absolute', left: '-1000px', top: '-1000px' })
     .appendTo('body')
     .on('click', handler)
-    .click()
+    .trigger('click')
     .remove();
 }
 

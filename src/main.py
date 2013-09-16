@@ -16,10 +16,8 @@ import tornado.httpserver
 # application specific
 import db
 import ajax
-import admin
 from assets import gen_assets
 from settings import settings
-from utils import BaseHandler
 
 # set the debug level for tornado
 sys.argv.append('--logging=DEBUG')
@@ -41,13 +39,14 @@ if settings['release'].upper() == "PRODUCTION":
 
 
 # only regen assets on each load when not in production mode... :P
-ASSETS = None
 if settings['release'].upper() == 'PRODUCTION':
     ASSETS = gen_assets()
+else:
+    ASSETS = None
 
 
 # simple & dumb renderer; nothing fancy here
-class MainHandler(BaseHandler):
+class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(
             'base.html',
@@ -58,8 +57,7 @@ class MainHandler(BaseHandler):
 def setup_db():
     from sqlalchemy import create_engine
 
-    default_url = settings.get('DATABASE_URL')
-    db_url = os.environ.get("DATABASE_URL", default_url)
+    db_url = settings.get('DATABASE_URL')
 
     logging.debug('Database url is: {}'.format(db_url))
 
@@ -108,8 +106,8 @@ application = tornado.web.Application(
 
         (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
 
-        (r"/auth", admin.AuthHandler),
-        (r"/logout", admin.LogoutHandler),
+        (r"/api/v1/me", ajax.AuthHandler),
+
         (r"/.*", MainHandler),
     ],
     **tornado_settings

@@ -111,14 +111,13 @@ def wipe(engine):
 
 
 def main():
-    # do some stuff to ensure that there are enough ball_entry's in the db
+    # do some stuff to ensure that there are enough ball_tables in the db
 
     import os
     import sys
     from sqlalchemy import create_engine
 
-    default_url = settings.get('DATABASE_URL')
-    db_url = os.environ.get("DATABASE_URL", default_url)
+    db_url = settings.get('DATABASE_URL')
 
     engine = create_engine(db_url)
     engine.echo = False

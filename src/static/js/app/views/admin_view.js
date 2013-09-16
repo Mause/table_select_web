@@ -24,13 +24,6 @@ TableSelectWeb.AdminView = Ember.View.extend({
         }
     },
 
-    clear_checkboxes: function(){
-        var checkboxes = this.get_checkboxes();
-        checkboxes.forEach(function(view){
-            view.set('checked', false);
-        });
-    },
-
     get_values: function(){
         var checkboxes = this.get_checked(),
             removal_requests = [];

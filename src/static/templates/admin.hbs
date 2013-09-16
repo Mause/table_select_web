@@ -13,7 +13,6 @@
             <ul class="well no-decoration">
             {{#if controller}}
                 {{#each request in controller}}
-                    {{log request}}
                     <li>
                         <label>
                             {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
