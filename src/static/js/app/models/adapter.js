@@ -31,4 +31,10 @@
             removal_request: TableSelectWeb.RemovalRequest
         }
     });
+
+    TableSelectWeb.MeAdapter = TableSelectWeb.ApplicationAdapter.extend({
+        pathForType: function(type){
+            return type;
+        }
+    });
 })(Ember);

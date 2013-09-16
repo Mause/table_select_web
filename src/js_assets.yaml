@@ -7,6 +7,7 @@ main:
         prefix: third-party/
         files:
          - jquery
+         - jquery.cookie
          - handlebars
          - ember
          - ember-data
@@ -24,6 +25,7 @@ main:
          - support_objects
          - routes
          - utils
+         - locale
 
         mixins:
             prefix: mixins/
@@ -36,14 +38,13 @@ main:
             postfix: _controller
             files:
              - admin
-             - ball_table
+             - auth
 
         views:
             prefix: views/
             postfix: _view
             files:
              - admin
-             - ball_table
              - removal_request_checkbox
 
         components:
@@ -78,15 +79,23 @@ main:
             prefix: routes/
             postfix: _route
             files:
+             - application
              - admin
              - index
              - info
+             - auth
 
         utils:
             prefix: utils/
             postfix: _util
             files:
              - send_notification
+             - auth_manager
+
+        locale:
+            prefix: locale/
+            files:
+             - en
 
         files:
          - main

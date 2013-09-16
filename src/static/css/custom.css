@@ -20,7 +20,9 @@ header a {
 }
 
 .barrier {
-    font-size: 24px;
+    font-size: 15px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 
 nav {
@@ -99,7 +101,12 @@ body {
     display: block;
     position: static;
     margin-bottom: 5px;
-    width: 85%;
+    /*width: 85%;*/
+    width: 100%;
+}
+
+.attendee {
+    border-bottom: solid 1px #E7E4E4;
 }
 
 .fixmargin {
@@ -114,7 +121,10 @@ body {
     }
     .dropdown-menu {
         /* the attendee lists */
-        list-style: none;
+        /*list-style: none;*/
+        border: none;
+    }
+    .custom-dropdown-menu {
         border: none;
     }
     .btn {
@@ -128,6 +138,10 @@ body {
     .alert {
         /* alerts :P */
         display: none;
+    }
+
+    .attendee {
+        border: none;
     }
 }
 
@@ -167,7 +181,7 @@ button.spec_close {
 }
 
 .action_marker {
-    margin: 0px;
+    margin: 0;
 }
 
 .no-decoration {
@@ -178,4 +192,8 @@ button.spec_close {
     margin-top: 2.3px;
     margin-right: 2.3px;
     float: right;
+}
+
+.spec_close.float_none {
+    float: none;
 }

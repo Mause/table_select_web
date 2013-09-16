@@ -1,4 +1,5 @@
 {
+    "api_key_seed": "BLABLAHBLAH",
     "release": "DEBUG",
     "smart_attendee_name_check": true,
     "DATABASE_URL": "postgresql://postgres:pass@localhost",

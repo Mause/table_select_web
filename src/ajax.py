@@ -8,20 +8,22 @@ import tornado
 import db
 from settings import settings
 from ember_data import BaseRESTEndpoint
-from utils import BaseHandler
 
 
-class TornadoWebInterface(BaseHandler):
+class TornadoWebInterface(tornado.web.RequestHandler):
     def set_bad_error(self, status_code):
         raise tornado.web.HTTPError(status_code)
 
     def set_status(self, *args, **kwargs):
         super(TornadoWebInterface, self).set_status(*args, **kwargs)
 
+    @property
+    def headers(self):
+        return self.request.headers
+
 
 class EmberDataRESTEndpoint(BaseRESTEndpoint, TornadoWebInterface):
     Session = db.Session
-    pass
 
 
 class BallTablesHandler(EmberDataRESTEndpoint):
@@ -40,7 +42,7 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
 
     allowed_methods = ['GET', 'POST', 'PUT']
     needs_admin = {
-        'GET': False,
+        'GET': True,
         'POST': False,
         'PUT': True
     }
@@ -73,21 +75,18 @@ class AttendeeHandler(EmberDataRESTEndpoint):
     def check_record(self, session, attendee):
         if attendee['ball_table_id'] is None:
             self.set_bad_error(400)
+        else:
+            return {}
 
     def check_if_table_full(self, session, attendee):
 
         if self.is_table_full(session, attendee['ball_table_id']):
             logging.info('table_full')
-            errors = {
-                'ball_table_id': [
-                    {
-                        'machine': 'table_full',
-                        'human': 'That table is full'
-                    }
-                ]
-            }
+
             self.set_status(400)
-            return errors
+            return {
+                'ball_table_id': ['table_full']
+            }
 
         else:
             return {}
@@ -116,12 +115,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
             logging.info('attendee_exists: "{}"'.format(
                          attendee_name))
             errors = {
-                'attendee_name': [
-                    {
-                        'machine': 'attendee_exists',
-                        'human': 'Attendee "%@" already exists'
-                    }
-                ]
+                'attendee_name': ['attendee_exists']
             }
             self.set_status(400)
             return errors
@@ -133,3 +127,30 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         check_if_table_full,
         check_if_attendee_exists
     ]
+
+
+class AuthHandler(EmberDataRESTEndpoint):
+    def post(self):
+        body = self.decode_and_load(self.request.body)
+
+        if 'password' in body and 'username' in body and all(body.values()):
+            username = body['username']
+            password = body['password']
+
+            auth_combos = settings.get('auth_combos', {})
+
+            logging.info('supposed password was supplied; "{}"'.format(
+                password))
+
+            if username in auth_combos and password == auth_combos[username]:
+                self.write_json({
+                    'api_key': {
+                        'access_token': self.create_key(username.encode('utf-8')),
+                        'user_id': username
+                    }
+                })
+            else:
+                self.set_status(401)
+
+        else:
+            self.set_bad_error(400)
