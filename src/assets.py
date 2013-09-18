@@ -35,6 +35,9 @@ class EmberHandlebarsFilter(handlebars.Handlebars, Filter):
         args = [self.binary or 'ember-precompile']
         if root:
             args.extend(['-b', root + '/'])
+
+        args.extend(['-k', 'each', '-k', 'if'])
+
         if self.extra_args:
             args.extend(self.extra_args)
         args.extend(templates)
