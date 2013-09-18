@@ -7,12 +7,12 @@ header {
 }
 
 header a:hover {
-    color: #B3B1B1;;
+    color: #B3B1B1;
     text-decoration: none;
 }
 
 header a:active {
-    color: #B3B1B1;;
+    color: #B3B1B1;
 }
 
 header a {
@@ -105,8 +105,12 @@ body {
     width: 100%;
 }
 
-.attendee {
+.attendee:not(:last-child) {
     border-bottom: solid 1px #E7E4E4;
+}
+
+.attendee:nth-last-child(3) {
+    border: none;
 }
 
 .fixmargin {
@@ -160,10 +164,11 @@ button.spec_close {
     cursor: pointer;
     background: transparent;
     border: 0;
-    appearance: none;
+    /*appearance: none;
     -moz-appearance: none;
-    -webkit-appearance: none;
+    -webkit-appearance: none;*/
 }
+
 .spec_close {
     float: right;
     font-size: 20px;
