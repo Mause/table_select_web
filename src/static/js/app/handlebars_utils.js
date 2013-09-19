@@ -9,3 +9,12 @@
         console.log(value.get('isLoaded'), value.get('content').length);
     });
 })();
+
+Ember.Handlebars.registerHelper('log_label', function(label, property, options) {
+  var context = (options.contexts && options.contexts[0]) || this,
+      normalized = Ember.Handlebars.normalizePath(context, property, options.data),
+      pathRoot = normalized.root,
+      path = normalized.path,
+      value = (path === 'this') ? pathRoot : Ember.Handlebars.get(pathRoot, path, options);
+  Ember.Logger.log('%@:'.fmt(label), value);
+});
