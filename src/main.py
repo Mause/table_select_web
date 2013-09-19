@@ -17,14 +17,14 @@ import tornado.httpserver
 import db
 import ajax
 from assets import gen_assets
-from settings import settings
+from settings import settings, flags
 
 # set the debug level for tornado
 sys.argv.append('--logging=DEBUG')
 tornado.options.parse_command_line()
 
 # setup newrelic
-if settings['release'].upper() == "PRODUCTION":
+if flags.is_production():
     import newrelic.agent
 
     if 'STAGING' in os.environ:
@@ -39,7 +39,7 @@ if settings['release'].upper() == "PRODUCTION":
 
 
 # only regen assets on each load when not in production mode... :P
-if settings['release'].upper() == 'PRODUCTION':
+if flags.is_production():
     ASSETS = gen_assets()
 else:
     ASSETS = None
@@ -48,10 +48,15 @@ else:
 # simple & dumb renderer; nothing fancy here
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+        newrelic_header = (
+            newrelic.agent.get_browser_timing_header() if flags.is_production()
+            else ''
+        )
         self.render(
             'base.html',
             path='/',
-            assets=ASSETS or gen_assets())
+            assets=ASSETS or gen_assets(),
+            newrelic_header=newrelic_header)
 
 
 def setup_db():

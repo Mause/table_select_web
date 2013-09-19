@@ -9,3 +9,10 @@ settings['DATABASE_URL'] = (
 
 if 'HEROKU' in os.environ:
     settings['release'] = 'PRODUCTION'
+
+
+class Flags:
+    def __init__(self):
+        self.is_production = lambda: settings['release'].upper() == "PRODUCTION"
+
+flags = Flags()
