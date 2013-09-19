@@ -239,6 +239,11 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
             # make the changes
             for key, value in record_data.items():
+                if not hasattr(record, key):
+                    logging.warn(
+                        'Patch of record of type {} attempted with unknown field {}'.format(
+                            self.ember_model_name, key))
+                    continue
                 if getattr(record, key) != value:
                     # don't change anything unless we have to
                     # i'm not sure how the sqlalchmemy internals work,

@@ -30,9 +30,10 @@ class BallTablesHandler(EmberDataRESTEndpoint):
     table = db.BallTable
     ember_model_name = 'ball_tables'
 
-    allowed_methods = ['GET']
+    allowed_methods = ['GET', 'PUT']
     needs_admin = {
-        'GET': False
+        'GET': False,
+        'PUT': False
     }
 
 
