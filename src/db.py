@@ -113,7 +113,6 @@ def wipe(engine):
 def main():
     # do some stuff to ensure that there are enough ball_tables in the db
 
-    import os
     import sys
     from sqlalchemy import create_engine
 

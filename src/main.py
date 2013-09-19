@@ -120,8 +120,8 @@ def main():
 
     Session, conn = setup_db()
 
-    port = os.environ.get('PORT', 8888)
     addr = get_ip()
+    port = os.environ.get('PORT', 8888)
     logging.debug('Running in {} mode, on {}:{}'.format(
         settings['release'],
         addr, port))
