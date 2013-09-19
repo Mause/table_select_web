@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.1-201-g2511cb1
-// Last commit: 2511cb1 (2013-09-13 15:33:11 -0700)
+// Version: v1.0.0-beta.1-225-g995b366
+// Last commit: 995b366 (2013-09-19 00:19:18 -0700)
 
 
 (function() {
@@ -467,7 +467,7 @@ DS.NumberTransform = DS.Transform.extend({
 
 
 (function() {
-var none = Ember.isNone, empty = Ember.isEmpty;
+var none = Ember.isNone;
 
 DS.StringTransform = DS.Transform.extend({
 
@@ -480,6 +480,7 @@ DS.StringTransform = DS.Transform.extend({
   }
 
 });
+
 })();
 
 
@@ -1170,7 +1171,6 @@ var isNone = Ember.isNone;
 var forEach = Ember.EnumerableUtils.forEach;
 var indexOf = Ember.EnumerableUtils.indexOf;
 var map = Ember.EnumerableUtils.map;
-var OrderedSet = Ember.OrderedSet;
 var resolve = Ember.RSVP.resolve;
 
 // Implementors Note:
@@ -1485,7 +1485,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   findById: function(type, id) {
     type = this.modelFor(type);
 
-    var record = this.getById(type, id);
+    var record = this.recordForId(type, id);
 
     var promise = this.fetchRecord(record) || resolve(record);
     return promiseObject(promise);
@@ -1545,7 +1545,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     Get a record by a given type and ID without triggering a fetch.
 
     This method will synchronously return the record if it's available.
-    Otherwise, it will return undefined.
+    Otherwise, it will return null.
 
     ```js
     var post = store.getById('post', 1);
@@ -1561,7 +1561,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     if (this.hasRecordForId(type, id)) {
       return this.recordForId(type, id);
     } else {
-      return this.buildRecord(type, id);
+      return null;
     }
   },
 
@@ -2146,7 +2146,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @param {DS.Model} type
     @param {Object} data
     @param {Boolean} partial the data should be merged into
-      the existing fata, not replace it.
+      the existing data, not replace it.
   */
   _load: function(type, data, partial) {
     var id = coerceId(data.id),
@@ -2259,6 +2259,44 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     this._load(type, data, _partial);
 
     return this.recordForId(type, data.id);
+  },
+
+  /**
+    Push some raw data into the store.
+
+    The data will be automatically deserialized using the
+    serializer for the `type` param.
+
+    This method can be used both to push in brand new
+    records, as well as to update existing records.
+
+    You can push in more than one type of object at once.
+    All objects should be in the format expected by the
+    serializer.
+
+    ```js
+    App.ApplicationSerializer = DS.ActiveModelSerializer;
+
+    var pushData = {
+      posts: [
+        {id: 1, post_title: "Great post", comment_ids: [2]}
+      ],
+      comments: [
+        {id: 2, comment_body: "Insightful comment"}
+      ]
+    }
+
+    store.pushPayload('post', pushData);
+    ```
+
+    @method push
+    @param {String} type
+    @param {Object} payload
+  */
+
+  pushPayload: function (type, payload) {
+    var serializer = this.serializerFor(type);
+    serializer.pushPayload(this, payload);
   },
 
   update: function(type, data) {
@@ -3107,6 +3145,7 @@ var RootState = {
 
     pushedData: function(record) {
       record.transitionTo('loaded.saved');
+      record.triggerLater('didLoad');
     }
   },
 
@@ -3703,6 +3742,12 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
 
   rollback: function() {
     this._attributes = {};
+
+    if (get(this, 'isError')) {
+      this._inFlightAttributes = {};
+      set(this, 'isError', false);
+    }
+
     this.send('rolledBack');
 
     this.suspendRelationshipObservers(function() {
@@ -4554,7 +4599,8 @@ function asyncBelongsTo(type, options, meta) {
     belongsTo = data[key];
 
     if(!isNone(belongsTo)) {
-      return store.fetchRecord(belongsTo);
+      var promise = store.fetchRecord(belongsTo) || Ember.RSVP.resolve(belongsTo);
+      return DS.PromiseObject.create({promise: promise});
     } else {
       return null;
     }
@@ -5390,9 +5436,8 @@ DS.RecordArrayManager = Ember.Object.extend({
   @module ember-data
 */
 
-var get = Ember.get, set = Ember.set, merge = Ember.merge;
+var get = Ember.get, set = Ember.set;
 var map = Ember.ArrayPolyfills.map;
-var resolve = Ember.RSVP.resolve;
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
 
@@ -5405,18 +5450,6 @@ DS.InvalidError = function(errors) {
   }
 };
 DS.InvalidError.prototype = Ember.create(Error.prototype);
-
-function isThenable(object) {
-  return object && typeof object.then === 'function';
-}
-
-// Simple dispatcher to support overriding the aliased
-// method in subclasses.
-function aliasMethod(methodName) {
-  return function() {
-    return this[methodName].apply(this, arguments);
-  };
-}
 
 /**
   An adapter is an object that receives requests from a store and
@@ -7369,7 +7402,7 @@ Inflector.prototype = {
     @param {String} word
   */
   pluralize: function(word) {
-    return this.inflect(word, this.rules.plurals);
+    return this.inflect(word, this.rules.plurals, this.rules.irregular);
   },
 
   /**
@@ -7377,15 +7410,18 @@ Inflector.prototype = {
     @param {String} word
   */
   singularize: function(word) {
-    return this.inflect(word, this.rules.singular);
+    return this.inflect(word, this.rules.singular,  this.rules.irregularInverse);
   },
 
   /**
+    @protected
+
     @method inflect
     @param {String} word
     @param {Object} typeRules
+    @param {Object} irregular
   */
-  inflect: function(word, typeRules) {
+  inflect: function(word, typeRules, irregular) {
     var inflection, substitution, result, lowercase, isBlank,
     isUncountable, isIrregular, isIrregularInverse, rule;
 
@@ -7403,16 +7439,10 @@ Inflector.prototype = {
       return word;
     }
 
-    isIrregular = this.rules.irregular[lowercase];
+    isIrregular = irregular && irregular[lowercase];
 
     if (isIrregular) {
       return isIrregular;
-    }
-
-    isIrregularInverse = this.rules.irregularInverse[lowercase];
-
-    if (isIrregularInverse) {
-      return isIrregularInverse;
     }
 
     for (var i = typeRules.length, min = 0; i > min; i--) {
@@ -7526,7 +7556,7 @@ Ember.Inflector.defaultRules = {
 
 
 (function() {
-if (Ember.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   /**
     See {{#crossLink "Ember.String/pluralize"}}{{/crossLink}}
 
@@ -7682,7 +7712,9 @@ DS.ActiveModelSerializer = DS.RESTSerializer.extend({
         if (relationship.options.polymorphic) {
           payloadKey = this.keyForAttribute(key);
           payload = hash[payloadKey];
-          payload.type = this.typeForRoot(payload.type);
+          if (payload && payload.type) {
+            payload.type = this.typeForRoot(payload.type);
+          }
         } else {
           payloadKey = this.keyForRelationship(key, relationship.kind);
           payload = hash[payloadKey];
@@ -7778,6 +7810,22 @@ DS.ActiveModelAdapter = DS.RESTAdapter.extend({
 
 
 (function() {
+
+})();
+
+
+
+(function() {
+Ember.onLoad('Ember.Application', function(Application) {
+  Application.initializer({
+    name: "activeModelAdapter",
+
+    initialize: function(container, application) {
+      application.register('serializer:_ams', DS.ActiveModelSerializer);
+      application.register('adapter:_ams', DS.ActiveModelAdapter);
+    }
+  });
+});
 
 })();
 
