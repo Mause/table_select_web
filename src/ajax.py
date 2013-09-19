@@ -7,7 +7,7 @@ import tornado
 # application specific
 import db
 from settings import settings
-from ember_data import BaseRESTEndpoint
+from ember_data import BaseRESTEndpoint, record_check
 
 
 class TornadoWebInterface(tornado.web.RequestHandler):
@@ -47,6 +47,7 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
         'PUT': True
     }
 
+    @record_check
     def check_ids(self, session, removal_request):
         logging.debug(removal_request)
         if removal_request['ball_table_id'] is None:
@@ -55,10 +56,6 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
         elif removal_request['attendee_id'] is None:
             logging.debug('Bad attendee_id in posted removal_request')
             self.set_bad_error(400)
-
-    checks = [
-        check_ids
-    ]
 
 
 class AttendeeHandler(EmberDataRESTEndpoint):
@@ -72,12 +69,14 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
     allowed_methods = ['GET', 'POST', 'PUT']
 
+    @record_check
     def check_record(self, session, attendee):
         if attendee['ball_table_id'] is None:
             self.set_bad_error(400)
         else:
             return {}
 
+    @record_check
     def check_if_table_full(self, session, attendee):
 
         if self.is_table_full(session, attendee['ball_table_id']):
@@ -102,6 +101,7 @@ class AttendeeHandler(EmberDataRESTEndpoint):
         # check if the table is full
         return num_attendees >= settings.get('max_pax_per_table', 10)
 
+    @record_check
     def check_if_attendee_exists(self, session, attendee):
         if settings.get('smart_attendee_name_check'):
             does_attendee_exist = db.does_attendee_exist_smart
@@ -121,12 +121,6 @@ class AttendeeHandler(EmberDataRESTEndpoint):
             return errors
         else:
             return {}
-
-    checks = [
-        check_record,
-        check_if_table_full,
-        check_if_attendee_exists
-    ]
 
 
 class AuthHandler(EmberDataRESTEndpoint):

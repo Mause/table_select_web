@@ -19,6 +19,11 @@ AUTH_RE = re.compile(r'(\w+) (.*)')
 API_KEY_SEED = settings['api_key_seed'].encode('utf-8') or b'bytes'
 
 
+def record_check(func):
+    func.__record_checker__ = True
+    return func
+
+
 class AuthorizedEndpoint(object):
     def is_authenticated(self):
         if 'Authorization' not in self.headers:
@@ -30,13 +35,19 @@ class AuthorizedEndpoint(object):
             if match:
                 auth_type = match.groups()[0]
                 if auth_type == 'none':
+                    logging.info('Attempted to access restricted endpoint with "none" authentication')
                     return False
                 elif auth_type == 'Bearer':
                     key = match.groups()[1]
 
-                    return self.verify_key(key)
+                    if self.verify_key(key):
+                        return True
+                    else:
+                        logging.info('Attempted to access restricted endpoint with invalid authentication key')
                 else:
                     self.set_bad_error(401)
+            else:
+                logging.info('Attempted to access restricted endpoint with invalid authentication')
 
     def verify_key(self, key):
         user_hash, timestamp = key.split(SEP)
@@ -44,11 +55,10 @@ class AuthorizedEndpoint(object):
         timestamp = base64.b64decode(timestamp.encode('utf-8'))
         timestamp = float(timestamp.decode('utf-8'))
 
-        possible_users = set()
-        for username in settings['auth_combos'].keys():
-            possible_users.add(
-                hmac.new(API_KEY_SEED, username.encode('utf-8')).hexdigest()
-            )
+        possible_users = {
+            hmac.new(API_KEY_SEED, username.encode('utf-8')).hexdigest()
+            for username in settings['auth_combos'].keys()
+        }
 
         if timestamp > time.time():
             logging.info('Invalid key, timestamp in future')
@@ -98,7 +108,6 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         'POST': False,
         'PUT': False
     }
-    checks = []
     Session = None
     json_indent = 4
 
@@ -333,8 +342,15 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         return body
 
     def perform_checks(self, session, record):
-        for check in self.checks:
-            errors = check(self, session, record)
+        checks = (getattr(self, item) for item in dir(self))
+        checks = (
+            item
+            for item in checks
+            if hasattr(item, '__record_checker__')
+        )
+
+        for check in checks:
+            errors = check(session, record)
             logging.debug('{}({}) -> {}'.format(
                 check.__name__,
                 record,
