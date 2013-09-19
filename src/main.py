@@ -52,11 +52,16 @@ class MainHandler(tornado.web.RequestHandler):
             newrelic.agent.get_browser_timing_header() if flags.is_production()
             else ''
         )
+        newrelic_footer = (
+            newrelic.agent.get_browser_timing_footer() if flags.is_production()
+            else ''
+        )
         self.render(
             'base.html',
             path='/',
             assets=ASSETS or gen_assets(),
-            newrelic_header=newrelic_header)
+            newrelic_header=newrelic_header,
+            newrelic_footer=newrelic_footer)
 
 
 def setup_db():

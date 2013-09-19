@@ -5,7 +5,9 @@
         <title>Table Select Web</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
-        <meta name="author" content="">
+        <meta name="author" content="Dominic May">
+
+        {% raw newrelic_header %}
 
         <!-- Le styles -->
         <link href="{{ static_url('css/bootstrap.css') }}" rel="stylesheet">
@@ -49,10 +51,10 @@
             </div> <!-- /container -->
         </script>
 
-        {% raw newrelic_header %}
     </head>
 
     <body>
         {# this is where Ember will put the app content :D #}
     </body>
+    {% raw newrelic_footer %}
 </html>
