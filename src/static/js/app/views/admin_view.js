@@ -15,7 +15,6 @@ TableSelectWeb.AdminView = Ember.View.extend({
             controller.send('action', records, 'resolved', 'show');
         },
         allow: function(){
-            debugger;
             // allow the removal request
             var controller = this.get('controller'),
                 records = this.get_values();
