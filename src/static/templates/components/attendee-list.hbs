@@ -1,13 +1,5 @@
-<div>
-    {{#if attendees}}
-        <div class="custom-dropdown clearfix attendee_list">
-            <ul class="custom-dropdown-menu dropdown-menu-customization">
-                {{#each attendee in attendees}}
-                    {{partial 'single_attendee'}}
-                {{/each}}
-            </ul>
-        </div>
-    {{else}}
-        <h5>No attendees on this table yet</h5>
-    {{/if}}
+<div class="custom-dropdown clearfix attendee_list">
+    <ul class="custom-dropdown-menu dropdown-menu-customization">
+        {{yield}}
+    </ul>
 </div>

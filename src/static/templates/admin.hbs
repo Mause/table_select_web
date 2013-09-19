@@ -10,29 +10,32 @@
         </p>
 
         <form>
-            <ul class="well no-decoration">
-            {{#if controller}}
-                {{#each request in controller}}
-                    <li>
-                        <label>
-                            {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
-                            <span style="margin-top:-1px;">
-                                requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
-                            </span>
-                        </label>
-                    </li>
-                {{/each}}
-            {{else}}
-                <h4>No nonresolved removal requests in existence</h4>
-            {{/if}}
-            </ul>
+            <div class="well no-decoration">
+                {{#if controller}}
+                    {{#attendee-list}}
+                        {{#each request in controller}}
+                            <li class="attendee">
+                                <span tabindex="-1">
+                                    <label>
+                                        {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
+                                        <span style="margin-top:-1px;">
+                                            requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
+                                        </span>
+                                    </label>
+                                </span>
+                            </li>
+                        {{/each}}
+                    {{/attendee-list}}
 
-            {{#if controller}}
-                <div class="request_actions">
-                    <button class="btn btn-success" {{action allow target="view"}}>Allow</button>
-                    <button class="btn btn-danger" {{action deny target="view"}}>Deny</button>
-                </div>
-            {{/if}}
+                    <div class="request_actions">
+                        <button class="btn btn-success" {{action allow target="view"}}>Allow</button>
+                        <button class="btn btn-danger" {{action deny target="view"}}>Deny</button>
+                    </div>
+
+                {{else}}
+                    <h4>No nonresolved removal requests in existence</h4>
+                {{/if}}
+            </div>
         </form>
     </div>
 </div>

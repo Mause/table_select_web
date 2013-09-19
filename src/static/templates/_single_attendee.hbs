@@ -2,7 +2,8 @@
     <span tabindex="-1">
         {{attendee.attendee_name}}
         <button type="button" class="spec_close"
-            {{action requestRemoveAttendee attendee}}
+            {{!i really dont like this target, but i will live}}
+            {{action requestRemoveAttendee attendee target="childViews.1"}}
             >&times;</button>
 
         {{#if attendee.removal_request_exists}}

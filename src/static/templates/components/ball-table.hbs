@@ -5,5 +5,15 @@
         {{add-attendee ball_table=ball_table}}
     {{/unless}}
 
-    {{attendee-list attendees=ball_table.displayable_attendees}}
+    <div>
+        {{#if ball_table.displayable_attendees}}
+            {{#attendee-list}}
+                {{#each attendee in ball_table.displayable_attendees}}
+                    {{partial 'single_attendee'}}
+                {{/each}}
+            {{/attendee-list}}
+        {{else}}
+            <h5>No attendees on this table yet</h5>
+        {{/if}}
+    </div>
 </div>
