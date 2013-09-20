@@ -57,6 +57,8 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
         elif removal_request['attendee_id'] is None:
             logging.debug('Bad attendee_id in posted removal_request')
             self.set_bad_error(400)
+        else:
+            return {}
 
 
 class AttendeeHandler(EmberDataRESTEndpoint):

@@ -241,7 +241,7 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
             for key, value in record_data.items():
                 if not hasattr(record, key):
                     logging.warn(
-                        'Patch of record of type {} attempted with unknown field {}'.format(
+                        'Patch of record of type {} attempted with unknown field "{}"'.format(
                             self.ember_model_name, key))
                     continue
                 if getattr(record, key) != value:
