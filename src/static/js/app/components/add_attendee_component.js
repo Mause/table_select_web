@@ -12,7 +12,6 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
                 self = this;
 
             this.set('attendee_name', '');
-
             if (!(attendee_name = attendee_name.trim())) { return; }
 
             Ember.assert('Not a ball_table instance',
@@ -27,23 +26,31 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
 
             record = store.createRecord('attendee', record_data);
             record.save().then(
-                function(event) {
-                    debugger;
-                    sendNotification(Ember.String.loc('attendee_add_success'));
-                    Ember.propertyDidChange(ball_table, 'attendees');
+                function(){
+                    return self.success.apply(self, arguments);
                 },
-
-                function(event) {
-                    var json = event.responseJSON;
-                    console.log('failed, handling errors', json.errors);
-
-                    self.handle_errors(
-                        json.errors,
-                        self.error_handlers,
-                        record_data);
+                function(){
+                    return self.failure.apply(self, arguments);
                 }
             );
         },
+    },
+
+    success: function(attendee) {
+        var ball_table = attendee.get('ball_table');
+        ball_table.get('attendees').pushObject(attendee);
+
+        sendNotification(Ember.String.loc('attendee_add_success'));
+    },
+
+    failure: function(event) {
+        var json = event.responseJSON;
+        console.log('failed, handling errors', json.errors);
+
+        this.handle_errors(
+            json.errors,
+            this.error_handlers,
+            record_data);
     },
 
     error_handlers: {
