@@ -6,7 +6,7 @@ TableSelectWeb.AdminRoute = Ember.Route.extend(TableSelectWeb.ApplicationRouteMi
     },
 
     model: function () {
-        return this.get('store').findQuery('removal_request', {
+        return this.store.findQuery('removal_request', {
             'state': 'unresolved'
         });
     }
