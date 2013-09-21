@@ -12,7 +12,12 @@ main:
          - ember
          - ember-data
          - bootstrap
-         - ember_plugins/ember-bootstrap
+
+        plugins:
+            prefix: ember_plugins/
+            files:
+             - ember-bootstrap
+             - ember-renderspeed
 
     app:
         prefix: app/
