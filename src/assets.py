@@ -168,7 +168,7 @@ def gen_assets():
 
 
 def get_changed():
-    modified = re.compile(r'^(?:M|A)(\s+)(?P<name>.*)')
+    modified = re.compile(r'^[MAD]  (?P<name>.*)')
 
     p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
     out, err = p.communicate()
@@ -212,10 +212,17 @@ def main():
     try:
         if GIT_HOOK:
             changed = get_changed()
+
+            changed = filter(
+                lambda x: not x.endswith('combined.js'),
+                changed
+            )
+
             result = any(
                 filename.rpartition('.')[-1] in ('hbs', 'js')
                 for filename in changed
             )
+
             if not result:
                 print('No assets have changed')
                 should_regen = False
