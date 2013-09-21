@@ -213,10 +213,10 @@ def main():
         if GIT_HOOK:
             changed = get_changed()
 
-            changed = filter(
+            changed = list(filter(
                 lambda x: not x.endswith('combined.js'),
                 changed
-            )
+            ))
 
             result = any(
                 filename.rpartition('.')[-1] in ('hbs', 'js')
@@ -226,6 +226,8 @@ def main():
             if not result:
                 print('No assets have changed')
                 should_regen = False
+            else:
+                print('Changed:', changed)
 
         if should_regen:
             my_env.debug = 'debug' in sys.argv
