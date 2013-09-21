@@ -190,8 +190,8 @@ if (!Ember.testing) {
 // ==========================================================================
 
 
-// Version: v1.0.0-134-gebda9db
-// Last commit: ebda9db (2013-09-18 06:49:35 -0700)
+// Version: v1.0.0-140-gc039946
+// Last commit: c039946 (2013-09-20 13:08:33 -0700)
 
 
 (function() {
@@ -25389,7 +25389,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   `bind-attr` supports a special syntax for handling a number of cases unique
   to the `class` DOM element attribute. The `class` attribute combines
-  multiple discreet values into a single attribute as a space-delimited
+  multiple discrete values into a single attribute as a space-delimited
   list of strings. Each string can be:
 
   * a string return value of an object's property.
@@ -35983,6 +35983,11 @@ Ember.ControllerMixin.reopen({
     this._super.apply(this, arguments);
   },
 
+  /**
+    @method controllerFor
+    @see {Ember.Route#controllerFor}
+    @deprecated Use `needs` instead
+  */
   controllerFor: function(controllerName) {
     Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
     return Ember.controllerFor(get(this, 'container'), controllerName);

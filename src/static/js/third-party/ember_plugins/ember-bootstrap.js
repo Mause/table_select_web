@@ -250,7 +250,7 @@ var get = Ember.get;
 Bootstrap.ItemViewTitleSupport = Ember.Mixin.create({
   title: Ember.computed(function() {
     var parentView = get(this, 'parentView'),
-        content, 
+        content,
         titleKey;
 
     content = get(this, 'content');
@@ -468,7 +468,7 @@ Bootstrap.Pager = Ember.CollectionView.extend({
     this._super();
     if (!this.get('content')) {
       this.set('content', Ember.A([
-                                  Ember.Object.create({ title: '&larr;' }), 
+                                  Ember.Object.create({ title: '&larr;' }),
                                   Ember.Object.create({ title: '&rarr;' })
       ]));
     }
@@ -522,8 +522,8 @@ Bootstrap.Breadcrumb = Ember.CollectionView.extend(Bootstrap.FirstLastViewSuppor
   classNames: ['breadcrumb'],
   divider: '/',
   arrayDidChange: function(content, start, removed, added) {
-    var view, 
-        index, 
+    var view,
+        index,
         length,
         item,
         lastItemViewClass = get(this, 'lastItemViewClass'),
@@ -853,7 +853,7 @@ Bootstrap.Forms.Select = Bootstrap.Forms.Field.extend({
     classNameBindings:      ['parentView.inputClassNames'],
     name: Ember.computed(function() {
       return this.get('parentView.name') || this.get('parentView.label');
-    }).property('parentView.name', 'parentView.label')    
+    }).property('parentView.name', 'parentView.label')
   })
 });
 
@@ -885,7 +885,7 @@ Bootstrap.Forms.TextArea = Bootstrap.Forms.Field.extend({
 
   inputField: Ember.TextArea.extend(Bootstrap.TextSupport, {
     rowsBinding: 'parentView.rows',
-    colsBinding: 'parentView.cols' 
+    colsBinding: 'parentView.cols'
   })
 });
 
