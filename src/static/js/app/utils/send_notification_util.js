@@ -4,19 +4,13 @@ function sendNotification(text, callback) {
         modalPane,
         default_callback;
 
-    default_callback = function(){
-        // default callback does nothing; derp :P
-    };
-
-    closed_callback = (
-        typeof callback === 'undefined' ?
-        default_callback : callback
-    );
+    // it will simply do nothing if no callback is provided
 
     options = {
         defaultTemplate: Ember.TEMPLATES.modal,
         heading: text,
-        callback: closed_callback
+        callback: closed_callback,
+        primary: 'Okay'
     };
 
     modalPane = Bootstrap.ModalPane.popup(options);
