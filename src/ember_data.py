@@ -93,8 +93,7 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
     set 'table' to the declarative sqlalchemy table model defintion
     set 'ember_model_name' to the EmberJS model name
-    set 'allowed_methods' to the allowed methods; GET, POST, etc
-    set 'needs_admin' to a dict for methods that needs admin
+    set 'methods' to the allowed methods and their configuration; GET, POST, etc
 
     set 'Session' to a session creater created by the session_maker
     """
@@ -102,12 +101,7 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
     table = None
     ember_model_name = None
 
-    allowed_methods = None
-    needs_admin = {
-        'GET': False,
-        'POST': False,
-        'PUT': False
-    }
+    methods = {}
     Session = None
     json_indent = 4
 
@@ -115,11 +109,12 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         method = self.request.method
 
         # ensure that we have enabled the <method> method
-        if method not in self.allowed_methods:
+        if method not in self.methods:
             self.set_bad_error(405)
 
         # check if you need to be an admin to access this method
-        if self.needs_admin[method] and not self.is_authenticated():
+        needs_admin = self.methods[method].get('needs_admin', False)
+        if needs_admin and not self.is_authenticated():
             self.set_status(401)
             return {'errors': ['authentication_invalid']}
 

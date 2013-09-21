@@ -30,10 +30,13 @@ class BallTablesHandler(EmberDataRESTEndpoint):
     table = db.BallTable
     ember_model_name = 'ball_tables'
 
-    allowed_methods = ['GET', 'PUT']
-    needs_admin = {
-        'GET': False,
-        'PUT': False
+    methods = {
+        'GET': {
+            'needs_auth': False
+        },
+        'PUT': {
+            'needs_auth': False
+        }
     }
 
 
@@ -41,11 +44,16 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
     table = db.RemovalRequestTable
     ember_model_name = 'removal_request'
 
-    allowed_methods = ['GET', 'POST', 'PUT']
-    needs_admin = {
-        'GET': True,
-        'POST': False,
-        'PUT': True
+    methods = {
+        'GET': {
+            'needs_auth': True
+        },
+        'POST': {
+            'needs_auth': False
+        },
+        'PUT': {
+            'needs_auth': True
+        }
     }
 
     @record_check
@@ -64,13 +72,18 @@ class RemovalRequestHandler(EmberDataRESTEndpoint):
 class AttendeeHandler(EmberDataRESTEndpoint):
     table = db.Attendee
     ember_model_name = 'attendees'
-    needs_admin = {
-        'GET': False,
-        'POST': False,
-        'PUT': False
-    }
 
-    allowed_methods = ['GET', 'POST', 'PUT']
+    methods = {
+        'GET': {
+            'needs_admin': False
+        },
+        'POST': {
+            'needs_admin': False
+        },
+        'PUT': {
+            'needs_admin': False
+        }
+    }
 
     @record_check
     def check_record(self, session, attendee):
