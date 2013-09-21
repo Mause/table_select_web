@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os
+import re
+import sys
 import logging
 import subprocess
 from itertools import chain
@@ -165,32 +167,40 @@ def gen_assets():
     )
 
 
-def has_changed(filename):
-    import re
+def get_changed():
     modified = re.compile(r'^(?:M|A)(\s+)(?P<name>.*)')
+
+    p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+
+    out = out.splitlines()
+    out = (filename.decode('utf-8') for filename in out)
+    actual_out = []
+    for filename in out:
+        match = modified.match(filename)
+        if match:
+            actual_out.append(match.groupdict()['name'])
+
+    return actual_out
+
+
+def has_changed(changed, filename):
     normalize = lambda x: '/'.join(re.split(r'[/\/]', x))
 
     filename = normalize(filename)
 
-    p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
-    out, err = p.communicate()
-    for line in out.splitlines():
+    for line in changed:
         line = normalize(line)
 
-        match = modified.match(line)
-        if line.endswith(filename) and match:
+        if line.endswith(filename):
             return True
 
     return False
 
 
 def main():
-    import sys
     GIT_HOOK = 'as_git_hook' in sys.argv
-
-    my_env.debug = 'debug' in sys.argv
-
-    ASSETS = _gen_assets()
+    should_regen = True
 
     if GIT_HOOK:
         print('Stashing uncommited code')
@@ -199,26 +209,44 @@ def main():
         if result:
             sys.exit(result)
 
-    print('-----> Generated assets;')
-    for asset in ASSETS:
-        print('----->    ', asset)
+    try:
+        if GIT_HOOK:
+            changed = get_changed()
+            result = any(
+                filename.rpartition('.')[-1] in ('hbs', 'js')
+                for filename in changed
+            )
+            if not result:
+                print('No assets have changed')
+                should_regen = False
 
-        if 'as_git_hook' in sys.argv:
-            asset = asset.rpartition('?')[0]
-            cmd = ['git', 'add', DIRNAME + asset]
+        if should_regen:
+            my_env.debug = 'debug' in sys.argv
 
-            return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
+            ASSETS = _gen_assets()
+
+            print('-----> Generated assets;')
+            for asset in ASSETS:
+                print('----->    ', asset)
+
+                if 'as_git_hook' in sys.argv:
+                    asset = asset.rpartition('?')[0]
+                    cmd = ['git', 'add', DIRNAME + asset]
+
+                    return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
+                    result = return_code or 0
+
+                    if result:
+                        # only break out of the loop, so we can reapply the stash
+                        break
+
+    finally:
+        if GIT_HOOK:
+            print('Restoring uncommited code')
+            return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
             result = return_code or 0
-
             if result:
                 sys.exit(result)
-
-    if GIT_HOOK:
-        print('Stashing uncommited code')
-        return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
-        result = return_code or 0
-        if result:
-            sys.exit(result)
 
 
 if __name__ == '__main__':
