@@ -11,8 +11,8 @@ from webassets.exceptions import FilterError
 from webassets.filter import Filter, handlebars, register_filter
 
 
-DIRNAME = os.path.dirname(__file__)
-STATIC_DIR = os.path.join(DIRNAME, 'static/')
+DIRNAME = os.path.abspath(os.path.dirname(__file__))
+STATIC_DIR = os.path.abspath(os.path.join(DIRNAME, 'static/'))
 GLOBAL_FILTERS = None
 
 my_env = Environment(STATIC_DIR, '/static/')
@@ -165,14 +165,60 @@ def gen_assets():
     )
 
 
+def has_changed(filename):
+    import re
+    modified = re.compile(r'^(?:M|A)(\s+)(?P<name>.*)')
+    normalize = lambda x: '/'.join(re.split(r'[/\/]', x))
+
+    filename = normalize(filename)
+
+    p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    for line in out.splitlines():
+        line = normalize(line)
+
+        match = modified.match(line)
+        if line.endswith(filename) and match:
+            return True
+
+    return False
+
+
 def main():
     import sys
+    GIT_HOOK = 'as_git_hook' in sys.argv
 
     my_env.debug = 'debug' in sys.argv
 
+    ASSETS = _gen_assets()
+
+    if GIT_HOOK:
+        print('Stashing uncommited code')
+        return_code = subprocess.call(['git', 'stash', '--keep-index'], stdout=subprocess.PIPE)
+        result = return_code or 0
+        if result:
+            sys.exit(result)
+
     print('-----> Generated assets;')
-    for asset in _gen_assets():
+    for asset in ASSETS:
         print('----->    ', asset)
+
+        if 'as_git_hook' in sys.argv:
+            asset = asset.rpartition('?')[0]
+            cmd = ['git', 'add', DIRNAME + asset]
+
+            return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
+            result = return_code or 0
+
+            if result:
+                sys.exit(result)
+
+    if GIT_HOOK:
+        print('Stashing uncommited code')
+        return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
+        result = return_code or 0
+        if result:
+            sys.exit(result)
 
 
 if __name__ == '__main__':
