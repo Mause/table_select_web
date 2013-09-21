@@ -20,3 +20,12 @@ var TableSelectWeb = Ember.Application.create({
     // LOG_VIEW_LOOKUPS: true,
     rootElement: 'body'
 });
+
+TableSelectWeb.initializer({
+    name: 'injectStoreIntoComponents',
+    before: 'registerComponents',
+    initialize: function(container, application){
+        container.register('store:main', TableSelectWeb.Store);
+        container.injection('component', 'store', 'store:main');
+    }
+});

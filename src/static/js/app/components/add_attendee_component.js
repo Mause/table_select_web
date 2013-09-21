@@ -5,7 +5,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
     actions: {
         addAttendeeFormEvent: function(attendee_name){
             'use strict';
-            var store = this.get('parentView.targetObject.store'),
+            var store = this.get('store'),
                 ball_table = this.get('ball_table'),
                 record_data,
                 record,
