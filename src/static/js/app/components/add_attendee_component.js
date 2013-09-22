@@ -26,12 +26,8 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
 
             record = store.createRecord('attendee', record_data);
             record.save().then(
-                function(){
-                    return self.success.apply(self, arguments);
-                },
-                function(){
-                    return self.failure.apply(self, arguments);
-                }
+                Ember.$.proxy(self.success, self),
+                Ember.$.proxy(self.failure, self)
             );
         },
     },
