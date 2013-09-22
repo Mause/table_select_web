@@ -5,9 +5,7 @@ TableSelectWeb.BallTable = DS.Model.extend({
     attendees: DS.hasMany('attendee', {async: true}),
 
     displayable_attendees: function(){
-        return this.get('attendees').filter(function(attendee){
-            return attendee.get('show') === true;
-        });
+        return this.get('attendees').filterBy('show', true);
     }.property('attendees.@each.show').cacheable(),
 
     row_end: function() {
