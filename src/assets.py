@@ -173,8 +173,12 @@ def get_changed():
     p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
     out, err = p.communicate()
 
+    if err:
+        sys.exit(err)
+
     out = out.splitlines()
     out = (filename.decode('utf-8') for filename in out)
+
     actual_out = []
     for filename in out:
         match = modified.match(filename)
@@ -182,20 +186,6 @@ def get_changed():
             actual_out.append(match.groupdict()['name'])
 
     return actual_out
-
-
-def has_changed(changed, filename):
-    normalize = lambda x: '/'.join(re.split(r'[/\/]', x))
-
-    filename = normalize(filename)
-
-    for line in changed:
-        line = normalize(line)
-
-        if line.endswith(filename):
-            return True
-
-    return False
 
 
 def main():
@@ -229,25 +219,8 @@ def main():
             else:
                 print('Changed:', changed)
 
-        if should_regen:
-            my_env.debug = 'debug' in sys.argv
-
-            ASSETS = _gen_assets()
-
-            print('-----> Generated assets;')
-            for asset in ASSETS:
-                print('----->    ', asset)
-
-                if 'as_git_hook' in sys.argv:
-                    asset = asset.rpartition('?')[0]
-                    cmd = ['git', 'add', DIRNAME + asset]
-
-                    return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
-                    result = return_code or 0
-
-                    if result:
-                        # only break out of the loop, so we can reapply the stash
-                        break
+                my_env.debug = 'debug' in sys.argv
+                ASSETS = _gen_assets()
 
     finally:
         if GIT_HOOK:
@@ -256,6 +229,27 @@ def main():
             result = return_code or 0
             if result:
                 sys.exit(result)
+
+    if should_regen and 'ASSETS' in locals():
+        print('-----> Generated assets;')
+        for asset in ASSETS:
+            print('----->    ', asset)
+
+            if GIT_HOOK:
+                asset = asset.rpartition('?')[0]
+                cmd = ['git', 'add', DIRNAME + asset]
+
+                return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
+                result = return_code or 0
+
+                if result:
+                    print('failed to add', asset)
+                    # only break out of the loop, so we can reapply the stash
+                    break
+
+                print('Changed:', get_changed())
+
+    print('End changed:', get_changed())
 
 
 if __name__ == '__main__':
