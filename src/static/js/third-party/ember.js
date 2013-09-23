@@ -190,8 +190,8 @@ if (!Ember.testing) {
 // ==========================================================================
 
 
-// Version: v1.0.0-140-gc039946
-// Last commit: c039946 (2013-09-20 13:08:33 -0700)
+// Version: v1.0.0-142-g8945e1e
+// Last commit: 8945e1e (2013-09-22 21:24:27 -0700)
 
 
 (function() {
@@ -31473,11 +31473,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   activate: Ember.K,
 
   /**
-    Transition into another route. Optionally supply a model for the
-    route in question. The model will be serialized into the URL
-    using the `serialize` hook.
+    Transition into another route. Optionally supply model(s) for the
+    route in question. If multiple models are supplied they will be applied
+    last to first recursively up the resource tree (see Multiple Models Example
+    below). The model(s) will be serialized into the URL using the appropriate 
+    route's `serialize` hook. See also 'replaceWith'.
 
-    Example
+    Simple Transition Example
 
     ```javascript
     App.Router.map(function() {
@@ -31498,9 +31500,31 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
+    Multiple Models Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.route("index");
+      this.resource('breakfast', {path:':breakfastId'}, function(){
+        this.resource('cereal', {path: ':cerealId'});
+      });
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        moveToChocolateCereal: function(){
+          var cereal = { cerealId: "ChocolateYumminess"},
+              breakfast = {breakfastId: "CerealAndMilk"};
+
+          this.transitionTo('cereal', breakfast, cereal);
+        }
+      }
+    });
+
     @method transitionTo
     @param {String} name the name of the route
-    @param {...Object} models
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
   */
   transitionTo: function(name, context) {
     var router = this.router;
@@ -31508,8 +31532,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    Transition into another route while replacing the current URL if
-    possible. Identical to `transitionTo` in all other respects.
+    Transition into another route while replacing the current URL, if possible.
+    This will replace the current history entry instead of adding a new one. 
+    Beside that, it is identical to `transitionTo` in all other respects. See
+    'transitionTo' for additional information regarding multiple models.
 
     Example
 
@@ -31530,7 +31556,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     @method replaceWith
     @param {String} name the name of the route
-    @param {...Object} models
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
   */
   replaceWith: function() {
     var router = this.router;
@@ -33882,8 +33909,23 @@ Ember.ControllerMixin.reopen({
       aController.transitionToRoute('blogPost', aPost);
     ```
 
+    Multiple models will be applied last to first recusively up the
+    resource tree.
+
+    ```javascript
+
+      this.resource('blogPost', {path:':blogPostId'}, function(){
+        this.resource('blogComment', {path: ':blogCommentId'});
+      });
+      
+      aController.transitionToRoute('blogComment', aPost, aComment);
+    ```
+
+    See also 'replaceRoute'.
+
     @param {String} name the name of the route
-    @param {...Object} models the
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
     @for Ember.ControllerMixin
     @method transitionToRoute
   */
@@ -33905,8 +33947,9 @@ Ember.ControllerMixin.reopen({
   },
 
   /**
-    Alternative to `transitionToRoute`.  Transition the application into another route. The route may
-    be either a single route or route path:
+    Transition into another route while replacing the current URL, if possible.
+    This will replace the current history entry instead of adding a new one. 
+    Beside that, it is identical to `transitionToRoute` in all other respects.
 
     ```javascript
       aController.replaceRoute('blogPosts');
@@ -33921,8 +33964,21 @@ Ember.ControllerMixin.reopen({
       aController.replaceRoute('blogPost', aPost);
     ```
 
+    Multiple models will be applied last to first recusively up the
+    resource tree.
+
+    ```javascript
+
+      this.resource('blogPost', {path:':blogPostId'}, function(){
+        this.resource('blogComment', {path: ':blogCommentId'});
+      });
+      
+      aController.replaceRoute('blogComment', aPost, aComment);
+    ```
+
     @param {String} name the name of the route
-    @param {...Object} models the
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
   */
