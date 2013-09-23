@@ -16,6 +16,7 @@ TableSelectWeb.Router.map(function(){
     this.resource('info', {path: '/info'});
     this.resource('admin', {path: '/admin'});
     this.resource('auth', {path: '/auth'});
+    this.resource('ball_table', {path: '/table/:ball_table_id'});
 });
 
 TableSelectWeb.ApplicationRouteMixin = Ember.Mixin.create({

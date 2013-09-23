@@ -89,6 +89,7 @@ main:
              - index
              - info
              - auth
+             - ball_table
 
         utils:
             prefix: utils/
