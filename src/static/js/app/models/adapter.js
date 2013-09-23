@@ -20,7 +20,8 @@
                 console.log('oh?', xhr.status);
                 this._super.apply(this, arguments);
             }
-        }
+        },
+        headers: {}
     });
 
     TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({

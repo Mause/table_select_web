@@ -17,9 +17,9 @@ var AuthManager = Ember.Object.extend({
     // Authenticate the user. Once they are authenticated, set the access token to be submitted with all
     // future AJAX requests to the server.
     authenticate: function(accessToken, userId) {
-        Ember.$.ajaxSetup({
-            headers: { 'Authorization': 'Bearer ' + accessToken }
-        });
+        var adapter = TableSelectWeb.__container__.lookup('adapter:application');
+        adapter.set('headers.Authorization', 'Bearer ' + accessToken);
+
         // var user = User.find(userId);
         this.set('apiKey', TableSelectWeb.ApiKey.create({
             accessToken: accessToken,
@@ -33,9 +33,9 @@ var AuthManager = Ember.Object.extend({
         Ember.run.sync();
         Ember.run.next(this, function(){
             this.set('apiKey', null);
-            Ember.$.ajaxSetup({
-                headers: { 'Authorization': 'Bearer none' }
-            });
+
+            var adapter = TableSelectWeb.__container__.lookup('adapter:application');
+            adapter.set('headers.Authorization', 'Bearer none');
         });
     },
 
