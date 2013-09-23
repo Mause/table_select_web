@@ -2,9 +2,6 @@
     <span tabindex="-1">
         {{attendee.attendee_name}}
         <button type="button" class="spec_close"
-            {{!i really dont like this target, but i will live}}
-            {{log_label "this" this}}
-            {{debugger}}
             {{action requestRemoveAttendee attendee}}
             >&times;</button>
 
