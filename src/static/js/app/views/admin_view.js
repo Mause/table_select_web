@@ -32,6 +32,6 @@ TableSelectWeb.AdminView = Ember.View.extend({
     },
 
     get_checkboxes: function(){
-        return this.get('childViews.0.childViews');
+        return this.get('childViews');
     }
 });
