@@ -1,8 +1,7 @@
 TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     success_submit: function(requested){
         var attendees = [],
-            proms,
-            self=this;
+            proms;
 
         requested.forEach(function(removal_request){
             var attendee = removal_request.get('attendee');
@@ -13,24 +12,24 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
         proms = attendees.invoke('save');
         Ember.RSVP.all(proms).then(
-            function(){
-                return self.success_attendee.call(self, attendees);
-            }, this.failure
+            Ember.$.proxy(this.success_attendee, this, requested),
+            Ember.$.proxy(this.failure, this)
         );
     },
 
-    success_attendee: function(attendees){
-        var ball_tables = [];
-        attendees.forEach(function(attendee){
-            ball_tables.push(attendee.get('ball_table'));
-        });
+    success_attendee: function(requested){
+        var route = TableSelectWeb.__container__.lookup('route:admin');
+        currentModel = route.get('currentModel');
 
-        Ember.RSVP.all(ball_tables.invoke('save')).then(
-            this.success_notif, this.failure
-        );
-    },
+        debugger;
+        if (currentModel.get('length') === 1) {
+            currentModel.set('content', []);
+        } else {
+            requested.forEach(function(removal_request){
+                currentModel.removeRecord(removal_request);
+            });
+        }
 
-    success_notif: function(ball_tables){
         sendNotification('Success');
     },
 
@@ -52,9 +51,8 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
             promises = records.invoke('save');
             Ember.RSVP.all(promises).then(
-                function(){
-                    return self.success_submit.apply(self, arguments);
-                }, self.failure
+                Ember.$.proxy(self.success_submit, self),
+                Ember.$.proxy(self.failure, self)
             );
         }
     }
