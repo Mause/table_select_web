@@ -247,8 +247,6 @@ def main():
                     # only break out of the loop, so we can reapply the stash
                     break
 
-                print('Changed:', get_changed())
-
     print('End changed:', get_changed())
 
 
