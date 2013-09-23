@@ -12,7 +12,8 @@
         <form>
             <div class="well no-decoration">
                 {{#if controller}}
-                    {{#attendee-list}}
+                    <div class="custom-dropdown clearfix attendee_list space_below">
+                        <ul class="custom-dropdown-menu dropdown-menu-customization">
                         {{#each request in controller}}
                             <li class="attendee">
                                 <span tabindex="-1">
@@ -25,7 +26,8 @@
                                 </span>
                             </li>
                         {{/each}}
-                    {{/attendee-list}}
+                        </ul>
+                    </div>
 
                     <div class="request_actions">
                         <button class="btn btn-success" {{action allow target="view"}}>Allow</button>

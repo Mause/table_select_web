@@ -11,11 +11,7 @@
 
     <div>
         {{#if ball_table.displayable_attendees}}
-            {{#attendee-list}}
-                {{#each attendee in ball_table.displayable_attendees}}
-                    {{partial 'single_attendee'}}
-                {{/each}}
-            {{/attendee-list}}
+            {{attendee-list attendees=ball_table.displayable_attendees}}
         {{else}}
             <h5>No attendees on this table yet</h5>
         {{/if}}

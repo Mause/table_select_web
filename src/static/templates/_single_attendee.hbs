@@ -3,7 +3,9 @@
         {{attendee.attendee_name}}
         <button type="button" class="spec_close"
             {{!i really dont like this target, but i will live}}
-            {{action requestRemoveAttendee attendee target="childViews.2"}}
+            {{log_label "this" this}}
+            {{debugger}}
+            {{action requestRemoveAttendee attendee}}
             >&times;</button>
 
         {{#if attendee.removal_request_exists}}
