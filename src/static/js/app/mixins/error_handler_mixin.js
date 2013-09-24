@@ -1,5 +1,11 @@
 TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
-    handle_errors: function(errors, error_handlers, context){
+    handle_errors: function(errors, context, error_handlers){
+        if (arguments.length != 3){
+            error_handlers = this.error_handlers;
+        } else {
+            console.log("YOGO");
+        }
+
         errors = this.reformat_errors(errors, error_handlers);
         var self = this;
 
@@ -53,7 +59,6 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
         };
 
         result = error.handler(error.error, context);
-
 
         if (result.notification) {
             sendNotification(result.notification, closed_callback);
