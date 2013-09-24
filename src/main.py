@@ -27,7 +27,7 @@ tornado.options.parse_command_line()
 if flags.is_production():
     import newrelic.agent
 
-    if 'STAGING' in os.environ:
+    if flags.is_staging():
         environment = 'staging'
     else:
         environment = 'production'

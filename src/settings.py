@@ -6,13 +6,10 @@ with open(os.path.join(os.path.dirname(__file__), 'settings.json')) as fh:
 settings['DATABASE_URL'] = (
     os.environ.get("DATABASE_URL", settings.get('DATABASE_URL')))
 
+flags = {
+    'is_production': lambda: 'HEROKU' in os.environ,
+    'is_staging': lambda: 'STAGING' in os.environ,
+    'is_debug': lambda: not flags.is_production()
+}
 
-if 'HEROKU' in os.environ:
-    settings['release'] = 'PRODUCTION'
-
-
-class Flags:
-    def __init__(self):
-        self.is_production = lambda: settings['release'].upper() == "PRODUCTION"
-
-flags = Flags()
+flags = type('flags', (object,), flags)
