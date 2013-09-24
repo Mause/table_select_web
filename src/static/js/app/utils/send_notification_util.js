@@ -1,15 +1,11 @@
 function sendNotification(text, callback) {
     var options,
-        closed_callback,
-        modalPane,
-        default_callback;
-
-    // it will simply do nothing if no callback is provided
+        modalPane;
 
     options = {
         defaultTemplate: Ember.TEMPLATES.modal,
         heading: text,
-        callback: closed_callback,
+        callback: callback,
         primary: 'Okay'
     };
 
