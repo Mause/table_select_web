@@ -4,5 +4,5 @@ psycopg2==2.5.1
 simplejson==3.3.0
 PyYaml==3.10
 webassets==0.9.dev
-jsmin==2.0.3
+rjsmin==1.0.7
 newrelic==2.0.0.1

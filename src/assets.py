@@ -15,7 +15,7 @@ from webassets.filter import Filter, handlebars, register_filter
 
 DIRNAME = os.path.abspath(os.path.dirname(__file__))
 STATIC_DIR = os.path.abspath(os.path.join(DIRNAME, 'static/'))
-GLOBAL_FILTERS = None
+GLOBAL_FILTERS = 'rjsmin'
 
 my_env = Environment(STATIC_DIR, '/static/')
 my_env.debug = flags.is_debug()
