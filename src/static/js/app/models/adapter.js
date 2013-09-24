@@ -5,22 +5,18 @@
         400
     ];
 
-    // TODO: investiage DS.InvalidError; didError no longer works
-
     DS.RESTAdapter.reopen({
-        didError: function(store, type, record, xhr) {
-            if (acceptable.contains(xhr.status)) {
-                console.log('Acceptable!', xhr.status);
-                var json = JSON.parse(xhr.responseText),
-                    serializer = Ember.get(this, 'serializer'),
-                    errors = serializer.extractExtendedValidationErrors(type, json);
+        ajaxError: function(jqXHR) {
+            var error = this._super(jqXHR);
 
-                store.recordWasInvalid(record, errors);
+            if (jqXHR && acceptable.contains(jqXHR.status)) {
+                console.log('Acceptable!', jqXHR.status);
+                var json = JSON.parse(jqXHR.responseText);
+                return new DS.InvalidError(json["errors"]);
             } else {
-                console.log('oh?', xhr.status);
-                this._super.apply(this, arguments);
+                return error;
             }
-        },
+        }
         headers: {}
     });
 
