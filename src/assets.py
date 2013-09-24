@@ -7,7 +7,7 @@ import subprocess
 from itertools import chain
 
 import yaml
-from settings import settings
+from settings import flags
 from webassets import Environment, Bundle
 from webassets.exceptions import FilterError
 from webassets.filter import Filter, handlebars, register_filter
@@ -18,7 +18,7 @@ STATIC_DIR = os.path.abspath(os.path.join(DIRNAME, 'static/'))
 GLOBAL_FILTERS = None
 
 my_env = Environment(STATIC_DIR, '/static/')
-my_env.debug = settings['release'].upper() == 'DEBUG'
+my_env.debug = flags.is_debug()
 
 
 class EmberHandlebarsFilter(handlebars.Handlebars, Filter):
@@ -191,6 +191,7 @@ def get_changed():
 def main():
     GIT_HOOK = 'as_git_hook' in sys.argv
     should_regen = True
+    stash_created = False
 
     if GIT_HOOK:
         print('Stashing uncommited code')
@@ -198,6 +199,7 @@ def main():
         result = return_code or 0
         if result:
             sys.exit(result)
+        stash_created = True
 
     try:
         if GIT_HOOK:
@@ -223,7 +225,7 @@ def main():
                 ASSETS = _gen_assets()
 
     finally:
-        if GIT_HOOK:
+        if GIT_HOOK and stash_created:
             print('Restoring uncommited code')
             return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
             result = return_code or 0
