@@ -220,9 +220,12 @@ def main():
                 should_regen = False
             else:
                 print('Changed:', changed)
-
                 my_env.debug = 'debug' in sys.argv
                 ASSETS = _gen_assets()
+
+        else:
+            my_env.debug = 'debug' in sys.argv
+            ASSETS = _gen_assets()
 
     finally:
         if GIT_HOOK and stash_created:
