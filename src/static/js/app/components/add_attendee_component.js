@@ -27,7 +27,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
             record = store.createRecord('attendee', record_data);
             record.save().then(
                 Ember.$.proxy(self.success, self),
-                Ember.$.proxy(self.failure, self)
+                Ember.$.proxy(self.failure, self, record_data)
             );
         },
     },
@@ -39,13 +39,12 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
         sendNotification(Ember.String.loc('attendee_add_success'));
     },
 
-    failure: function(event) {
-        var json = event.responseJSON;
-        console.log('failed, handling errors', json.errors);
+    failure: function(record_data, event) {
+        var errors = event.errors;
+        console.log('failed, handling errors', errors);
 
         this.handle_errors(
-            json.errors,
-            this.error_handlers,
+            errors,
             record_data);
     },
 
