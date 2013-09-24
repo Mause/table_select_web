@@ -16,7 +16,7 @@
             } else {
                 return error;
             }
-        }
+        },
         headers: {}
     });
 
