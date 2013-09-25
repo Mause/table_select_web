@@ -143,9 +143,16 @@ body {
         /* alerts :P */
         display: none;
     }
-
     .attendee {
         border: none;
+    }
+    .attendee:not(:last-child) {
+        border-bottom: none;
+    }
+
+    /* this is to remove the link bootstrap adds */
+    a[href]:after {
+        content: none !important;
     }
 }
 
