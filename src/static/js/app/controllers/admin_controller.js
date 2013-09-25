@@ -47,11 +47,8 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     actions: {
         action: function(state, sh){
             'use strict';
-
             var promises,
-                records;
-
-            records=this.checked_removal_requests.copy();
+                records=this.checked_removal_requests.copy();
             this.checked_removal_requests.clear();
 
             records.forEach(function(record){

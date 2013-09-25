@@ -15,9 +15,9 @@ var TableSelectWeb = Ember.Application.create({
     title: 'Ball Table Select',
     author: 'Dominic May (http://mause.me)',
     // LOG_TRANSITIONS: true,
-    LOG_ACTIVE_GENERATION: true,
+    // LOG_ACTIVE_GENERATION: true,
     // LOG_TRANSITIONS_INTERNAL: true,
-    LOG_VIEW_LOOKUPS: true,
+    // LOG_VIEW_LOOKUPS: true,
     rootElement: 'body'
 });
 
