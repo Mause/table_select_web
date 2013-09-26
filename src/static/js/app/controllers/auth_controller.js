@@ -4,11 +4,11 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     actions: {
         submitAuthFormEvent: function(){
-            var adapter = this.store.adapterFor({typeKey: 'me'}),
+            var adapter = this.store.adapterFor({}),
                 url = adapter.buildURL('me'),
-                self = this,
                 username = this.get('username'),
-                password = this.get('password');
+                password = this.get('password'),
+                self = this;
 
             // clear the form
             this.set('username', '');
@@ -30,7 +30,8 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
                 // on success, setup the appropriate internal variables
                 TableSelectWeb.AuthManager.authenticate(
                     data.api_key.access_token,
-                    data.api_key.user_id);
+                    data.api_key.user_id
+                );
 
                 // and transtion to the admin page
                 self.transitionToRoute('admin');
@@ -48,3 +49,5 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
         }
     }
 });
+
+Ember.Inflector.inflector.uncountable('me');
