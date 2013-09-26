@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.1-259-g7991107
-// Last commit: 7991107 (2013-09-23 22:37:16 -0700)
+// Version: v1.0.0-beta.1-276-g39e999a
+// Last commit: 39e999a (2013-09-26 15:05:41 +0800)
 
 
 (function() {
@@ -776,11 +776,13 @@ DS.AdapterPopulatedRecordArray = DS.RecordArray.extend({
   load: function(data) {
     var store = get(this, 'store'),
         type = get(this, 'type'),
-        records = store.pushMany(type, data);
+        records = store.pushMany(type, data),
+        meta = store.metadataFor(type);
 
     this.setProperties({
       content: Ember.A(records),
-      isLoaded: true
+      isLoaded: true,
+      meta: meta
     });
 
     // TODO: does triggering didLoad event should be the last action of the runLoop?
@@ -2690,7 +2692,7 @@ function _commit(adapter, store, operation, record, resolver) {
   Ember.assert("Your adapter's '" + operation + "' method must return a promise, but it returned " + promise, isThenable(promise));
 
   return promise.then(function(payload) {
-    payload = serializer.extract(store, type, payload, get(record, 'id'), operation);
+    if (payload) { payload = serializer.extract(store, type, payload, get(record, 'id'), operation); }
     store.didSaveRecord(record, payload);
     return record;
   }, function(reason) {
@@ -7873,8 +7875,8 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
   }
 
   type.eachRelationship(function(key, relationship) {
-    var payloadKey, attribute, ids,
-        attr = attrs[key],
+    var expandedKey, embeddedTypeKey, attribute, ids,
+        config = attrs[key],
         serializer = store.serializerFor(relationship.type.typeKey),
         primaryKey = get(serializer, "primaryKey");
 
@@ -7882,8 +7884,11 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
       return;
     }
 
-    if (attr && (attr.embedded === 'always' || attr.embedded === 'load')) {
-      payloadKey = this.keyForRelationship(key, relationship.kind);
+    if (config && (config.embedded === 'always' || config.embedded === 'load')) {
+      // underscore forces the embedded records to be side loaded.
+      // it is needed when main type === relationship.type
+      embeddedTypeKey = '_' + Ember.String.pluralize(relationship.type.typeKey);
+      expandedKey = this.keyForRelationship(key, relationship.kind);
       attribute  = this.keyForAttribute(key);
       ids = [];
 
@@ -7891,14 +7896,14 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
         return;
       }
 
-      payload[attribute] = payload[attribute] || [];
+      payload[embeddedTypeKey] = payload[embeddedTypeKey] || [];
 
       forEach(partial[attribute], function(data) {
         ids.push(data[primaryKey]);
-        payload[attribute].push(data);
+        payload[embeddedTypeKey].push(data);
       });
 
-      partial[payloadKey] = ids;
+      partial[expandedKey] = ids;
       delete partial[attribute];
     }
   }, serializer);
@@ -7912,6 +7917,8 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
 /**
   @module ember-data
 */
+
+var forEach = Ember.EnumerableUtils.forEach;
 
 /**
   The ActiveModelAdapter is a subclass of the RESTAdapter designed to integrate
@@ -7991,8 +7998,14 @@ DS.ActiveModelAdapter = DS.RESTAdapter.extend({
     var error = this._super(jqXHR);
 
     if (jqXHR && jqXHR.status === 422) {
-      var json = JSON.parse(jqXHR.responseText);
-      return new DS.InvalidError(json["errors"]);
+      var jsonErrors = Ember.$.parseJSON(jqXHR.responseText)["errors"],
+          errors = {};
+
+      forEach(Ember.keys(jsonErrors), function(key) {
+        errors[Ember.String.camelize(key)] = jsonErrors[key];
+      });
+
+      return new DS.InvalidError(errors);
     } else {
       return error;
     }
