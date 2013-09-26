@@ -1,4 +1,11 @@
-DS.RESTAdapter.reopen({
+TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
+    namespace: 'api/v1',
+
+    mappings: {
+        ball_tables: TableSelectWeb.BallTable,
+        removal_request: TableSelectWeb.RemovalRequest
+    },
+
     ajaxError: function(jqXHR) {
         var error = this._super(jqXHR);
 
@@ -10,18 +17,11 @@ DS.RESTAdapter.reopen({
             return error;
         }
     },
+
     headers: {},
+
     acceptable: [
         422,
         400
     ]
-});
-
-TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
-    namespace: 'api/v1',
-
-    mappings: {
-        ball_tables: TableSelectWeb.BallTable,
-        removal_request: TableSelectWeb.RemovalRequest
-    }
 });
