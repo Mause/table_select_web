@@ -3,6 +3,6 @@ Ember.STRINGS = {
     table_full: 'That table is full',
     attendee_exists: 'Attendee "%@" already exists',
     attendee_add_success: 'Attendee add was successful',
-    invalid_login: 'Invalid login credentials'
+    invalid_login: 'Invalid login credentials',
+    removal_request_submit_success: 'Removal request successfully submitted'
 };
-

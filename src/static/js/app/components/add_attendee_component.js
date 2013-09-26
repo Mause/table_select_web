@@ -1,4 +1,4 @@
-TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
+TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.ErrorHandlerMixin, {
     templateName: 'addAttendee',
     attendee_name: '',
 
@@ -73,6 +73,3 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend({
         show: Ember.K
     }
 });
-
-
-TableSelectWeb.AddAttendeeComponent.reopen(TableSelectWeb.ErrorHandlerMixin);
