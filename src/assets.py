@@ -194,7 +194,7 @@ def main():
     stash_created = False
 
     if GIT_HOOK:
-        print('Stashing uncommited code')
+        print('Stashing unstaged code')
         return_code = subprocess.call(['git', 'stash', '--keep-index'], stdout=subprocess.PIPE)
         result = return_code or 0
         if result:
@@ -229,7 +229,7 @@ def main():
 
     finally:
         if GIT_HOOK and stash_created:
-            print('Restoring uncommited code')
+            print('Restoring unstaged code')
             return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
             result = return_code or 0
             if result:
