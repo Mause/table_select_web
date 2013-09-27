@@ -5,7 +5,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
         requestRemoveAttendee: function(attendee) {
             'use strict';
             var ball_table = attendee.get('ball_table'),
-                store = this.get('parentView.targetObject.store'),
+                store = this.get('store'),
                 record_data,
                 record;
 
