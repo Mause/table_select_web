@@ -25,6 +25,7 @@ TableSelectWeb.initializer({
     name: 'injectStoreIntoComponents',
     before: 'registerComponents',
     initialize: function(container, application){
+        'use strict';
         container.register('store:main', TableSelectWeb.Store);
         container.injection('component', 'store', 'store:main');
     }

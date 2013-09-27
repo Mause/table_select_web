@@ -1,6 +1,7 @@
 var ApplicationSerializer = DS.RESTSerializer.extend({
     // taken from the TRANSITION.md file for Ember.js
     normalize: function(type, hash, property) {
+        'use strict';
         var normalized = {}, normalizedProp;
         console.assert(this.primaryKey);
 
@@ -27,6 +28,7 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
     },
 
     serializeBelongsTo: function(record, json, relationship) {
+        'use strict';
         var key = relationship.key,
             get = Ember.get,
             isNone = Ember.isNone;
@@ -46,6 +48,7 @@ var ApplicationSerializer = DS.RESTSerializer.extend({
     },
 
     serializeHasMany: function(){
+        'use strict';
         debugger;
         return this._super.apply(this, arguments);
     }

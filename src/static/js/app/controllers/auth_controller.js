@@ -4,6 +4,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     actions: {
         submitAuthFormEvent: function(){
+            'use strict';
             var adapter = this.store.adapterFor({}),
                 url = adapter.buildURL('me'),
                 username = this.get('username'),

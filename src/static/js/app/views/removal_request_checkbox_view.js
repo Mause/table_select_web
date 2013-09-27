@@ -4,6 +4,7 @@ TableSelectWeb.RemovalRequestCheckboxView = Ember.Checkbox.extend({
     destinationBinding: '',
 
     observer: function(){
+        'use strict';
         var box = this.get('destination'),
             value = this.get('value');
 

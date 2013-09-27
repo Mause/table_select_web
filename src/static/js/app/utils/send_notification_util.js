@@ -1,4 +1,5 @@
 function sendNotification(text, callback) {
+    'use strict';
     var options,
         modalPane;
 

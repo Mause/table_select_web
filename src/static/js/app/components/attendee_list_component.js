@@ -34,6 +34,8 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
     },
 
     success_removal_request: function(attendee){
+        'use strict';
+
         // and when it is saved, mark the attendee
         attendee.set('removal_request_exists', true);
         attendee.save().then(

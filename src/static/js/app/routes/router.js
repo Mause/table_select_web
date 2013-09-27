@@ -2,11 +2,13 @@ TableSelectWeb.Router.reopen({
     location: 'history',
 
     init: function(){
+        'use strict';
         TableSelectWeb.AuthManager = AuthManager.create();
         return this._super.apply(this, arguments);
     },
 
     isAuthenticated: function() {
+        'use strict';
         return TableSelectWeb.AuthManager.isAuthenticated();
     }.property('TableSelectWeb.AuthManager.apiKey')
 });
@@ -21,6 +23,7 @@ TableSelectWeb.Router.map(function(){
 
 TableSelectWeb.ApplicationRouteMixin = Ember.Mixin.create({
     renderTemplate: function(controller, model){
+        'use strict';
         this.render({
             outlet: 'application'
         });

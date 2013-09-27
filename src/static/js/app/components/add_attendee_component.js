@@ -33,6 +33,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
     },
 
     success: function(attendee) {
+        'use strict';
         var ball_table = attendee.get('ball_table');
         ball_table.get('attendees').pushObject(attendee);
 
@@ -40,6 +41,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
     },
 
     failure: function(record_data, event) {
+        'use strict';
         var errors = event.errors;
         console.log('failed, handling errors', errors);
 
@@ -50,6 +52,8 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
 
     error_handlers: {
         attendee_name: function (error, context) {
+            'use strict';
+
             if (error === "attendee_exists") {
                 console.error('attendee_exists: %@'.fmt(context.attendee_name));
                 return {
@@ -61,6 +65,8 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
         },
 
         ball_table_id: function(error, context) {
+            'use strict';
+
             if (error === "table_full") {
                 return {
                     notification: Ember.String.loc(error)

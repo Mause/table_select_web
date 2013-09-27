@@ -7,6 +7,7 @@ TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
     },
 
     ajaxError: function(jqXHR) {
+        'use strict';
         var error = this._super(jqXHR);
 
         if (jqXHR && this.acceptable.contains(jqXHR.status)) {

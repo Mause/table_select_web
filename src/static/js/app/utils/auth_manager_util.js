@@ -1,6 +1,7 @@
 var AuthManager = Ember.Object.extend({
     // Load the current user if the cookies exist and is valid
     init: function() {
+        'use strict';
         this._super();
         var accessToken = Ember.$.cookie('access_token');
         var authUserId  = Ember.$.cookie('auth_user');
@@ -11,12 +12,14 @@ var AuthManager = Ember.Object.extend({
 
     // Determine if the user is currently authenticated.
     isAuthenticated: function() {
+        'use strict';
         return !Ember.isEmpty(this.get('apiKey.accessToken')) && !Ember.isEmpty(this.get('apiKey.user'));
     },
 
     // Authenticate the user. Once they are authenticated, set the access token to be submitted with all
     // future AJAX requests to the server.
     authenticate: function(accessToken, userId) {
+        'use strict';
         var adapter = TableSelectWeb.__container__.lookup('adapter:application');
         adapter.set('headers.Authorization', 'Bearer ' + accessToken);
 
@@ -29,6 +32,7 @@ var AuthManager = Ember.Object.extend({
 
     // Log out the user
     reset: function() {
+        'use strict';
         // TableSelectWeb.__container__.lookup("route:application").transitionTo('sessions.new');
         Ember.run.sync();
         Ember.run.next(this, function(){
@@ -42,6 +46,7 @@ var AuthManager = Ember.Object.extend({
     // Ensure that when the apiKey changes, we store the data in cookies in order for us to load
     // the user when the browser is refreshed.
     apiKeyObserver: function() {
+        'use strict';
         if (Ember.isEmpty(this.get('apiKey'))) {
             Ember.$.removeCookie('access_token');
             Ember.$.removeCookie('auth_user');

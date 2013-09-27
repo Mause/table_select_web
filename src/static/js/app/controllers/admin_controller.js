@@ -2,6 +2,7 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     checked_removal_requests: [],
 
     success_submit: function(requested){
+        'use strict';
         var attendees = [],
             proms;
 
@@ -23,6 +24,7 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     },
 
     success_attendee: function(requested){
+        'use strict';
         this.arrayContentWillChange();
         TableSelectWeb.Router.router.getHandler('admin').model();
         this.arrayContentDidChange();
