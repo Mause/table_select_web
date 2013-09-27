@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 # application specific
+from settings import settings
 from utils import dict_from_query
 
 

@@ -89,12 +89,17 @@ def get_ip():
     ip = socket.gethostbyname(socket.gethostname())
     ip = socket.gethostbyname(socket.getfqdn())
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("gmail.com", 80))
-    ip = s.getsockname()[0]
-    s.close()
+
+    try:
+        s.connect(("gmail.com", 80))
+    except TimeoutError:
+        return 'unknown'
+    else:
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
 
     return ip
-    # return ''
 
 
 tornado_settings = {
