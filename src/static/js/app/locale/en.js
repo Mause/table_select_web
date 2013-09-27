@@ -4,6 +4,7 @@ Ember.STRINGS = {
     attendee_exists: 'Attendee "%@" already exists',
     attendee_add_success: 'Attendee addition was successful',
     invalid_login: 'Invalid login credentials',
+    unknown_login_error: 'Unknown login error',
     removal_request_submit_success: 'Removal request successfully submitted',
     removal_request_submit_failure: 'Removal request submission failure'
 };

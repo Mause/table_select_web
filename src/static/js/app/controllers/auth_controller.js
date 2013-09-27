@@ -50,7 +50,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
             sendNotificationLoc('invalid_login');
         } else {
             debugger;
-            sendNotification('Unknown login error');
+            sendNotificationLoc('unknown_login_error');
             TableSelectWeb.AuthManager.reset();
             console.log(arguments);
         }
