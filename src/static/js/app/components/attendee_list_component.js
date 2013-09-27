@@ -26,14 +26,29 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
             record = store.createRecord('removal_request', record_data);
 
             // save it...
-            record.save().then(function(event){
-                // and when it is saved, mark the attendee
-                attendee.set('removal_request_exists', true);
-                attendee.save().then(function(){
-                    sendNotification(
-                        Ember.String.loc('removal_request_submit_success'));
-                });
-            });
+            record.save().then(
+                Ember.$.proxy(this.success_removal_request, this),
+                Ember.$.proxy(this.failure, this)
+            );
         }
+    },
+
+    success_removal_request: function(attendee){
+        // and when it is saved, mark the attendee
+        attendee.set('removal_request_exists', true);
+        attendee.save().then(
+            Ember.$.proxy(this.success_attendee, this),
+            Ember.$.proxy(this.failure, this)
+        );
+    },
+
+    success_attendee: function(){
+        sendNotification(
+            Ember.String.loc('removal_request_submit_success'));
+    },
+
+    failure: function(){
+        sendNotification(
+            Ember.String.loc('removal_request_submit_failure'));
     }
 });
