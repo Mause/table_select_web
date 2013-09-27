@@ -1,20 +1,4 @@
-import string
-
-bad_chars = ''
-for i in range(128, 256):
-    bad_chars += chr(i)
-table_from = string.punctuation + string.ascii_uppercase
-table_to = ' ' * len(string.punctuation) + string.ascii_lowercase
-trans_table = str.maketrans(table_from, table_to)
-
-
-def asciionly(s):
-    return s
-
-
-# remove non-ASCII characters from strings
-def asciidammit(s):
-    return s
+from .string_processing import StringProcessor
 
 
 def validate_string(s):
@@ -26,9 +10,55 @@ def validate_string(s):
     except:
         return False
 
+bad_chars = ''
+for i in range(128, 256):
+    bad_chars += chr(i)
 
-def full_process(s):
-    return s
+
+def asciionly(s):
+    return s.translate(bad_chars)
+
+
+def asciidammit(s):
+    if type(s) is str:
+        return asciionly(s)
+    elif type(s) is str:
+        return asciionly(s.encode('ascii', 'ignore'))
+    else:
+        return asciidammit(str(s))
+
+
+def make_type_consistent(s1, s2):
+    if isinstance(s1, str) and isinstance(s2, str):
+        return s1, s2
+
+    elif isinstance(s1, str) and isinstance(s2, str):
+        return s1, s2
+
+    else:
+        return str(s1), str(s2)
+
+
+def full_process(s, force_ascii=False):
+    """Process string by
+        -- removing all but letters and numbers
+        -- trim whitespace
+        -- force to lower case
+        if force_ascii == True, force convert to ascii"""
+
+    if s is None:
+        return ""
+
+    if force_ascii:
+        s = asciidammit(s)
+    # Keep only Letters and Numbres (see Unicode docs).
+    string_out = StringProcessor.replace_non_lettters_non_numbers_with_whitespace(
+        s)
+    # Force into lowercase.
+    string_out = StringProcessor.to_lower_case(string_out)
+    # Remove leading and trailing whitespaces.
+    string_out = StringProcessor.strip(string_out)
+    return string_out
 
 
 def intr(n):
