@@ -12,6 +12,9 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
             );
         });
 
+        Ember.assert('Bad function', this.success_attendee);
+        Ember.assert('Bad function', this.failure);
+
         proms = attendees.invoke('save');
         Ember.RSVP.all(proms).then(
             Ember.$.proxy(this.success_attendee, this, requested),
@@ -20,8 +23,6 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
     },
 
     success_attendee: function(requested){
-
-        debugger;
         this.arrayContentWillChange();
         TableSelectWeb.Router.router.getHandler('admin').model();
         this.arrayContentDidChange();
@@ -55,6 +56,9 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
                 record.set('state', state);
                 record.set('attendee.show', sh == 'show');
             });
+
+            Ember.assert('Bad function', this.success_attendee);
+            Ember.assert('Bad function', this.failure);
 
             promises = records.invoke('save');
             Ember.RSVP.all(promises).then(
