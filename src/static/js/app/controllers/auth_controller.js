@@ -27,26 +27,32 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
                 password: password
             };
 
-            adapter.ajax(url, 'POST', {data: data}).then(function(data){
-                // on success, setup the appropriate internal variables
-                TableSelectWeb.AuthManager.authenticate(
-                    data.api_key.access_token,
-                    data.api_key.user_id
-                );
+            adapter.ajax(url, 'POST', {data: data}).then(
+                this.auth_success,
+                this.auth_failure
+            );
+        }
+    },
 
-                // and transtion to the admin page
-                self.transitionToRoute('admin');
+    auth_success: function(data){
+        // on success, setup the appropriate internal variables
+        TableSelectWeb.AuthManager.authenticate(
+            data.api_key.access_token,
+            data.api_key.user_id
+        );
 
-            }, function(xhr){
-                if (xhr.status === 401) {
-                    sendNotification(Ember.String.loc('invalid_login'));
-                } else {
-                    debugger;
-                    sendNotification('Unknown login error');
-                    TableSelectWeb.AuthManager.reset();
-                    console.log(arguments);
-                }
-            });
+        // and transtion to the admin page
+        self.transitionToRoute('admin');
+    },
+
+    auth_failure: function(xhr){
+        if (xhr.status === 401) {
+            sendNotification(Ember.String.loc('invalid_login'));
+        } else {
+            debugger;
+            sendNotification('Unknown login error');
+            TableSelectWeb.AuthManager.reset();
+            console.log(arguments);
         }
     }
 });
