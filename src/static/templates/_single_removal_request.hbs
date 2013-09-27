@@ -1,7 +1,9 @@
 <li class="attendee">
     <span tabindex="-1">
         <label>
-            {{view TableSelectWeb.RemovalRequestCheckboxView valueBinding="request"}}
+            {{view TableSelectWeb.RemovalRequestCheckboxView
+                valueBinding="request"
+                destinationBinding="controller.checked_removal_requests"}}
             <span style="margin-top:-1px;">
                 requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
             </span>
