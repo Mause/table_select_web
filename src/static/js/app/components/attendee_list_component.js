@@ -45,12 +45,10 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
     },
 
     success_attendee: function(){
-        sendNotification(
-            Ember.String.loc('removal_request_submit_success'));
+        sendNotificationLoc('removal_request_submit_success');
     },
 
     failure: function(){
-        sendNotification(
-            Ember.String.loc('removal_request_submit_failure'));
+        sendNotificationLoc('removal_request_submit_failure');
     }
 });

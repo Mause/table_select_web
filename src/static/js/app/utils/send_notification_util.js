@@ -14,3 +14,9 @@ function sendNotification(text, callback) {
 
     return modalPane;
 }
+
+function sendNotificationLoc(text, callback) {
+    'use strict';
+    text = Ember.String.loc(text);
+    return sendNotification(text, callback);
+}

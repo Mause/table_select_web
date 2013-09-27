@@ -47,7 +47,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     auth_failure: function(xhr){
         if (xhr.status === 401) {
-            sendNotification(Ember.String.loc('invalid_login'));
+            sendNotificationLoc('invalid_login');
         } else {
             debugger;
             sendNotification('Unknown login error');
