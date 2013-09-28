@@ -196,8 +196,8 @@ if (!Ember.testing) {
 // ==========================================================================
 
 
-// Version: v1.0.0-185-g1c31d42
-// Last commit: 1c31d42 (2013-09-26 15:10:57 -0700)
+// Version: v1.0.0-193-g595ea8c
+// Last commit: 595ea8c (2013-09-28 00:23:21 -0400)
 
 
 (function() {
@@ -25829,7 +25829,7 @@ var VIEW_PREFIX = /^view\./;
 
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
-  propertiesFromHTMLOptions: function(options, thisContext) {
+  propertiesFromHTMLOptions: function(options) {
     var hash = options.hash, data = options.data;
     var extensions = {},
         classes = hash['class'],
@@ -31296,10 +31296,7 @@ Ember.Router.reopenClass({
   },
 
   _defaultErrorHandler: function(error, transition) {
-    Ember.Logger.error('Error while loading route:', error);
-
-    // Using setTimeout allows us to escape from the Promise's try/catch block
-    setTimeout(function() { throw error; });
+    Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
   },
 
   _routePath: function(handlerInfos) {
@@ -32776,7 +32773,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           templateContext = helperParameters.context,
           paths = getResolvedPaths(helperParameters),
           length = paths.length,
-          path, i;
+          path, i, normalizedPath;
+
+      if (Ember.FEATURES.isEnabled('link-to-non-block')) {
+        var linkTextPath = helperParameters.options.linkTextPath;
+        if (linkTextPath) {
+          normalizedPath = Ember.Handlebars.normalizePath(templateContext, linkTextPath, helperParameters.options.data);
+          this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
+        }
+      }
 
       for(i=0; i < length; i++) {
         path = paths[i];
@@ -32785,8 +32790,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           continue;
         }
 
-        var normalizedPath =
-          Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
+        normalizedPath = Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
         this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
       }
 
@@ -33308,6 +33312,24 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         hash = options.hash;
 
     hash.disabledBinding = hash.disabledWhen;
+
+    if (Ember.FEATURES.isEnabled('link-to-non-block')) {
+      if (!options.fn) {
+        var linkTitle = params.shift();
+        var linkType = options.types.shift();
+        var context = this;
+        if (linkType === 'ID') {
+          options.linkTextPath = linkTitle;
+          options.fn = function() {
+            return Ember.Handlebars.get(context, linkTitle, options);
+          };
+        } else {
+          options.fn = function() {
+            return linkTitle;
+          };
+        }
+      }
+    }
 
     hash.parameters = {
       context: this,

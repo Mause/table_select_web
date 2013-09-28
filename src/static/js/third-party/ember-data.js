@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.1-291-g8e8c89e
-// Last commit: 8e8c89e (2013-09-26 22:01:12 -0700)
+// Version: v1.0.0-beta.1-296-g3017027
+// Last commit: 3017027 (2013-09-27 22:45:12 -0700)
 
 
 (function() {
@@ -4682,11 +4682,7 @@ DS.belongsTo = function(type, options) {
         store = get(this, 'store'), belongsTo, typeClass;
 
     if (typeof type === 'string') {
-      if (type.indexOf(".") === -1) {
-        typeClass = store.modelFor(type);
-      } else {
-        typeClass = get(Ember.lookup, type);
-      }
+      typeClass = store.modelFor(type);
     } else {
       typeClass = type;
     }
@@ -5030,7 +5026,7 @@ DS.Model.reopenClass({
       // it to the map.
       if (meta.isRelationship) {
         if (typeof meta.type === 'string') {
-          meta.type = Ember.get(Ember.lookup, meta.type);
+          meta.type = this.store.modelFor(meta.type);
         }
 
         var relationshipsForType = map.get(meta.type);
@@ -5115,7 +5111,7 @@ DS.Model.reopenClass({
         type = meta.type;
 
         if (typeof type === 'string') {
-          type = get(this, type, false) || get(Ember.lookup, type);
+          type = get(this, type, false) || this.store.modelFor(type);
         }
 
         Ember.assert("You specified a hasMany (" + meta.type + ") on " + meta.parentType + " but " + meta.type + " was not found.",  type);
@@ -6338,7 +6334,11 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
 
       /*jshint loopfunc:true*/
       forEach.call(payload[prop], function(hash) {
-        hash = this.normalize(type, hash, prop);
+        var typeName = this.typeForRoot(prop),
+            type = store.modelFor(typeName),
+            typeSerializer = store.serializerFor(type);
+
+        hash = typeSerializer.normalize(type, hash, prop);
 
         var isFirstCreatedRecord = isPrimary && !recordId && !primaryRecord,
             isUpdatedRecord = isPrimary && coerceId(hash.id) === recordId;
@@ -6478,11 +6478,12 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
 
       var typeName = this.typeForRoot(typeKey),
           type = store.modelFor(typeName),
+          typeSerializer = store.serializerFor(type),
           isPrimary = (!forcedSecondary && (typeName === primaryTypeName));
 
       /*jshint loopfunc:true*/
       var normalizedArray = map.call(payload[prop], function(hash) {
-        return this.normalize(type, hash, prop);
+        return typeSerializer.normalize(type, hash, prop);
       }, this);
 
       if (isPrimary) {
