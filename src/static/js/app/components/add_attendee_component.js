@@ -20,7 +20,6 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
 
             record_data = {
                 'attendee_name': attendee_name,
-                'show': true,
                 'ball_table': ball_table
             };
 
