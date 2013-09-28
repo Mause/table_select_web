@@ -106,4 +106,3 @@ main:
         files:
          - main
          - handlebars_utils
-         - utils
