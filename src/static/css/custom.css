@@ -19,11 +19,6 @@ header a {
     color: #B3B1B1;
 }
 
-.barrier {
-    font-size: 15px;
-    margin-left: 2px;
-    margin-right: 2px;
-}
 
 nav {
     float: right;
@@ -37,11 +32,20 @@ body {
     background-image: url('/static/img/black_lozenge.png')
 }
 
+.barrier {
+    font-size: 15px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.ball_table_title {
+    color: black;
+    text-decoration: none;
+}
 
 .space_below {
     margin-bottom: 10px;
 }
-
 
 .enclosure {
     /*width: 100%;*/
