@@ -1,11 +1,9 @@
-<div class="submit_attendee_form">
-    <form class="well submit_attendee">
-        <label>
-            <strong>Attendee name:</strong> {{view Ember.TextField valueBinding="attendee_name"}}
-        </label>
-        <button
-            {{action addAttendeeFormEvent attendee_name}}
-            type="submit"
-            class="btn btn-primary">Submit attendee</button>
-    </form>
-</div>
+<form class="well">
+    <label>
+        <strong>Attendee name:</strong> {{view Ember.TextField valueBinding="attendee_name"}}
+    </label>
+    <button
+        {{action addAttendeeFormEvent attendee_name}}
+        type="submit"
+        class="btn btn-primary">Submit attendee</button>
+</form>
