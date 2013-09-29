@@ -17,9 +17,7 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
 
             record_data = {
                 attendee: attendee,
-                ball_table: ball_table,
-                remover_ident: 'unknown',
-                state: 'unresolved'
+                ball_table: ball_table
             };
 
             // create the record...
