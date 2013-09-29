@@ -8,8 +8,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
             var store = this.get('store'),
                 ball_table = this.get('ball_table'),
                 record_data,
-                record,
-                self = this;
+                record;
 
             this.set('attendee_name', '');
             if (!(attendee_name = attendee_name.trim())) { return; }
@@ -25,8 +24,8 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
 
             record = store.createRecord('attendee', record_data);
             record.save().then(
-                Ember.$.proxy(self.success, self),
-                Ember.$.proxy(self.failure, self, record_data)
+                Ember.$.proxy(this.success, this),
+                Ember.$.proxy(this.failure, this, record_data)
             );
         },
     },
