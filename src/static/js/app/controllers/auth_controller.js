@@ -8,8 +8,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
             var adapter = this.store.adapterFor({}),
                 url = adapter.buildURL('me'),
                 username = this.get('username'),
-                password = this.get('password'),
-                self = this;
+                password = this.get('password');
 
             // clear the form
             this.set('username', '');
@@ -17,8 +16,6 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
             // cleanup the values
             if (!(username = username.trim())) { return; }
-
-            // cleanup the values
             if (!(password = password.trim())) { return; }
 
             // record ftw
@@ -52,7 +49,6 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
             debugger;
             sendNotificationLoc('unknown_login_error');
             TableSelectWeb.AuthManager.reset();
-            console.log(arguments);
         }
     }
 });
