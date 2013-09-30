@@ -47,26 +47,33 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
         sendNotification('Failure');
     },
 
+    action: function(show_attendee){
+        'use strict';
+        var promises,
+            records=this.checked_removal_requests.copy();
+        this.checked_removal_requests.clear();
+
+        records.forEach(function(record){
+            record.set('state', 'resolved');
+            record.set('attendee.show', show_attendee);
+        });
+
+        Ember.assert('Bad function', this.success_attendee);
+        Ember.assert('Bad function', this.failure);
+
+        promises = records.invoke('save');
+        Ember.RSVP.all(promises).then(
+            Ember.$.proxy(self.success_submit, self),
+            Ember.$.proxy(self.failure, self)
+        );
+    },
+
     actions: {
-        action: function(state, sh){
-            'use strict';
-            var promises,
-                records=this.checked_removal_requests.copy();
-            this.checked_removal_requests.clear();
-
-            records.forEach(function(record){
-                record.set('state', state);
-                record.set('attendee.show', sh == 'show');
-            });
-
-            Ember.assert('Bad function', this.success_attendee);
-            Ember.assert('Bad function', this.failure);
-
-            promises = records.invoke('save');
-            Ember.RSVP.all(promises).then(
-                Ember.$.proxy(self.success_submit, self),
-                Ember.$.proxy(self.failure, self)
-            );
+        deny: function(){
+            return this.action('show');
+        },
+        allow: function(){
+            return this.action('hide');
         }
     }
 });
