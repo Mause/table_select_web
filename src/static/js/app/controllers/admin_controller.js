@@ -25,26 +25,23 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
 
     success_attendee: function(requested){
         'use strict';
-        this.arrayContentWillChange();
         TableSelectWeb.Router.router.getHandler('admin').model();
-        this.arrayContentDidChange();
 
-        // var route = TableSelectWeb.__container__.lookup('route:admin');
-        // currentModel = route.get('currentModel');
-        // debugger;
-        // if (currentModel.get('length') === 1) {
-        //     currentModel.set('content', []);
-        // } else {
-        //     requested.forEach(function(removal_request){
-        //         currentModel.removeRecord(removal_request);
-        //     });
-        // }
+        var route = TableSelectWeb.__container__.lookup('route:admin');
+        currentModel = route.get('currentModel');
+        currentModel.arrayContentWillChange();
+        requested.forEach(function(removal_request){
+            currentModel.removeRecord(removal_request);
+        });
+        currentModel.arrayContentDidChange();
 
-        sendNotification('Success');
+        debugger;
+        sendNotificationLoc('Success');
     },
 
-    failure: function(){
-        sendNotification('Failure');
+    failure: function(source){
+        debugger;
+        sendNotificationLoc('Failure');
     },
 
     action: function(show_attendee){
