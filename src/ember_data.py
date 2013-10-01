@@ -304,7 +304,8 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
             self.set_bad_error(400)
 
         try:
-            out['ids'] = [int(id) for id in decode(out['ids'])]
+            out['ids'] = decode(out['ids'])
+            out['ids'] = list(map(int, out['ids']))
         except ValueError as e:
             logging.error(e)
             self.set_bad_error(400)
