@@ -1,6 +1,5 @@
 # stdlib
 import re
-# import json
 
 # third-party
 import tornado.web
@@ -28,9 +27,12 @@ def pluralize(name):
             return name
 
 
-# use the same plurals hash to determine
-# special-case singularization
 def singularize(name):
+    """
+    use the same plurals hash to determine
+    special-case singularization
+    """
+
     plurals = settings.get('plurals')
     if plurals:
         for i in plurals.keys():
@@ -50,7 +52,8 @@ def camelize(string):
     """
     return STRING_CAMELIZE_REGEXP.sub(
         lambda match: match.groups()[1].upper(),
-        string)
+        string
+    )
 
 
 def camelize_dict(dictionary):
@@ -75,7 +78,7 @@ def get_primary_key_from_record(record):
     return record.__dict__[key]
 
 
-def dict_from_query(query, debug=False):
+def dict_from_query(query):
     def serialize(record, ids_only=False):
         if type(record) in (list, InstrumentedList):
             return [serialize(sub, ids_only=True) for sub in record]
@@ -95,6 +98,46 @@ def dict_from_query(query, debug=False):
         return list(map(serialize, query))
     else:
         return serialize(query)
+
+
+class Application(tornado.web.Application):
+    def __init__(self, handlers, *args, **kwargs):
+        new_handlers = []
+
+        for handler in handlers:
+            if type(handler[1]) == list:
+                handler = self.splat(handler[1], handler)
+                new_handlers.extend(handler)
+            else:
+                new_handlers.append(handler)
+
+        return super().__init__(new_handlers, *args, **kwargs)
+
+    def splat(self, handlers, super_handler):
+        prefix, _, kwargs = super_handler
+
+        new_handlers = []
+        for handler in handlers:
+            new_handlers.append(self._splat_single(prefix, kwargs, handler))
+
+        return new_handlers
+
+    def _splat_single(self, prefix, super_kwargs, handler):
+        if len(handler) == 3:
+            pattern, handler, my_kwargs = handler
+        else:
+            pattern, handler = handler
+            my_kwargs = {}
+
+        kwargs = super_kwargs.copy()
+        kwargs.update(my_kwargs)
+
+        pattern = prefix + pattern
+        if 'postfix' in kwargs:
+            pattern += kwargs['postfix']
+            del kwargs['postfix']
+
+        return (pattern, handler, kwargs)
 
 
 def main():

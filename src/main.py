@@ -16,6 +16,7 @@ import tornado.httpserver
 # application specific
 import db
 import ajax
+from utils import Application
 from assets import gen_assets
 from settings import settings, flags
 
@@ -89,6 +90,7 @@ def get_ip():
     ip = socket.gethostbyname(socket.gethostname())
     ip = socket.gethostbyname(socket.getfqdn())
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(1)
 
     try:
         s.connect(("gmail.com", 80))
@@ -110,18 +112,20 @@ tornado_settings = {
     "gzip": True,
 }
 
-application = tornado.web.Application(
+api = [
+    (r"/ball_tables", ajax.BallTablesHandler),
+
+    (r"/removal_requests", ajax.RemovalRequestHandler),
+
+    (r"/attendees", ajax.AttendeeHandler),
+
+    (r"/me", ajax.AuthHandler)
+]
+
+
+application = Application(
     [
-        (r'/static/(.*)', tornado.web.StaticFileHandler,
-            {'path': tornado_settings['static_path']}),
-
-        (r"/api/v1/ball_tables(?:/(?P<record_id>\d+))?", ajax.BallTablesHandler),
-
-        (r"/api/v1/removal_requests(?:/(?P<record_id>\d+))?", ajax.RemovalRequestHandler),
-
-        (r"/api/v1/attendees(?:/(?P<record_id>\d+))?", ajax.AttendeeHandler),
-
-        (r"/api/v1/me", ajax.AuthHandler),
+        (r'/api/v1', api, {'postfix': r'(?:/(?P<record_id>\d+))?'}),
 
         (r"/.*", MainHandler),
     ],
