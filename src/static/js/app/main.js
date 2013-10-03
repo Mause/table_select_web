@@ -1,6 +1,14 @@
-Ember.RSVP.configure('onerror', function(event){
-    console.error(event);
+Ember.RSVP.configure('onerror', function(e) {
+  console.log(e.message);
+  console.log(e.stack);
 });
+
+Ember.RSVP.configure('async', function(func){
+    debugger;
+    var args = Array.prototype.slice.call(arguments, 1);
+    return func.apply(this, args);
+});
+
 
 // these tend to spam :/
 // Ember.LOG_BINDINGS = true;

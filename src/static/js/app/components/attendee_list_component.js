@@ -1,6 +1,4 @@
 TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxyMixin, {
-    layoutName: 'components/attendee-list',
-
     actions: {
         requestRemoveAttendee: function(attendee) {
             'use strict';
