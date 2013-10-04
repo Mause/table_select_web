@@ -1,13 +1,14 @@
-<li class="attendee">
-    <span tabindex="-1">
-        <label>
+{{!-- <li class="list-group-item"> --}}
+    <div class="input-group">
+        <span class="input-group-addon">
             {{view TableSelectWeb.RemovalRequestCheckboxView
                 valueBinding="request"
                 destinationBinding="controller.checked_removal_requests"}}
-
-            <span style="margin-top:-1px;">
-                requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
-            </span>
-        </label>
-    </span>
-</li>
+        </span>
+        {{!-- <span style="margin-top:-1px;"> --}}
+        <div class="form-control">
+            requesting that "{{request.attendee.attendee_name}}" be removed from "{{request.ball_table.ball_table_name}}"
+        </div>
+        {{!-- </span> --}}
+    </div><!-- /input-group -->
+{{!-- </li> --}}

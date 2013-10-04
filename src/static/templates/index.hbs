@@ -1,7 +1,9 @@
 <div>
     {{! iterate through each table }}
     {{#each ball_table in controller}}
-        {{ball-table ball_table=ball_table}}
+        <div class="col-md-6">
+            {{ball-table ball_table=ball_table}}
+        </div>
 
     {{! logic to make sure the tables are evenly layed out }}
     {{#if ball_table.row_end}}
