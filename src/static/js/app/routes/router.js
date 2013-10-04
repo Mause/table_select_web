@@ -20,12 +20,3 @@ TableSelectWeb.Router.map(function(){
     this.resource('auth', {path: '/auth'});
     this.resource('ball_table', {path: '/table/:ball_table_id'});
 });
-
-TableSelectWeb.ApplicationRouteMixin = Ember.Mixin.create({
-    renderTemplate: function(controller, model){
-        'use strict';
-        this.render({
-            outlet: 'application'
-        });
-    }
-});

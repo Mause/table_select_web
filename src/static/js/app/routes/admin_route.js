@@ -1,4 +1,4 @@
-TableSelectWeb.AdminRoute = Ember.Route.extend(TableSelectWeb.ApplicationRouteMixin, {
+TableSelectWeb.AdminRoute = Ember.Route.extend({
     beforeModel: function (){
         'use strict';
         if (!TableSelectWeb.AuthManager.isAuthenticated()){

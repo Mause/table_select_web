@@ -86,7 +86,6 @@ main:
              - application
              - admin
              - index
-             - info
              - auth
              - ball_table
 
