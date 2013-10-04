@@ -15,8 +15,8 @@ TableSelectWeb.Router.reopen({
 
 TableSelectWeb.Router.map(function(){
     this.resource('index', {path: '/'});
-    this.resource('info', {path: '/info'});
-    this.resource('admin', {path: '/admin'});
-    this.resource('auth', {path: '/auth'});
+    this.resource('info');
+    this.resource('admin');
+    this.resource('auth');
     this.resource('ball_table', {path: '/table/:ball_table_id'});
 });
