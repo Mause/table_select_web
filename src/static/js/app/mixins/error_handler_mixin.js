@@ -13,7 +13,11 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
             try {
                 self.handle_errors_recurse(errors, context, resolve);
             } catch (e) {
-                console.error(e);
+                // reject the promise. poor promise :(
+                reject();
+
+                // stacktrace is preserved, right?
+                throw e;
             }
         });
     },

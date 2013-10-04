@@ -4,7 +4,7 @@ Ember.RSVP.configure('onerror', function(e) {
 });
 
 Ember.RSVP.configure('async', function(func){
-    debugger;
+    // debugger;
     var args = Array.prototype.slice.call(arguments, 1);
     return func.apply(this, args);
 });
@@ -19,7 +19,7 @@ Ember.ENV.RAISE_ON_DEPRECATION = true;
 Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
 Ember.DEBUG = true;
 
-var TableSelectWeb = Ember.Application.create({
+var TableSelectWeb = Ember.Application.createWithMixins(Bootstrap.Register, {
     title: 'Ball Table Select',
     author: 'Dominic May (http://mause.me)',
     // LOG_TRANSITIONS: true,

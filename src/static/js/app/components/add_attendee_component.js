@@ -26,7 +26,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
                 Ember.$.proxy(this.success, this),
                 Ember.$.proxy(this.failure, this, record_data)
             );
-        },
+        }
     },
 
     success: function(attendee) {
