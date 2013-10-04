@@ -1,12 +1,10 @@
-<li class="attendee">
-    <span tabindex="-1">
-        {{attendee.attendee_name}}
-        <button type="button" class="spec_close"
-            {{action requestRemoveAttendee attendee}}
-            >&times;</button>
+<li class="list-group-item attendee">
+    {{attendee.attendee_name}}
+    <button type="button" class="spec_close"
+        {{action requestRemoveAttendee attendee}}
+        >&times;</button>
 
-        {{#if attendee.removal_request_exists}}
-            <i class="icon-info-sign removal_request_notif" title="Removal request pending"></i>
-        {{/if}}
-    </span>
+    {{#if attendee.removal_request_exists}}
+        <i class="glyphicon glyphicon-info-sign removal_request_notif" title="Removal request pending"></i>
+    {{/if}}
 </li>
