@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.3-20-g33263b0
-// Last commit: 33263b0 (2013-10-02 18:47:37 -0700)
+// Version: v1.0.0-beta.3-21-gd45b685
+// Last commit: d45b685 (2013-10-03 10:38:18 -0700)
 
 
 (function() {
@@ -6545,6 +6545,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
     in data streaming in from your server structured the same way
     that fetches and saves are structured.
 
+    @method pushPayload
     @param {DS.Store} store
     @param {Object} payload
   */
