@@ -25,7 +25,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
             };
 
             adapter.ajax(url, 'POST', {data: data}).then(
-                this.auth_success,
+                Em.$.proxy(this.auth_success, this),
                 this.auth_failure
             );
         }
@@ -39,7 +39,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
         );
 
         // and transtion to the admin page
-        self.transitionToRoute('admin');
+        this.transitionToRoute('admin');
     },
 
     auth_failure: function(xhr){
