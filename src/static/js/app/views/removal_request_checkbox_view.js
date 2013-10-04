@@ -8,6 +8,9 @@ TableSelectWeb.RemovalRequestCheckboxView = Ember.Checkbox.extend({
         var box = this.get('destination'),
             value = this.get('value');
 
+        Em.assert('Bad destination', box);
+        Em.assert('Bad value', value);
+
         if (box.contains(value)) {
             box.removeObject(value);
         } else {
