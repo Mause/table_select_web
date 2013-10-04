@@ -16,7 +16,8 @@ main:
         plugins:
             prefix: ember_plugins/
             files:
-             - ember-bootstrap
+             - bs-core.max
+             - bs-modal.max
              - ember-renderspeed
 
     app:
@@ -37,6 +38,7 @@ main:
             postfix: _mixin
             files:
              - error_handler
+             - send_notification
 
         controllers:
             prefix: controllers/
@@ -93,7 +95,6 @@ main:
             prefix: utils/
             postfix: _util
             files:
-             - send_notification
              - auth_manager
 
         locale:
