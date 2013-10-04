@@ -1,16 +1,40 @@
 function sendNotification(text, callback) {
     'use strict';
+    debugger;
     var options,
-        modalPane;
+        modalPane,
+        callbacks,
+        manualButtons;
 
-    options = {
-        defaultTemplate: Ember.TEMPLATES.modal,
-        heading: text,
-        callback: callback,
-        primary: 'Okay'
+    callbacks = {
+        success_callback: function(){
+            var returned = Bootstrap.ModalManager.close('manualModal');
+
+            callback.apply(this, arguments);
+            return returned;
+
+        },
+        failure_callback: function(){
+            var returned = Bootstrap.ModalManager.close('manualModal');
+
+            callback.apply(this, arguments);
+            return returned;
+
+        },
     };
 
-    modalPane = Bootstrap.ModalPane.popup(options);
+    manualButtons = [
+        Ember.Object.create({title: 'Submit', clicked: "success_callback"}),
+        Ember.Object.create({title: 'Cancel', dismiss: "failure_callback"})
+    ];
+
+    var x = Bootstrap.ModalManager.open(
+        'manualModal',
+        text,
+        Ember.TEMPLATES.modal,
+        manualButtons,
+        'lol'
+    );
 
     return modalPane;
 }
