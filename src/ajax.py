@@ -140,7 +140,9 @@ class AttendeeHandler(EmberDataRESTEndpoint):
 
 
 class AuthHandler(EmberDataRESTEndpoint):
-    def post(self):
+    def post(self, record_id):
+        # record_id is unused
+
         body = self.decode_and_load(self.request.body)
 
         if 'password' in body and 'username' in body and all(body.values()):

@@ -253,11 +253,19 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
         self.write_json(response)
 
-    def delete(self):
+    def delete(self, record_id):
         raise NotImplementedError()
 
-    def patch(self):
+    def patch(self, record_id):
         raise NotImplementedError()
+
+    def options(self, record_id):
+        allowed = self.methods
+        if record_id:
+            if 'PUT' in allowed:
+                del allowed['PUT']
+
+        self.set_header('Allow', ', '.join(allowed.keys()))
 
     def get_record_data(self, request_body):
         body = self.decode_and_load(request_body)
