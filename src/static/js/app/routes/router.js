@@ -19,4 +19,7 @@ TableSelectWeb.Router.map(function(){
     this.resource('admin');
     this.resource('auth');
     this.resource('ball_table', {path: '/table/:ball_table_id'});
+
+    // TODO: flesh this out
+    this.resource("fourOhFour", { path: "*path"});
 });
