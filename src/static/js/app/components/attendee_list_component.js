@@ -1,4 +1,4 @@
-TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxyMixin, {
+TableSelectWeb.AttendeeListComponent = Ember.Component.extend(TableSelectWeb.NotificationMixin, {
     actions: {
         requestRemoveAttendee: function(attendee) {
             'use strict';
@@ -42,10 +42,10 @@ TableSelectWeb.AttendeeListComponent = Ember.Component.extend(Ember.PromiseProxy
     },
 
     success_attendee: function(){
-        sendNotificationLoc('removal_request_submit_success');
+        this.sendNotificationLoc('removal_request_submit_success');
     },
 
     failure: function(){
-        sendNotificationLoc('removal_request_submit_failure');
+        this.sendNotificationLoc('removal_request_submit_failure');
     }
 });

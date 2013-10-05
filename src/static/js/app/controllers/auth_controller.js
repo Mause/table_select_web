@@ -1,4 +1,4 @@
-TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
+TableSelectWeb.AuthController = Ember.ArrayController.extend({
     username: '',
     password: '',
 
@@ -52,5 +52,10 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
         }
     }
 });
+
+TableSelectWeb.AuthController.reopen(
+    // Ember.Evented,
+    TableSelectWeb.NotificationMixin
+);
 
 Ember.Inflector.inflector.uncountable('me');

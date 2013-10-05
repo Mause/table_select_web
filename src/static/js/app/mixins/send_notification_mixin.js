@@ -1,46 +1,41 @@
-function sendNotification(text, callback) {
-    'use strict';
-    debugger;
-    var options,
-        modalPane,
-        callbacks,
-        manualButtons;
-
-    callbacks = {
-        success_callback: function(){
-            var returned = Bootstrap.ModalManager.close('manualModal');
-
-            callback.apply(this, arguments);
-            return returned;
-
-        },
-        failure_callback: function(){
-            var returned = Bootstrap.ModalManager.close('manualModal');
-
-            callback.apply(this, arguments);
-            return returned;
-
-        },
-    };
-
-    manualButtons = [
+TableSelectWeb.NotificationMixin = Ember.Mixin.create({
+    manualModalButtons: [
         Ember.Object.create({title: 'Submit', clicked: "success_callback"}),
         Ember.Object.create({title: 'Cancel', dismiss: "failure_callback"})
-    ];
+    ],
 
-    var x = Bootstrap.ModalManager.open(
-        'manualModal',
-        text,
-        Ember.TEMPLATES.modal,
-        manualButtons,
-        'lol'
-    );
+    sendNotification: function(text, callback) {
+        'use strict';
+        var options,
+            modalPane,
+            callbacks,
+            manualButtons;
 
-    return modalPane;
-}
+        var callback_wrapper = function(){
+            var returned = Bootstrap.ModalManager.close('manualModal');
 
-function sendNotificationLoc(text, callback) {
-    'use strict';
-    text = Ember.String.loc(text);
-    return sendNotification(text, callback);
-}
+            callback.apply(this, arguments);
+
+            return returned;
+        };
+
+        callbacks = {
+            success_callback: callback_wrapper,
+            failure_callback: callback_wrapper,
+        };
+
+        Bootstrap.ModalManager.open(
+            'manualModal',
+            text,
+            Ember.TEMPLATES.modal,
+            this.manualModalButtons,
+            this
+        );
+    },
+
+    sendNotificationLoc: function(text, callback) {
+        'use strict';
+        text = Ember.String.loc(text);
+        return this.sendNotification(text, callback);
+    }
+});

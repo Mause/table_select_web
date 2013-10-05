@@ -18,6 +18,7 @@ main:
             files:
              - bs-core.max
              - bs-modal.max
+             - bs-button.max
              - ember-renderspeed
 
     app:
@@ -37,8 +38,8 @@ main:
             prefix: mixins/
             postfix: _mixin
             files:
-             - error_handler
              - send_notification
+             - error_handler
 
         controllers:
             prefix: controllers/
