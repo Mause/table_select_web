@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.3-21-gd45b685
-// Last commit: d45b685 (2013-10-03 10:38:18 -0700)
+// Version: v1.0.0-beta.3-34-g6bf433e
+// Last commit: 6bf433e (2013-10-04 23:04:35 -0700)
 
 
 (function() {
@@ -1631,7 +1631,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     Returns true if a record for a given type and ID is already loaded.
 
     @method hasRecordForId
-    @param {String} type
+    @param {DS.Model} type
     @param {String|Integer} id
     @returns Boolean
   */
@@ -2173,17 +2173,18 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @returns {subclass of DS.Model}
   */
   modelFor: function(key) {
-    if (typeof key !== 'string') {
-      return key;
+    var factory;
+
+    if (typeof key === 'string') {
+      factory = this.container.lookupFactory('model:' + key);
+      Ember.assert("No model was found for '" + key + "'", factory);
+      factory.typeKey = key;
+    } else {
+      // A factory already supplied.
+      factory = key;
     }
 
-    var factory = this.container.lookupFactory('model:'+key);
-
-    Ember.assert("No model was found for '" + key + "'", factory);
-
     factory.store = this;
-    factory.typeKey = key;
-
     return factory;
   },
 
@@ -4664,7 +4665,7 @@ function asyncBelongsTo(type, options, meta) {
 
     if (arguments.length === 2) {
       Ember.assert("You can only add a '" + type + "' record to this relationship", !value || value instanceof store.modelFor(type));
-      return value === undefined ? null : value;
+      return value === undefined ? null : DS.PromiseObject.create({ promise: Ember.RSVP.resolve(value) });
     }
 
     var link = data.links && data.links[key],
@@ -7419,26 +7420,6 @@ DS.Model.reopen({
 
 
 (function() {
-//Copyright (C) 2011 by Living Social, Inc.
-
-//Permission is hereby granted, free of charge, to any person obtaining a copy of
-//this software and associated documentation files (the "Software"), to deal in
-//the Software without restriction, including without limitation the rights to
-//use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-//of the Software, and to permit persons to whom the Software is furnished to do
-//so, subject to the following conditions:
-
-//The above copyright notice and this permission notice shall be included in all
-//copies or substantial portions of the Software.
-
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//SOFTWARE.
-
 /**
   Ember Data
 
@@ -8000,6 +7981,8 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
       payload[embeddedTypeKey] = payload[embeddedTypeKey] || [];
 
       forEach(partial[attribute], function(data) {
+        var embeddedType = store.modelFor(relationship.type.typeKey);
+        updatePayloadWithEmbedded(store, serializer, embeddedType, data, payload);
         ids.push(data[primaryKey]);
         payload[embeddedTypeKey].push(data);
       });
