@@ -16,5 +16,9 @@ TableSelectWeb.BallTable = DS.Model.extend({
             row_end = ball_table_num % 2 === 0;
 
         return row_end;
-    }.property('ball_table_num').cacheable(),
+    }.property('ball_table_num'),
+
+    row_start: function(){
+        return !this.get('row_end');
+    }.property('row_end')
 });

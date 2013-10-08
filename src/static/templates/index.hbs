@@ -1,17 +1,19 @@
 <div>
     {{! iterate through each table }}
     {{#each ball_table in controller}}
+
+        {{! some logic to make sure the tables are evenly layed out }}
+        {{#if ball_table.row_start}}
+            <div class="row">
+        {{/if}}
+
         <div class="col-md-6">
             {{ball-table ball_table=ball_table}}
         </div>
 
-    {{! logic to make sure the tables are evenly layed out }}
-    {{#if ball_table.row_end}}
-        </div>
-    {{else}}
-        {{! if it aint the end, it must be the start }}
-        <div class="row">
-    {{/if}}
+        {{#if ball_table.row_end}}
+            </div>
+        {{/if}}
 
     {{/each}}
 </div>
