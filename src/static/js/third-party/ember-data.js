@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.3-34-g6bf433e
-// Last commit: 6bf433e (2013-10-04 23:04:35 -0700)
+// Version: v1.0.0-beta.3-38-g940bc57
+// Last commit: 940bc57 (2013-10-05 23:33:18 -0700)
 
 
 (function() {
@@ -2169,7 +2169,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     etc.)
 
     @method modelFor
-    @param {String} key
+    @param {String or subclass of DS.Model} key
     @returns {subclass of DS.Model}
   */
   modelFor: function(key) {
@@ -2526,6 +2526,7 @@ function normalizeRelationships(store, type, data, record) {
       deserializeRecordId(store, data, key, relationship, value);
     } else if (kind === 'hasMany') {
       deserializeRecordIds(store, data, key, relationship, value);
+      addUnsavedRecords(record, key, value);
     }
   });
 
@@ -2559,6 +2560,14 @@ function typeFor(relationship, key, data) {
 function deserializeRecordIds(store, data, key, relationship, ids) {
   for (var i=0, l=ids.length; i<l; i++) {
     deserializeRecordId(store, ids, i, relationship, ids[i]);
+  }
+}
+
+// If there are any unsaved records that are in a hasMany they won't be
+// in the payload, so add them back in manually.
+function addUnsavedRecords(record, key, data) {
+  if(record) {
+    data.pushObjects(record.get(key).filterBy('isNew'));
   }
 }
 
