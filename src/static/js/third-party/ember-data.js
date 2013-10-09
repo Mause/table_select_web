@@ -1,14 +1,14 @@
 // ==========================================================================
 // Project:   Ember Data
-// Copyright: ©2011-2013 Tilde Inc. and contributors.
-//            Portions ©2011 LivingSocial Inc.
+// Copyright: Copyright 2011-2013 Tilde Inc. and contributors.
+//            Portions Copyright 2011 LivingSocial Inc.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
 
 
-// Version: v1.0.0-beta.3-38-g940bc57
-// Last commit: 940bc57 (2013-10-05 23:33:18 -0700)
+// Version: v1.0.0-beta.3-49-g2326a1c
+// Last commit: 2326a1c (2013-10-09 05:37:56 +0300)
 
 
 (function() {
@@ -3283,7 +3283,7 @@ var RootState = {
 
       didCommit: function(record) {
         record.send('invokeLifecycleCallbacks', get(record, 'lastDirtyType'));
-      },
+      }
 
     },
 
@@ -3609,6 +3609,8 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
     for (i=0, l=setups.length; i<l; i++) {
       setups[i].setup(this);
     }
+
+    this.updateRecordArraysLater();
   },
 
   _unhandledEvent: function(state, name, context) {
@@ -5822,7 +5824,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
   },
 
   /**
-    Implement this method in order to provide provide json for CRUD methods
+    Implement this method in order to provide json for CRUD methods
 
     @method mockJSON
     @param  type
