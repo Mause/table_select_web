@@ -1,10 +1,15 @@
 <!-- add-attendee-form class is for the css print media selector -->
-<form class="well add-attendee-form">
-    <label>
-        <strong>Attendee name:</strong> {{view Ember.TextField valueBinding="attendee_name"}}
-    </label>
-    <button
-        {{action addAttendeeFormEvent attendee_name}}
-        type="submit"
-        class="btn btn-primary">Submit attendee</button>
-</form>
+<div class="well add-attendee-form">
+    <form>
+        <div class="form-group">
+            <label class="control-label">
+                Attendee name: {{view Ember.TextField valueBinding="attendee_name"}}
+            </label>
+        </div>
+
+        <button
+            {{action addAttendeeFormEvent attendee_name}}
+            type="submit"
+            class="btn btn-primary">Submit attendee</button>
+    </form>
+</div>
