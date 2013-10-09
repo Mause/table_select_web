@@ -8,7 +8,7 @@ TableSelectWeb.AdminRoute = Ember.Route.extend({
 
     model: function () {
         'use strict';
-        return this.store.findQuery('removal_request', {
+        return this.store.findQuery('removalRequest', {
             'state': 'unresolved'
         });
     }

@@ -6,6 +6,11 @@ TableSelectWeb.ApplicationAdapter = DS.RESTAdapter.extend({
         removal_request: TableSelectWeb.RemovalRequest
     },
 
+    pathForType: function(type){
+        type = Ember.String.underscore(type);
+        return this._super(type);
+    },
+
     ajaxError: function(jqXHR) {
         'use strict';
         var error = this._super(jqXHR);
