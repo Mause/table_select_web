@@ -7,8 +7,8 @@
 
 
 
-// Version: v1.0.0-beta.3-49-g2326a1c
-// Last commit: 2326a1c (2013-10-09 05:37:56 +0300)
+// Version: v1.0.0-beta.3-51-g236a675
+// Last commit: 236a675 (2013-10-09 15:03:18 -0700)
 
 
 (function() {
@@ -61,7 +61,7 @@ var define, requireModule;
   @class DS
   @static
 */
-
+var DS;
 if ('undefined' === typeof DS) {
   DS = Ember.Namespace.create({
     VERSION: '1.0.0-beta.2'
