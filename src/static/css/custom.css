@@ -2,7 +2,7 @@ header {
     width: 100%;
     padding-top: 6px;
     padding-bottom: 20px;
-    padding-left: 15px;
+    padding-left: 30px;
     color: white;
 }
 
@@ -22,7 +22,7 @@ header a {
 
 nav {
     float: right;
-    margin-top: -32px;
+    margin-top: -50px;
 }
 
 body {
