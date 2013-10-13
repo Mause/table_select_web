@@ -6,5 +6,6 @@ Ember.STRINGS = {
     invalid_login: 'Invalid login credentials',
     unknown_login_error: 'Unknown login error',
     removal_request_submit_success: 'Removal request successfully submitted',
-    removal_request_submit_failure: 'Removal request submission failure'
+    removal_request_submit_failure: 'Removal request submission failure',
+    unknown_error: 'An unknown error has occured, please check your connection to the network'
 };
