@@ -1,8 +1,18 @@
 TableSelectWeb.NotificationMixin = Ember.Mixin.create({
     manualModalButtons: [
-        Ember.Object.create({title: 'Submit', clicked: "success_callback"}),
-        Ember.Object.create({title: 'Cancel', dismiss: "failure_callback"})
+        Ember.Object.create({title: 'Submit', clicked: "modal_success_callback"}),
+        Ember.Object.create({title: 'Cancel', dismiss: "modal_failure_callback"})
     ],
+
+    send: function(eventName, args){
+        var possible_diverts = this.manualModalButtons.mapBy('clicked');
+        possible_diverts = possible_diverts.concat(this.manualModalButtons.mapBy('dismiss'));
+        if (possible_diverts.contains(eventName)) {
+            return this.get('_callbacks')[eventName](args);
+        }
+
+        return this._super(eventName, args);
+    },
 
     sendNotification: function(text, callback) {
         'use strict';
@@ -19,10 +29,10 @@ TableSelectWeb.NotificationMixin = Ember.Mixin.create({
             return returned;
         };
 
-        callbacks = {
-            success_callback: callback_wrapper,
-            failure_callback: callback_wrapper,
-        };
+        this.set('_callbacks', {
+            modal_success_callback: callback_wrapper,
+            modal_failure_callback: callback_wrapper,
+        });
 
         Bootstrap.ModalManager.open(
             'manualModal',
