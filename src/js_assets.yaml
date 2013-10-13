@@ -1,0 +1,108 @@
+main:
+    prefix: js/
+    postfix: .js
+    order: [third_party, app]
+
+    third_party:
+        prefix: third-party/
+        files:
+         - jquery
+         - jquery.cookie
+         - handlebars
+         - ember
+         - ember-data
+         - bootstrap
+
+        plugins:
+            prefix: ember_plugins/
+            files:
+             - bs-core.max
+             - bs-modal.max
+             - bs-button.max
+             - ember-renderspeed
+
+    app:
+        prefix: app/
+        order:
+         - mixins
+         - controllers
+         - components
+         - views
+         - models
+         - support_objects
+         - routes
+         - utils
+         - locale
+
+        mixins:
+            prefix: mixins/
+            postfix: _mixin
+            files:
+             - send_notification
+             - error_handler
+
+        controllers:
+            prefix: controllers/
+            postfix: _controller
+            files:
+             - admin
+             - auth
+
+        views:
+            prefix: views/
+            postfix: _view
+            files:
+             - removal_request_checkbox
+
+        components:
+            prefix: components/
+            postfix: _component
+            files:
+             - add_attendee
+             - attendee_list
+
+        models:
+            prefix: models/
+            postfix: _model
+            files:
+             - attendee
+             - ball_table
+             - removal_request
+
+        support_objects:
+            data:
+                prefix: models/
+                postfix:
+                files:
+                 - adapter
+                 - serializer
+                 - store
+
+            misc:
+                files:
+                 - routes/router
+
+        routes:
+            prefix: routes/
+            postfix: _route
+            files:
+             - application
+             - admin
+             - index
+             - auth
+             - ball_table
+
+        utils:
+            prefix: utils/
+            postfix: _util
+            files:
+             - auth_manager
+
+        locale:
+            prefix: locale/
+            files:
+             - en
+
+        files:
+         - main
+         - handlebars_utils

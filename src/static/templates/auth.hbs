@@ -1,0 +1,22 @@
+<div class="col-lg-4">
+    <div class="well form-group">
+        <form>
+            <div class="form-group control-label">
+                <label class="control-label">
+                    Username: {{view Ember.TextField valueBinding="username" id="username"}}
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class=" control-label">Password: </label>
+                {{view Ember.TextField valueBinding="password" id="password" type="password"}}
+            </div>
+
+            <div class="form-group">
+                <button {{action submitAuthFormEvent}} class="btn btn-primary" type="submit">
+                    Login
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

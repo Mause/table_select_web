@@ -10,7 +10,6 @@ dist
 build
 eggs
 parts
-bin
 var
 sdist
 develop-eggs
@@ -42,4 +41,7 @@ __pycache__
 # application specific
 *.sublime-workspace
 *.swp
-*templates/templates.html
+
+# generated stuff
+src/static/gen/compiled_templates.js
+*.webassets-cache*

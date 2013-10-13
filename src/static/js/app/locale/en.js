@@ -1,0 +1,11 @@
+Ember.STRINGS = {
+    unauthorized: 'You are not authorized',
+    table_full: 'That table is full',
+    attendee_exists: 'Attendee "%@" already exists',
+    attendee_add_success: 'Attendee addition was successful',
+    invalid_login: 'Invalid login credentials',
+    unknown_login_error: 'Unknown login error',
+    removal_request_submit_success: 'Removal request successfully submitted',
+    removal_request_submit_failure: 'Removal request submission failure',
+    unknown_error: 'An unknown error has occured, please check your connection to the network'
+};

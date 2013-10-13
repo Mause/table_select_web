@@ -1,0 +1,13 @@
+<nav>
+    {{#bs-link-to 'index'}}Home{{/bs-link-to}}
+    {{#bs-link-to 'info'}}Info{{/bs-link-to}}
+
+    <span class="barrier">|</span>
+
+    {{#if target.isAuthenticated}}
+        {{#bs-link-to 'admin'}}Admin{{/bs-link-to}}
+        <button {{action 'logout'}} class="btn">Logout</button>
+    {{else}}
+        {{#bs-link-to 'auth'}}Auth{{/bs-link-to}}
+    {{/if}}
+</nav>

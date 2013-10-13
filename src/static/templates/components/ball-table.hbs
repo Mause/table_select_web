@@ -1,0 +1,19 @@
+<div class="enclosure space_below span5">
+    <h2 class="ball_table_title">
+        {{#link-to "ball_table" ball_table class="ball_table_title"}}
+            {{ball_table.ball_table_name}}
+        {{/link-to}}
+    </h2>
+
+    {{#unless ball_table.full}}
+        {{add-attendee ball_table=ball_table}}
+    {{/unless}}
+
+    <div>
+        {{#if ball_table.displayable_attendees}}
+            {{attendee-list attendees=ball_table.displayable_attendees}}
+        {{else}}
+            <h5>No attendees on this table yet</h5>
+        {{/if}}
+    </div>
+</div>
