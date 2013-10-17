@@ -1,14 +1,14 @@
 // ==========================================================================
 // Project:   Ember Data
-// Copyright: ©2011-2013 Tilde Inc. and contributors.
-//            Portions ©2011 LivingSocial Inc.
+// Copyright: Copyright 2011-2013 Tilde Inc. and contributors.
+//            Portions Copyright 2011 LivingSocial Inc.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
 
 
-// Version: v1.0.0-beta.3-21-gd45b685
-// Last commit: d45b685 (2013-10-03 10:38:18 -0700)
+// Version: v1.0.0-beta.3-51-g236a675
+// Last commit: 236a675 (2013-10-09 15:03:18 -0700)
 
 
 (function() {
@@ -61,7 +61,7 @@ var define, requireModule;
   @class DS
   @static
 */
-
+var DS;
 if ('undefined' === typeof DS) {
   DS = Ember.Namespace.create({
     VERSION: '1.0.0-beta.2'
@@ -1631,7 +1631,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     Returns true if a record for a given type and ID is already loaded.
 
     @method hasRecordForId
-    @param {String} type
+    @param {DS.Model} type
     @param {String|Integer} id
     @returns Boolean
   */
@@ -2169,21 +2169,22 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     etc.)
 
     @method modelFor
-    @param {String} key
+    @param {String or subclass of DS.Model} key
     @returns {subclass of DS.Model}
   */
   modelFor: function(key) {
-    if (typeof key !== 'string') {
-      return key;
+    var factory;
+
+    if (typeof key === 'string') {
+      factory = this.container.lookupFactory('model:' + key);
+      Ember.assert("No model was found for '" + key + "'", factory);
+      factory.typeKey = key;
+    } else {
+      // A factory already supplied.
+      factory = key;
     }
 
-    var factory = this.container.lookupFactory('model:'+key);
-
-    Ember.assert("No model was found for '" + key + "'", factory);
-
     factory.store = this;
-    factory.typeKey = key;
-
     return factory;
   },
 
@@ -2525,6 +2526,7 @@ function normalizeRelationships(store, type, data, record) {
       deserializeRecordId(store, data, key, relationship, value);
     } else if (kind === 'hasMany') {
       deserializeRecordIds(store, data, key, relationship, value);
+      addUnsavedRecords(record, key, value);
     }
   });
 
@@ -2558,6 +2560,14 @@ function typeFor(relationship, key, data) {
 function deserializeRecordIds(store, data, key, relationship, ids) {
   for (var i=0, l=ids.length; i<l; i++) {
     deserializeRecordId(store, ids, i, relationship, ids[i]);
+  }
+}
+
+// If there are any unsaved records that are in a hasMany they won't be
+// in the payload, so add them back in manually.
+function addUnsavedRecords(record, key, data) {
+  if(record) {
+    data.pushObjects(record.get(key).filterBy('isNew'));
   }
 }
 
@@ -3273,7 +3283,7 @@ var RootState = {
 
       didCommit: function(record) {
         record.send('invokeLifecycleCallbacks', get(record, 'lastDirtyType'));
-      },
+      }
 
     },
 
@@ -3599,6 +3609,8 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
     for (i=0, l=setups.length; i<l; i++) {
       setups[i].setup(this);
     }
+
+    this.updateRecordArraysLater();
   },
 
   _unhandledEvent: function(state, name, context) {
@@ -4664,7 +4676,7 @@ function asyncBelongsTo(type, options, meta) {
 
     if (arguments.length === 2) {
       Ember.assert("You can only add a '" + type + "' record to this relationship", !value || value instanceof store.modelFor(type));
-      return value === undefined ? null : value;
+      return value === undefined ? null : DS.PromiseObject.create({ promise: Ember.RSVP.resolve(value) });
     }
 
     var link = data.links && data.links[key],
@@ -5812,7 +5824,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
   },
 
   /**
-    Implement this method in order to provide provide json for CRUD methods
+    Implement this method in order to provide json for CRUD methods
 
     @method mockJSON
     @param  type
@@ -7419,26 +7431,6 @@ DS.Model.reopen({
 
 
 (function() {
-//Copyright (C) 2011 by Living Social, Inc.
-
-//Permission is hereby granted, free of charge, to any person obtaining a copy of
-//this software and associated documentation files (the "Software"), to deal in
-//the Software without restriction, including without limitation the rights to
-//use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-//of the Software, and to permit persons to whom the Software is furnished to do
-//so, subject to the following conditions:
-
-//The above copyright notice and this permission notice shall be included in all
-//copies or substantial portions of the Software.
-
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//SOFTWARE.
-
 /**
   Ember Data
 
@@ -8000,6 +7992,8 @@ function updatePayloadWithEmbedded(store, serializer, type, partial, payload) {
       payload[embeddedTypeKey] = payload[embeddedTypeKey] || [];
 
       forEach(partial[attribute], function(data) {
+        var embeddedType = store.modelFor(relationship.type.typeKey);
+        updatePayloadWithEmbedded(store, serializer, embeddedType, data, payload);
         ids.push(data[primaryKey]);
         payload[embeddedTypeKey].push(data);
       });

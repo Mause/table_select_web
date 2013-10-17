@@ -1,4 +1,4 @@
-TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
+TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create(TableSelectWeb.NotificationMixin, {
     handle_errors: function(errors, context, error_handlers){
         if (arguments.length != 3){
             error_handlers = this.error_handlers;
@@ -13,7 +13,11 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
             try {
                 self.handle_errors_recurse(errors, context, resolve);
             } catch (e) {
-                console.error(e);
+                // reject the promise. poor promise :(
+                reject();
+
+                // stacktrace is preserved, right?
+                throw e;
             }
         });
     },
@@ -61,7 +65,7 @@ TableSelectWeb.ErrorHandlerMixin = Ember.Mixin.create({
         result = error.handler(error.error, context);
 
         if (result.notification) {
-            sendNotification(result.notification, closed_callback);
+            this.sendNotification(result.notification, closed_callback);
         } else {
             handle_errors_recurse(errors, context);
         }

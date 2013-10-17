@@ -1,4 +1,8 @@
-TableSelectWeb.ApplicationRoute = Ember.Route.extend({
+TableSelectWeb.ApplicationRoute = Ember.Route.extend(TableSelectWeb.NotificationMixin, {
+    manualModalButtons: [
+        Ember.Object.create({title: 'OK'})
+    ],
+
     actions: {
         logout: function(){
             'use strict';
@@ -10,6 +14,10 @@ TableSelectWeb.ApplicationRoute = Ember.Route.extend({
 
             // and redirect to the homepage
             this.transitionTo('/');
+        },
+        error: function(error, transition){
+            console.log('Error has occured:', error);
+            this.sendNotificationLoc('unknown_error');
         }
     }
 });

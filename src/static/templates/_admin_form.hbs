@@ -1,13 +1,11 @@
 <form>
-    <div class="well no-decoration">
+    {{!-- <div class="well no-decoration"> --}}
         {{#if controller}}
-            <div class="custom-dropdown clearfix attendee_list space_below">
-                <ul class="custom-dropdown-menu dropdown-menu-customization">
+            {{!-- <ul class="list-group"> --}}
                     {{#each request in controller}}
                         {{partial _single_removal_request}}
                     {{/each}}
-                </ul>
-            </div>
+            {{!-- </ul> --}}
 
             <div class="request_actions">
                 <button class="btn btn-success" {{action allow}}>Allow</button>
@@ -19,5 +17,5 @@
                 No nonresolved removal requests in existence
             </h4>
         {{/if}}
-    </div>
+    {{!-- </div> --}}
 </form>

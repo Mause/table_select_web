@@ -1,13 +1,13 @@
 <nav>
-    {{#link-to 'index' class="btn"}}Home{{/link-to}}
-    {{#link-to 'info' class="btn"}}Info{{/link-to}}
+    {{#bs-link-to 'index'}}Home{{/bs-link-to}}
+    {{#bs-link-to 'info'}}Info{{/bs-link-to}}
 
     <span class="barrier">|</span>
 
     {{#if target.isAuthenticated}}
-        {{#link-to 'admin' class="btn"}}Admin{{/link-to}}
+        {{#bs-link-to 'admin'}}Admin{{/bs-link-to}}
         <button {{action 'logout'}} class="btn">Logout</button>
     {{else}}
-        {{#link-to 'auth' class="btn"}}Auth{{/link-to}}
+        {{#bs-link-to 'auth'}}Auth{{/bs-link-to}}
     {{/if}}
 </nav>

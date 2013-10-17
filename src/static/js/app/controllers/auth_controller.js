@@ -1,4 +1,4 @@
-TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
+TableSelectWeb.AuthController = Ember.ArrayController.extend(TableSelectWeb.NotificationMixin, {
     username: '',
     password: '',
 
@@ -26,7 +26,7 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
             adapter.ajax(url, 'POST', {data: data}).then(
                 Em.$.proxy(this.auth_success, this),
-                this.auth_failure
+                Em.$.proxy(this.auth_failure, this)
             );
         }
     },
@@ -44,13 +44,18 @@ TableSelectWeb.AuthController = Ember.ArrayController.extend(Ember.Evented, {
 
     auth_failure: function(xhr){
         if (xhr.status === 401) {
-            sendNotificationLoc('invalid_login');
+            this.sendNotificationLoc('invalid_login');
         } else {
             debugger;
-            sendNotificationLoc('unknown_login_error');
+            this.sendNotificationLoc('unknown_login_error');
             TableSelectWeb.AuthManager.reset();
         }
     }
 });
+
+TableSelectWeb.AuthController.reopen(
+    // Ember.Evented,
+    TableSelectWeb.NotificationMixin
+);
 
 Ember.Inflector.inflector.uncountable('me');

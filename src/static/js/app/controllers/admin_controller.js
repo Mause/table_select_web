@@ -1,4 +1,4 @@
-TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
+TableSelectWeb.AdminController = Ember.ArrayController.extend({
     checked_removal_requests: [],
 
     success_submit: function(requested){
@@ -36,12 +36,12 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
         currentModel.arrayContentDidChange();
 
         debugger;
-        sendNotificationLoc('Success');
+        this.sendNotificationLoc('Success');
     },
 
     failure: function(source){
         debugger;
-        sendNotificationLoc('Failure');
+        this.sendNotificationLoc('Failure');
     },
 
     action: function(show_attendee){
@@ -74,3 +74,8 @@ TableSelectWeb.AdminController = Ember.ArrayController.extend(Ember.Evented, {
         }
     }
 });
+
+TableSelectWeb.AdminController.reopen(
+    Ember.Evented,
+    TableSelectWeb.NotificationMixin
+);

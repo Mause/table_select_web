@@ -26,7 +26,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
                 Ember.$.proxy(this.success, this),
                 Ember.$.proxy(this.failure, this, record_data)
             );
-        },
+        }
     },
 
     success: function(attendee) {
@@ -34,7 +34,7 @@ TableSelectWeb.AddAttendeeComponent = Ember.Component.extend(TableSelectWeb.Erro
         var ball_table = attendee.get('ball_table');
         ball_table.get('attendees').pushObject(attendee);
 
-        sendNotificationLoc('attendee_add_success');
+        this.sendNotificationLoc('attendee_add_success');
     },
 
     failure: function(record_data, event) {
