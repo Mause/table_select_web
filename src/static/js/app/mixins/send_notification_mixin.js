@@ -24,7 +24,8 @@ TableSelectWeb.NotificationMixin = Ember.Mixin.create({
         var callback_wrapper = function(){
             var returned = Bootstrap.ModalManager.close('manualModal');
 
-            callback.apply(this, arguments);
+            if (!Em.isNone(callback))
+                callback.apply(this, arguments);
 
             return returned;
         };
