@@ -7,7 +7,7 @@
 
 
 
- // Version: 1.0.0-beta.4+canary.b3beee0b
+ // Version: 1.0.0-beta.4+canary.c15b8f80
 
 (function() {
 var define, requireModule;
@@ -62,7 +62,7 @@ var define, requireModule;
 var DS;
 if ('undefined' === typeof DS) {
   DS = Ember.Namespace.create({
-    VERSION: '1.0.0-beta.4+canary.b3beee0b'
+    VERSION: '1.0.0-beta.4+canary.c15b8f80'
   });
 
   if ('undefined' !== typeof window) {
@@ -183,6 +183,11 @@ DS.JSONSerializer = Ember.Object.extend({
 
   /**
     You can use this method to customize how polymorphic objects are serialized.
+
+    @method serializePolymorphicType
+    @param {DS.Model} record
+    @param {Object} json
+    @param relationship
   */
   serializePolymorphicType: Ember.K,
 
@@ -355,7 +360,7 @@ DS.DebugAdapter = Ember.DataAdapter.extend({
 DS.Transform = Ember.Object.extend({
 
   serialize: Ember.required(),
-  
+
   deserialize: Ember.required()
 
 });
@@ -435,7 +440,7 @@ DS.DateTransform = DS.Transform.extend({
     } else {
       return null;
     }
-  } 
+  }
 
 });
 
@@ -582,7 +587,7 @@ Ember.onLoad('Ember.Application', function(Application) {
 /**
   Date.parse with progressive enhancement for ISO 8601 <https://github.com/csnover/js-iso8601>
 
-  © 2011 Colin Snover <http://zetafleet.com>
+  Â© 2011 Colin Snover <http://zetafleet.com>
 
   Released under MIT license.
 
@@ -601,12 +606,12 @@ var origParse = Date.parse, numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
 Ember.Date.parse = function (date) {
     var timestamp, struct, minutesOffset = 0;
 
-    // ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
-    // before falling back to any implementation-specific date parsing, so that’s what we do, even if native
+    // ES5 Â§15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
+    // before falling back to any implementation-specific date parsing, so thatâ€™s what we do, even if native
     // implementations could be faster
-    //              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
+    //              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 Â±    10 tzHH    11 tzmm
     if ((struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(date))) {
-        // avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
+        // avoid NaN timestamps caused by â€œundefinedâ€ values being passed to Date.UTC
         for (var i = 0, k; (k = numericKeys[i]); ++i) {
             struct[k] = +struct[k] || 0;
         }
@@ -1893,7 +1898,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     If any of a record's properties change, or if it changes state, the
     filter function will be invoked again to determine whether it should
     still be in the array.
-    
+
     Optionally you can pass a query which will be triggered at first. The
     results returned by the server could then appear in the filter if they
     match the filter function.
@@ -4981,7 +4986,7 @@ DS.Model.reopenClass({
     var options = this.metaForProperty(name).options;
 
     if (options.inverse === null) { return null; }
-    
+
     var inverseName, inverseKind;
 
     if (options.inverse) {
@@ -5123,7 +5128,7 @@ DS.Model.reopenClass({
         App.Blog = DS.Model.extend({
           users: DS.hasMany('user'),
           owner: DS.belongsTo('user'),
-  
+
           posts: DS.hasMany('post')
         });
 
@@ -6837,7 +6842,7 @@ var forEach = Ember.ArrayPolyfills.forEach;
 
   ### Conventional Names
 
-  Attribute names in your JSON payload should be the camelcased versions of
+  Attribute names in your JSON payload should be the camelCased versions of
   the attributes in your Ember.js models.
 
   For example, if you have a `Person` model:
@@ -6888,14 +6893,14 @@ var forEach = Ember.ArrayPolyfills.forEach;
 
   ### Headers customization
 
-  Some APIs require HTTP headers, eg to provide an API key. An array of
+  Some APIs require HTTP headers, e.g. to provide an API key. An array of
   headers can be added to the adapter which are passed with every request:
 
   ```js
   DS.RESTAdapter.reopen({
     headers: {
       "API_KEY": "secret key",
-      "ANOTHER_HEADER": "asdsada"
+      "ANOTHER_HEADER": "Some header value"
     }
   });
   ```
@@ -6912,8 +6917,10 @@ DS.RESTAdapter = DS.Adapter.extend({
     Called by the store in order to fetch the JSON for a given
     type and ID.
 
-    It makes an Ajax request to a URL computed by `buildURL`, and returns a
+    The `find` method makes an Ajax request to a URL computed by `buildURL`, and returns a
     promise for the resulting payload.
+
+    This method performs an HTTP `GET` request with the id provided as part of the querystring.
 
     @method find
     @see RESTAdapter/buildURL
@@ -6931,7 +6938,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     Called by the store in order to fetch a JSON array for all
     of the records for a given type.
 
-    It makes an Ajax request to a URL computed by `buildURL`, and returns a
+    The `findAll` method makes an Ajax (HTTP GET) request to a URL computed by `buildURL`, and returns a
     promise for the resulting payload.
 
     @method findAll
@@ -6956,11 +6963,11 @@ DS.RESTAdapter = DS.Adapter.extend({
     Called by the store in order to fetch a JSON array for
     the records that match a particular query.
 
-    The query is a simple JavaScript object that will be passed directly
-    to the server as parameters.
-
-    It makes an Ajax request to a URL computed by `buildURL`, and returns a
+    The `findQuery` method makes an Ajax (HTTP GET) request to a URL computed by `buildURL`, and returns a
     promise for the resulting payload.
+
+    The `query` argument is a simple JavaScript object that will be passed directly
+    to the server as parameters.
 
     @method findQuery
     @see RESTAdapter/buildURL
@@ -6995,11 +7002,11 @@ DS.RESTAdapter = DS.Adapter.extend({
     ids[]=1&ids[]=2&ids[]=3
     ```
 
-    Many servers, such as Rails and PHP, will automatically convert this
+    Many servers, such as Rails and PHP, will automatically convert this URL-encoded array
     into an Array for you on the server-side. If you want to encode the
     IDs, differently, just override this (one-line) method.
 
-    It makes an Ajax request to a URL computed by `buildURL`, and returns a
+    The `findMany` method makes an Ajax (HTTP GET) request to a URL computed by `buildURL`, and returns a
     promise for the resulting payload.
 
     @method findMany
@@ -7033,7 +7040,7 @@ DS.RESTAdapter = DS.Adapter.extend({
 
     This method will be called with the parent record and `/posts/1/comments`.
 
-    It will make an Ajax request to the originally specified URL.
+    The `findHasMany` method will make an Ajax (HTTP GET) request to the originally specified URL.
     If the URL is host-relative (starting with a single slash), the
     request will use the host specified on the adapter (if any).
 
@@ -7076,7 +7083,7 @@ DS.RESTAdapter = DS.Adapter.extend({
 
     This method will be called with the parent record and `/people/1/group`.
 
-    It will make an Ajax request to the originally specified URL.
+    The `findBelongsTo` method will make an Ajax (HTTP GET) request to the originally specified URL.
 
     @method findBelongsTo
     @see RESTAdapter/buildURL
@@ -7095,9 +7102,10 @@ DS.RESTAdapter = DS.Adapter.extend({
 
   /**
     Called by the store when a newly created record is
-    `save`d.
+    saved via the `save` method on a model record instance.
 
-    It serializes the record, and `POST`s it to a URL generated by `buildURL`.
+    The `createRecord` method serializes the record and makes an Ajax (HTTP POST) request
+    to a URL computed by `buildURL`.
 
     See `serialize` for information on how to customize the serialized form
     of a record.
@@ -7121,9 +7129,11 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   /**
-    Called by the store when an existing record is `saved`.
+    Called by the store when an existing record is saved
+    via the `save` method on a model record instance.
 
-    It serializes the record, and performs HTTP `PUT` to a URL generated by `buildURL`.
+    The `updateRecord` method serializes the record and makes an Ajax (HTTP PUT) request
+    to a URL computed by `buildURL`.
 
     See `serialize` for information on how to customize the serialized form
     of a record.
@@ -7151,7 +7161,7 @@ DS.RESTAdapter = DS.Adapter.extend({
   /**
     Called by the store when a record is deleted.
 
-    It serializes the record, and performs HTTP `DELETE` to a URL generated by `buildURL`.
+    The `deleteRecord` method  makes an Ajax (HTTP DELETE) request to a URL computed by `buildURL`.
 
     @method deleteRecord
     @see RESTAdapter/buildURL
@@ -7257,9 +7267,9 @@ DS.RESTAdapter = DS.Adapter.extend({
   /**
     Takes an ajax response, and returns a relavant error.
 
-    By default, it has the following behavior:
+    By default, the `ajaxError` method has the following behavior:
 
-    * It simply returns the ajax response.
+    * It simply returns the ajax response (jqXHR).
 
     @method ajaxError
     @param  jqXHR
@@ -7280,7 +7290,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     or `extractArray` (depending on whether the original query was for one record or
     many records).
 
-    By default, it has the following behavior:
+    By default, `ajax` method has the following behavior:
 
     * It sets the response `dataType` to `"json"`
     * If the HTTP method is not `"GET"`, it sets the `Content-Type` to be
@@ -8026,6 +8036,10 @@ var forEach = Ember.EnumerableUtils.forEach;
   [active_model_serializers](http://github.com/rails-api/active_model_serializers)
   Ruby gem.
 
+  This adapter extends the DS.RESTAdapter by making consistent use of the camelization,
+  decamelization and pluralization methods to normalize the serialized JSON into a
+  format that is compatible with a conventional Rails backend and Ember Data.
+
   ## JSON Structure
 
   The ActiveModelAdapter expects the JSON returned from your server to follow
@@ -8067,8 +8081,8 @@ var forEach = Ember.EnumerableUtils.forEach;
 DS.ActiveModelAdapter = DS.RESTAdapter.extend({
   defaultSerializer: '_ams',
   /**
-    The ActiveModelAdapter overrides the `pathForType` method
-    to build underscored URLs.
+    The ActiveModelAdapter overrides the `pathForType` method to build
+    underscored URLs by decamelizing and pluralizing the object type name.
 
     ```js
       this.pathForType("famousPerson");
@@ -8088,6 +8102,13 @@ DS.ActiveModelAdapter = DS.RESTAdapter.extend({
     The ActiveModelAdapter overrides the `ajaxError` method
     to return a DS.InvalidError for all 422 Unprocessable Entity
     responses.
+
+    A 422 HTTP response from the server generally implies that the request
+    was well formed but the API was unable to process it because the
+    content was not semantically correct or meaningful per the API.
+
+    For more information on 422 HTTP Error code see 11.2 WebDAV RFC 4918
+    https://tools.ietf.org/html/rfc4918#section-11.2
 
     @method ajaxError
     @param jqXHR
