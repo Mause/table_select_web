@@ -113,9 +113,9 @@ tornado_settings = {
 }
 
 api = [
-    (r"/ball_tables", ajax.BallTablesHandler),
+    (r"/ballTables", ajax.BallTablesHandler),
 
-    (r"/removal_requests", ajax.RemovalRequestHandler),
+    (r"/removalRequests", ajax.RemovalRequestHandler),
 
     (r"/attendees", ajax.AttendeeHandler),
 
