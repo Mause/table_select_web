@@ -283,19 +283,26 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         return body
 
     def perform_checks(self, session, record):
-        checks = (getattr(self, item) for item in dir(self))
+        """
+        Iterates through methods marked as record_checkers,
+        run them against the session and record
+        """
+
         checks = (
-            item
-            for item in checks
-            if hasattr(item, '__record_checker__')
+            attrib
+            for attrib in vars(self).values()
+            if hasattr(attrib, '__record_checker__')
         )
 
         for check in checks:
             errors = check(session, record)
-            logging.debug('{}({}) -> {}'.format(
-                check.__name__,
-                record,
-                errors))
+            logging.debug(
+                '{}({}) -> {}'.format(
+                    check.__name__,
+                    record,
+                    errors
+                )
+            )
 
             if errors:
                 return errors
