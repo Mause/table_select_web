@@ -310,5 +310,16 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         return None
 
     def write_json(self, data):
+        """
+        Sets the content type to application/json and writes out
+        the supplied `data` as json
+        """
+
         self.set_header('Content-Type', 'application/json')
-        return self.write(json.dumps(data, indent=self.json_indent))
+
+        return self.write(
+            json.dumps(
+                data,
+                indent=self.json_indent
+            )
+        )
