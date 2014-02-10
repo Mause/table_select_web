@@ -31,7 +31,7 @@ var TableSelectWeb = Ember.Application.create({
 
 TableSelectWeb.initializer({
     name: 'injectStoreIntoComponents',
-    before: 'registerComponents',
+    before: 'injectStore',
     initialize: function(container, application){
         'use strict';
         container.register('store:main', TableSelectWeb.Store);
