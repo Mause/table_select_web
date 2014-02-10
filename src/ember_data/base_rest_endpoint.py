@@ -14,9 +14,7 @@ from utils import (
 
 
 def check_setup_decorator(func):
-    print('wrapping:', func)
-
-    @wraps
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
         # check the setup
         errors = self.check_setup()
@@ -67,12 +65,8 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
     @check_setup_decorator
     def get(self, record_id):
-        # errors = self.check_setup()
-        # if errors:
-        #     self.write(json.dumps(errors, indent=4))
-        #     return
-
         response = {}
+
         # parse the conditions
         conditions = self.build_conditions_from_args(
             self.request.arguments, self.table)
@@ -110,12 +104,6 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
     def post(self, record_id):
         if record_id is not None:
             raise NotImplementedError()
-
-        # # check the setup
-        # errors = self.check_setup()
-        # if errors:
-        #     self.write(json.dumps(errors, indent=4))
-        #     return
 
         response = {}
 
@@ -155,11 +143,6 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
     @check_setup_decorator
     def put(self, record_id):
-        # # check the setup
-        # errors = self.check_setup()
-        # if errors:
-        #     self.write(json.dumps(errors, indent=4))
-        #     return
 
         response = {}
 
@@ -282,6 +265,7 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
         try:
             if type(body) == bytes:
                 body = body.decode('utf-8')
+
         except UnicodeDecodeError:
             logging.debug('UnicodeDecodeError whilst decoding fields')
             self.set_bad_error(400)
