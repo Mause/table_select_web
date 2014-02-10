@@ -155,9 +155,11 @@ class AuthHandler(EmberDataRESTEndpoint):
                 password))
 
             if username in auth_combos and password == auth_combos[username]:
+                access_token = self.create_key(username.encode('utf-8'))
+
                 self.write_json({
                     'api_key': {
-                        'access_token': self.create_key(username.encode('utf-8')),
+                        'access_token': access_token,
                         'user_id': username
                     }
                 })

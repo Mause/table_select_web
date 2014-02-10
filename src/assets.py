@@ -51,9 +51,12 @@ class EmberHandlebarsFilter(handlebars.Handlebars, Filter):
         stdout, stderr = proc.communicate()
 
         if proc.returncode != 0:
-            raise FilterError(
-                ('ember-precompile: subprocess had error: stderr=%s, '
-                 'stdout=%s, returncode=%s') % (stderr, stdout, proc.returncode))
+            msg = (
+                'ember-precompile: subprocess had error: stderr=%s, '
+                'stdout=%s, returncode=%s'
+            ) % (stderr, stdout, proc.returncode)
+            raise FilterError(msg)
+
         out_data = stdout.decode('utf-8').strip() + ';'
         out_data = out_data.replace('Ember.TEMPLATES["/', 'Ember.TEMPLATES["')
         out.write(out_data)
@@ -170,7 +173,9 @@ def gen_assets():
 def get_changed():
     modified = re.compile(r'^[MAD]  (?P<name>.*)')
 
-    p = subprocess.Popen(['git', 'status', '--porcelain'], stdout=subprocess.PIPE)
+    p = subprocess.Popen(
+        ['git', 'status', '--porcelain'], stdout=subprocess.PIPE
+    )
     out, err = p.communicate()
 
     if err:
@@ -195,7 +200,10 @@ def main():
 
     if GIT_HOOK:
         print('Stashing unstaged code')
-        return_code = subprocess.call(['git', 'stash', '--keep-index'], stdout=subprocess.PIPE)
+        return_code = subprocess.call(
+            ['git', 'stash', '--keep-index'],
+            stdout=subprocess.PIPE
+        )
         result = return_code or 0
         if result:
             sys.exit(result)
@@ -230,7 +238,10 @@ def main():
     finally:
         if GIT_HOOK and stash_created:
             print('Restoring unstaged code')
-            return_code = subprocess.call(['git', 'stash', 'pop'], stdout=subprocess.PIPE)
+            return_code = subprocess.call(
+                ['git', 'stash', 'pop'],
+                stdout=subprocess.PIPE
+            )
             result = return_code or 0
             if result:
                 sys.exit(result)

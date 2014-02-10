@@ -27,7 +27,10 @@ def record_check(func):
 class AuthorizedEndpoint(object):
     def is_authenticated(self):
         if 'Authorization' not in self.headers:
-            logging.info('Attempted to access restricted endpoint without authentication')
+            logging.info(
+                'Attempted to access restricted endpoint '
+                'without authentication'
+            )
             return False
         else:
             auth_data = self.headers['Authorization']
@@ -35,7 +38,10 @@ class AuthorizedEndpoint(object):
             if match:
                 auth_type = match.groups()[0]
                 if auth_type == 'none':
-                    logging.info('Attempted to access restricted endpoint with "none" authentication')
+                    logging.info(
+                        'Attempted to access restricted endpoint with '
+                        '"none" authentication'
+                    )
                     return False
                 elif auth_type == 'Bearer':
                     key = match.groups()[1]
@@ -43,11 +49,17 @@ class AuthorizedEndpoint(object):
                     if self.verify_key(key):
                         return True
                     else:
-                        logging.info('Attempted to access restricted endpoint with invalid authentication key')
+                        logging.info(
+                            'Attempted to access restricted endpoint with '
+                            'invalid authentication key'
+                        )
                 else:
                     self.set_bad_error(401)
             else:
-                logging.info('Attempted to access restricted endpoint with invalid authentication')
+                logging.info(
+                    'Attempted to access restricted endpoint '
+                    'with invalid authentication'
+                )
 
     def verify_key(self, key):
         user_hash, timestamp = key.split(SEP)
@@ -74,7 +86,9 @@ class AuthorizedEndpoint(object):
     def create_key(self, username):
         user_hash = hmac.new(API_KEY_SEED, username).hexdigest()
 
-        timestamp = str(base64.b64encode(str(time.time()).encode('utf-8')))[2:-1]
+        timestamp = str(time.time())
+        timestamp = timestamp.encode('utf-8')
+        timestamp = str(base64.b64encode())[2:-1]
 
         ret = '{}{}{}'.format(
             user_hash,
@@ -93,7 +107,8 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
 
     set 'table' to the declarative sqlalchemy table model defintion
     set 'ember_model_name' to the EmberJS model name
-    set 'methods' to the allowed methods and their configuration; GET, POST, etc
+    set 'methods' to the allowed methods and their configuration;
+        GET, POST, etc
 
     set 'Session' to a session creater created by the session_maker
     """
@@ -236,8 +251,9 @@ class BaseRESTEndpoint(AuthorizedEndpoint):
             for key, value in record_data.items():
                 if not hasattr(record, key):
                     logging.warn(
-                        'Patch of record of type {} attempted with unknown field "{}"'.format(
-                            self.ember_model_name, key))
+                        'Patch of record of type {} attempted with unknown '
+                        'field "{}"'.format(self.ember_model_name, key)
+                    )
                     continue
                 if getattr(record, key) != value:
                     # don't change anything unless we have to
