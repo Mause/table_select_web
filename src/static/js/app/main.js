@@ -19,7 +19,7 @@ Ember.ENV.RAISE_ON_DEPRECATION = true;
 Ember.LOG_STACKTRACE_ON_DEPRECATION = true;
 Ember.DEBUG = true;
 
-var TableSelectWeb = Ember.Application.createWithMixins(Bootstrap.Register, {
+var TableSelectWeb = Ember.Application.create({
     title: 'Ball Table Select',
     author: 'Dominic May (http://mause.me)',
     // LOG_TRANSITIONS: true,
