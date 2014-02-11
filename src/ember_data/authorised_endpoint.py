@@ -76,7 +76,7 @@ class AuthorizedEndpoint(object):
 
         timestamp = str(time.time())
         timestamp = timestamp.encode('utf-8')
-        timestamp = str(base64.b64encode())[2:-1]
+        timestamp = str(base64.b64encode(timestamp))[2:-1]
 
         ret = '{}{}{}'.format(
             user_hash,
