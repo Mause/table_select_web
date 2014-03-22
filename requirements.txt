@@ -3,6 +3,6 @@ sqlalchemy==0.9.1
 psycopg2==2.5.2
 simplejson==3.3.0
 PyYaml==3.10
-webassets==0.10.dev
+webassets==0.9.dev
 rjsmin==1.0.7
 newrelic==2.0.0.1
