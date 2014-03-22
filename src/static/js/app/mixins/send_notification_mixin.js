@@ -35,6 +35,9 @@ TableSelectWeb.NotificationMixin = Ember.Mixin.create({
             modal_failure_callback: callback_wrapper,
         });
 
+        // hax :/
+        TableSelectWeb.BsModalComponent = Bootstrap.BsModalComponent;
+
         Bootstrap.ModalManager.open(
             'manualModal',
             text,

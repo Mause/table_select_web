@@ -22,5 +22,5 @@ Ember.Handlebars.registerHelper('bs-link-to', function(name, options){
    // btn-default';
   options.hash['tag'] = 'button';
 
-  return Ember.Handlebars.helpers.linkTo(name, options);
+  return Ember.Handlebars.helpers['link-to'](name, options);
 });
