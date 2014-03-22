@@ -1,8 +1,8 @@
 tornado==3.1.1
-sqlalchemy==0.8.2
-psycopg2==2.5.1
+sqlalchemy==0.9.1
+psycopg2==2.5.2
 simplejson==3.3.0
 PyYaml==3.10
-webassets==0.9.dev
+webassets==0.10.dev
 rjsmin==1.0.7
 newrelic==2.0.0.1
