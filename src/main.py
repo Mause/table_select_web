@@ -17,7 +17,7 @@ import tornado.httpserver
 import db
 import ajax
 from utils import Application
-from assets import gen_assets
+from assets import gen_assets_tags
 from settings import settings, flags
 
 # set the debug level for tornado
@@ -41,7 +41,7 @@ if flags.is_production():
 
 # only regen assets on each load when not in production mode... :P
 if flags.is_production():
-    ASSETS = gen_assets()
+    ASSETS = gen_assets_tags()
 else:
     ASSETS = None
 
@@ -60,7 +60,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.render(
             'base.html',
             path='/',
-            assets=ASSETS or gen_assets(),
+            assets=ASSETS or gen_assets_tags(),
             newrelic_header=newrelic_header,
             newrelic_footer=newrelic_footer)
 
