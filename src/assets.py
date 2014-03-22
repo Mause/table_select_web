@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import os
-import re
+from os.path import abspath, dirname, join
 import sys
 import logging
 import subprocess
@@ -13,8 +12,8 @@ from webassets.exceptions import FilterError
 from webassets.filter import Filter, handlebars, register_filter
 
 
-DIRNAME = os.path.abspath(os.path.dirname(__file__))
-STATIC_DIR = os.path.abspath(os.path.join(DIRNAME, 'static/'))
+DIRNAME = abspath(dirname(__file__))
+STATIC_DIR = abspath(join(DIRNAME, 'static/'))
 GLOBAL_FILTERS = 'rjsmin'
 
 my_env = Environment(STATIC_DIR, '/static/')
@@ -30,7 +29,7 @@ class EmberHandlebarsFilter(handlebars.Handlebars, Filter):
         if self.root is True:
             root = self.get_config('directory')
         elif self.root:
-            root = os.path.join(self.get_config('directory'), self.root)
+            root = join(self.get_config('directory'), self.root)
         else:
             root = self._find_base_path(templates)
 
@@ -70,30 +69,14 @@ def parse_subsection(subsection):
     if not subsection:
         return []
 
-    if 'prefix' in subsection and subsection['prefix']:
-        prefix = subsection['prefix']
-        del subsection['prefix']
-    else:
-        prefix = ''
+    prefix = subsection.pop('prefix') if subsection.get('prefix') else ''
+    postfix = subsection.pop('postfix') if subsection.get('postfix') else ''
+    files = subsection.pop('files') if subsection.get('files') else []
+    order = subsection.pop('order') if subsection.get('order') else subsection
 
-    if 'postfix' in subsection and subsection['postfix']:
-        postfix = subsection['postfix']
-        del subsection['postfix']
-    else:
-        postfix = ''
-
-    if 'files' in subsection and subsection['files']:
-        files = subsection['files']
-        del subsection['files']
-    else:
-        files = []
-
-    order = subsection['order'] if 'order' in subsection else subsection
-
-    files += chain.from_iterable(
-        parse_subsection(subsection[sub])
-        for sub in order
-    )
+    extra_files = map(subsection.__get__, order)
+    extra_files = map(parse_subsection, order)
+    files += chain.from_iterable(extra_files)
 
     return add_pre_post(prefix, postfix, files)
 
@@ -102,13 +85,15 @@ def sub_bundle(data, key, filters):
     js_files = parse_subsection(data['main'][key])
     js_files = add_pre_post('js/', '.js', js_files)
 
-    js_bundle = Bundle(
-        *js_files, filters=filters, output='gen/{}.js'.format(key))
-    return js_bundle
+    return Bundle(
+        *js_files,
+        filters=filters,
+        output='gen/{}.js'.format(key)
+    )
 
 
 def generate_js():
-    with open(os.path.join(DIRNAME, 'js_assets.yaml')) as fh:
+    with open(join(DIRNAME, 'js_assets.yaml')) as fh:
         data = yaml.load(fh)
 
     # third party libraries
@@ -136,10 +121,12 @@ def generate_templates():
 
 def combine_bundles(*bundles):
     if 'combined' not in my_env:
-        my_env.register('combined',
-                        *bundles,
-                        filters=GLOBAL_FILTERS,
-                        output='gen/combined.js')
+        my_env.register(
+            'combined',
+            *bundles,
+            filters=GLOBAL_FILTERS,
+            output='gen/combined.js'
+        )
     return my_env['combined'].urls()
 
 
@@ -163,107 +150,20 @@ def _gen_assets():
     return JS_INCLUDES
 
 
-def gen_assets():
+def gen_assets_tags():
     return '\n'.join(
         '<script src="{}"></script>'.format(filename)
         for filename in _gen_assets()
     )
 
 
-def get_changed():
-    modified = re.compile(r'^[MAD]  (?P<name>.*)')
-
-    p = subprocess.Popen(
-        ['git', 'status', '--porcelain'], stdout=subprocess.PIPE
-    )
-    out, err = p.communicate()
-
-    if err:
-        sys.exit(err)
-
-    out = out.splitlines()
-    out = (filename.decode('utf-8') for filename in out)
-
-    actual_out = []
-    for filename in out:
-        match = modified.match(filename)
-        if match:
-            actual_out.append(match.groupdict()['name'])
-
-    return actual_out
-
-
 def main():
-    GIT_HOOK = 'as_git_hook' in sys.argv
-    should_regen = True
-    stash_created = False
+    my_env.debug = 'debug' in sys.argv
+    ASSETS = _gen_assets()
 
-    if GIT_HOOK:
-        print('Stashing unstaged code')
-        return_code = subprocess.call(
-            ['git', 'stash', '--keep-index'],
-            stdout=subprocess.PIPE
-        )
-        result = return_code or 0
-        if result:
-            sys.exit(result)
-        stash_created = True
-
-    try:
-        if GIT_HOOK:
-            changed = get_changed()
-
-            changed = list(filter(
-                lambda x: not x.endswith('combined.js'),
-                changed
-            ))
-
-            result = any(
-                filename.rpartition('.')[-1] in ('hbs', 'js')
-                for filename in changed
-            )
-
-            if not result:
-                print('No assets have changed')
-                should_regen = False
-            else:
-                print('Changed:', changed)
-                my_env.debug = 'debug' in sys.argv
-                ASSETS = _gen_assets()
-
-        else:
-            my_env.debug = 'debug' in sys.argv
-            ASSETS = _gen_assets()
-
-    finally:
-        if GIT_HOOK and stash_created:
-            print('Restoring unstaged code')
-            return_code = subprocess.call(
-                ['git', 'stash', 'pop'],
-                stdout=subprocess.PIPE
-            )
-            result = return_code or 0
-            if result:
-                sys.exit(result)
-
-    if should_regen and 'ASSETS' in locals():
-        print('-----> Generated assets;')
-        for asset in ASSETS:
-            print('----->    ', asset)
-
-            if GIT_HOOK:
-                asset = asset.rpartition('?')[0]
-                cmd = ['git', 'add', DIRNAME + asset]
-
-                return_code = subprocess.call(cmd, stdout=subprocess.PIPE)
-                result = return_code or 0
-
-                if result:
-                    print('failed to add', asset)
-                    # only break out of the loop, so we can reapply the stash
-                    break
-
-    print('End changed:', get_changed())
+    print('-----> Generated assets;')
+    for asset in ASSETS:
+        print('----->    ', asset)
 
 
 if __name__ == '__main__':
