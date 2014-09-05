@@ -34,7 +34,7 @@ TableSelectWeb.initializer({
     before: 'injectStore',
     initialize: function(container, application){
         'use strict';
-        container.register('store:main', TableSelectWeb.Store);
+        container.register('store:application', TableSelectWeb.ApplicationStore);
         container.injection('component', 'store', 'store:main');
     }
 });

@@ -1,7 +1,7 @@
 <li class="list-group-item attendee">
     {{attendee.attendee_name}}
     <button type="button" class="spec_close badge"
-        {{action requestRemoveAttendee attendee}}
+        {{action 'requestRemoveAttendee' attendee}}
         >&times;</button>
 
     {{#if attendee.removal_request_exists}}
