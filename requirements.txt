@@ -1,5 +1,5 @@
 tornado==3.1
-requests==1.2.3
+requests==2.20.0
 sqlalchemy
 pg8000-py3
 psycopg2
